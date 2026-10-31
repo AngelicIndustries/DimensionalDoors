@@ -11,7 +11,6 @@ import net.minecraftforge.event.entity.living.LivingDeathEvent;
 import net.minecraftforge.event.entity.living.LivingFallEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent.Action;
-import net.minecraftforge.event.terraingen.InitMapGenEvent;
 import net.minecraftforge.event.world.ChunkEvent;
 import net.minecraftforge.event.world.WorldEvent;
 
@@ -50,19 +49,6 @@ public class EventHookContainer {
         // I want to make this dependency explicit in our code.
         this.worldProperties = worldProperties;
         this.regenerator = regenerator;
-    }
-
-    @SubscribeEvent(priority = EventPriority.LOW)
-    public void onInitMapGen(InitMapGenEvent event) {
-        // Replace the Nether fortress generator with our own only if any
-        // gateways would ever generate. This allows admins to disable our
-        // fortress overriding without disabling all gateways.
-        /*
-         * if (properties.FortressGatewayGenerationChance > 0 &&
-         * properties.WorldRiftGenerationEnabled && event.type ==
-         * InitMapGenEvent.EventType.NETHER_BRIDGE) { event.newGen = new
-         * DDNetherFortressGenerator(); }
-         */
     }
 
     @SubscribeEvent

@@ -7,7 +7,7 @@ import net.minecraftforge.common.config.Configuration;
 import org.dimdev.dimdoors.blocks.BlockRift;
 import org.dimdev.dimdoors.helpers.LimboEscape;
 import org.dimdev.dimdoors.ticking.CustomLimboPopulator;
-import org.dimdev.dimdoors.world.fortresses.DDStructureNetherBridgeStart;
+import org.dimdev.dimdoors.world.fortresses.FortressGateways;
 import org.dimdev.dimdoors.world.gateways.GatewayGenerator;
 
 public class DDProperties {
@@ -339,7 +339,7 @@ public class DDProperties {
                 Configuration.CATEGORY_GENERAL,
                 "Fortress Gateway Generation Chance",
                 33,
-                "Sets the chance (out of " + DDStructureNetherBridgeStart.MAX_GATEWAY_GENERATION_CHANCE
+                "Sets the chance (out of " + FortressGateways.MAX_GATEWAY_GENERATION_CHANCE
                     + ") that a Rift Gateway will "
                     + "generate as part of a Nether Fortress. The default chance is 33.")
             .getInt();
