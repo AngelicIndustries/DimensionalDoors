@@ -11,12 +11,13 @@ import net.minecraft.util.ChatComponentText;
  * some convenience improvements.
  */
 public abstract class DDCommandBase extends CommandBase {
+
     private final String name;
     private final String[] formats;
 
     public DDCommandBase(String name, String format) {
         this.name = name;
-        this.formats = new String[]{format};
+        this.formats = new String[] { format };
     }
 
     public DDCommandBase(String name, String[] formats) {
@@ -57,14 +58,14 @@ public abstract class DDCommandBase extends CommandBase {
      */
     @Override
     public final void processCommand(ICommandSender sender, String[] command) {
-        //Forward the command
+        // Forward the command
         EntityPlayer player = getCommandSenderAsPlayer(sender);
         DDCommandResult result = processCommand(player, command);
 
-        //If the command failed, send the player a status message.
+        // If the command failed, send the player a status message.
         if (result.failed()) {
             if (result.shouldPrintUsage()) {
-                //Send the argument formats for this command
+                // Send the argument formats for this command
                 for (String format : formats) {
                     sendChat(player, "Usage: " + name + " " + format);
                 }
@@ -81,11 +82,12 @@ public abstract class DDCommandBase extends CommandBase {
     /*
      * The following two compareTo() methods are copied from CommandBase because it seems
      * that Dryware and Technic Jenkins don't have those functions defined. How in the world?
-     * I have no idea. But it's breaking our builds. -_-  ~SenseiKiwi
+     * I have no idea. But it's breaking our builds. -_- ~SenseiKiwi
      */
     @Override
     public int compareTo(ICommand command) {
-        return this.getCommandName().compareTo(command.getCommandName());
+        return this.getCommandName()
+            .compareTo(command.getCommandName());
     }
 
     @Override

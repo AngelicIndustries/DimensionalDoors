@@ -1,6 +1,7 @@
 package org.dimdev.dimdoors.saving;
 
 public class PackedDungeonData {
+
     public final int Weight;
     public final boolean IsOpen;
     public final boolean IsInternal;
@@ -9,7 +10,8 @@ public class PackedDungeonData {
     public final String DungeonTypeName;
     public final String DungeonPackName;
 
-    public PackedDungeonData(int weight, boolean isOpen, boolean isInternal, String schematicPath, String schematicName, String dungeonTypeName, String dungeonPackName) {
+    public PackedDungeonData(int weight, boolean isOpen, boolean isInternal, String schematicPath, String schematicName,
+        String dungeonTypeName, String dungeonPackName) {
         this.Weight = weight;
         this.IsOpen = isOpen;
         this.IsInternal = isInternal;

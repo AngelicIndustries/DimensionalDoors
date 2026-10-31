@@ -13,7 +13,9 @@ import java.util.NoSuchElementException;
  * @author SenseiKiwi
  */
 public class LinkedList<T> implements Iterable<T> {
+
     private static class Node<P> implements ILinkedListNode<P> {
+
         private Node<P> next;
         private Node<P> prev;
         private P data;
@@ -79,6 +81,7 @@ public class LinkedList<T> implements Iterable<T> {
     }
 
     private static class LinkedListIterator<P> implements Iterator<P> {
+
         private Node<P> current;
         private final Node<P> trailer;
 

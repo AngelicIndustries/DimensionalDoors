@@ -6,6 +6,7 @@ public class DisjointSet<T> {
     // This class implements a disjoint set data structure that associates objects with sets.
 
     private static class SetNode<P> {
+
         private int rank;
         private SetNode<P> parent;
         private final P data;
@@ -58,8 +59,7 @@ public class DisjointSet<T> {
         SetNode<T> firstRoot = findRootNode(first);
         SetNode<T> secondRoot = findRootNode(second);
 
-        if (firstRoot == null || secondRoot == null ||
-                firstRoot == secondRoot) {
+        if (firstRoot == null || secondRoot == null || firstRoot == secondRoot) {
             return false;
         }
 

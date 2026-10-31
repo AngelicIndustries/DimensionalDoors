@@ -1,13 +1,8 @@
 package org.dimdev.dimdoors.helpers;
 
-import org.dimdev.dimdoors.experimental.BoundingBox;
-import org.dimdev.dimdoors.IChunkLoader;
-import org.dimdev.dimdoors.Point3D;
-import org.dimdev.dimdoors.core.NewDimData;
-import org.dimdev.dimdoors.core.PocketManager;
-import org.dimdev.dimdoors.DimDoors;
-import org.dimdev.dimdoors.world.PocketBuilder;
-import cpw.mods.fml.common.event.FMLServerStartingEvent;
+import java.io.File;
+import java.util.List;
+
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.world.ChunkCoordIntPair;
 import net.minecraft.world.World;
@@ -17,17 +12,28 @@ import net.minecraftforge.common.ForgeChunkManager.LoadingCallback;
 import net.minecraftforge.common.ForgeChunkManager.Ticket;
 import net.minecraftforge.common.ForgeChunkManager.Type;
 
-import java.io.File;
-import java.util.List;
+import org.dimdev.dimdoors.DimDoors;
+import org.dimdev.dimdoors.IChunkLoader;
+import org.dimdev.dimdoors.Point3D;
+import org.dimdev.dimdoors.core.NewDimData;
+import org.dimdev.dimdoors.core.PocketManager;
+import org.dimdev.dimdoors.experimental.BoundingBox;
+import org.dimdev.dimdoors.world.PocketBuilder;
+
+import cpw.mods.fml.common.event.FMLServerStartingEvent;
 
 public class ChunkLoaderHelper implements LoadingCallback {
+
     @Override
     public void ticketsLoaded(List<Ticket> tickets, World world) {
         for (Ticket ticket : tickets) {
             boolean loaded = false;
-            int x = ticket.getModData().getInteger("goldDimDoorX");
-            int y = ticket.getModData().getInteger("goldDimDoorY");
-            int z = ticket.getModData().getInteger("goldDimDoorZ");
+            int x = ticket.getModData()
+                .getInteger("goldDimDoorX");
+            int y = ticket.getModData()
+                .getInteger("goldDimDoorY");
+            int z = ticket.getModData()
+                .getInteger("goldDimDoorZ");
 
             if (world.getBlock(x, y, z) == DimDoors.goldenDimensionalDoor) {
                 IChunkLoader loader = (IChunkLoader) world.getTileEntity(x, y, z);
@@ -75,7 +81,8 @@ public class ChunkLoaderHelper implements LoadingCallback {
     public static void loadForcedChunkWorlds(FMLServerStartingEvent event) {
         for (NewDimData data : PocketManager.getDimensions()) {
             if (data.isPocketDimension()) {
-                String chunkDir = DimensionManager.getCurrentSaveRootDirectory() + "/DimensionalDoors/pocketDimID" + data.id();
+                String chunkDir = DimensionManager.getCurrentSaveRootDirectory() + "/DimensionalDoors/pocketDimID"
+                    + data.id();
 
                 File file = new File(chunkDir);
 

@@ -24,7 +24,6 @@ public class LinkData implements Serializable {
 
     static final long serialVersionUID = 45544342L;
 
-
     public LinkData() {
         this.exists = false;
     }
@@ -36,7 +35,8 @@ public class LinkData implements Serializable {
         this.destZCoord = exitZ;
     }
 
-    public LinkData(int locationDimID, int destinationDimID, int locationXCoord, int locationYCoord, int locationZCoord, int destinationXCoord, int destinationYCoord, int destinationZCoord, boolean isPocket, int orientation) {
+    public LinkData(int locationDimID, int destinationDimID, int locationXCoord, int locationYCoord, int locationZCoord,
+        int destinationXCoord, int destinationYCoord, int destinationZCoord, boolean isPocket, int orientation) {
         this.exists = true;
         this.locXCoord = locationXCoord;
         this.locYCoord = locationYCoord;
@@ -53,12 +53,26 @@ public class LinkData implements Serializable {
     }
 
     public String printLinkData() {
-        //TODO: Rewrite this to make it prettier. @_@ I'm afraid of changing it to ToString() on the off
-        //chance it'll cause explosions and sadness. Damn serialization! ~SenseiKiwi
+        // TODO: Rewrite this to make it prettier. @_@ I'm afraid of changing it to ToString() on the off
+        // chance it'll cause explosions and sadness. Damn serialization! ~SenseiKiwi
 
         String linkInfo;
-        linkInfo = this.locDimID + "locDimID " + this.locXCoord + ":locXCoord " + this.locYCoord + ":locYCoord " + this.locZCoord + ":locZCoord ";
-        linkInfo.concat("\n" + this.destDimID + "DestDimID " + this.destXCoord + ":destXCoord " + this.destYCoord + ":destYCoord " + this.destZCoord + ":destZCoord ");
+        linkInfo = this.locDimID + "locDimID "
+            + this.locXCoord
+            + ":locXCoord "
+            + this.locYCoord
+            + ":locYCoord "
+            + this.locZCoord
+            + ":locZCoord ";
+        linkInfo.concat(
+            "\n" + this.destDimID
+                + "DestDimID "
+                + this.destXCoord
+                + ":destXCoord "
+                + this.destYCoord
+                + ":destYCoord "
+                + this.destZCoord
+                + ":destZCoord ");
         return linkInfo;
     }
 }

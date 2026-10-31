@@ -1,16 +1,19 @@
 package org.dimdev.dimdoors.client;
 
-import org.dimdev.dimdoors.core.PocketManager;
-import cpw.mods.fml.relauncher.Side;
-import cpw.mods.fml.relauncher.SideOnly;
 import net.minecraft.client.particle.EffectRenderer;
 import net.minecraft.client.particle.EntityFX;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.util.AxisAlignedBB;
 import net.minecraft.world.World;
 
+import org.dimdev.dimdoors.core.PocketManager;
+
+import cpw.mods.fml.relauncher.Side;
+import cpw.mods.fml.relauncher.SideOnly;
+
 @SideOnly(Side.CLIENT)
 public class ClosingRiftFX extends EntityFX {
+
     private final int field_92049_a = 160;
     private boolean field_92054_ax;
     private boolean field_92048_ay;
@@ -20,7 +23,8 @@ public class ClosingRiftFX extends EntityFX {
     private float field_92052_aC;
     private boolean field_92053_aD;
 
-    public ClosingRiftFX(World par1World, double par2, double par4, double par6, double par8, double par10, double par12, EffectRenderer par14EffectRenderer) {
+    public ClosingRiftFX(World par1World, double par2, double par4, double par6, double par8, double par10,
+        double par12, EffectRenderer par14EffectRenderer) {
 
         super(par1World, par2, par4, par6);
         this.motionX = par8;
@@ -72,13 +76,16 @@ public class ClosingRiftFX extends EntityFX {
     }
 
     @Override
-    public void renderParticle(Tessellator par1Tessellator, float par2, float par3, float par4, float par5, float par6, float par7) {
-        if (!this.field_92048_ay || this.particleAge < this.particleMaxAge / 3 || (this.particleAge + this.particleMaxAge) / 3 % 2 == 0) {
+    public void renderParticle(Tessellator par1Tessellator, float par2, float par3, float par4, float par5, float par6,
+        float par7) {
+        if (!this.field_92048_ay || this.particleAge < this.particleMaxAge / 3
+            || (this.particleAge + this.particleMaxAge) / 3 % 2 == 0) {
             this.doRenderParticle(par1Tessellator, par2, par3, par4, par5, par6, par7);
         }
     }
 
-    public void doRenderParticle(Tessellator par1Tessellator, float par2, float par3, float par4, float par5, float par6, float par7) {
+    public void doRenderParticle(Tessellator par1Tessellator, float par2, float par3, float par4, float par5,
+        float par6, float par7) {
         float var8 = super.particleTextureIndexX % 16 / 16.0F;
         float var9 = var8 + 0.0624375F;
         float var10 = this.particleTextureIndexX / 16 / 16.0F;
@@ -89,16 +96,41 @@ public class ClosingRiftFX extends EntityFX {
         float var15 = (float) (this.prevPosZ + (this.posZ - this.prevPosZ) * par2 - interpPosZ);
         float var16 = 0.8F;
 
-        if (PocketManager.createDimensionData(worldObj).isPocketDimension()) {
+        if (PocketManager.createDimensionData(worldObj)
+            .isPocketDimension()) {
             var16 = 0.4F;
         }
 
-        par1Tessellator.setColorRGBA_F(this.particleRed * var16, this.particleGreen * var16, this.particleBlue * var16, (float) .7);
+        par1Tessellator.setColorRGBA_F(
+            this.particleRed * var16,
+            this.particleGreen * var16,
+            this.particleBlue * var16,
+            (float) .7);
 
-        par1Tessellator.addVertexWithUV(var13 - par3 * var12 - par6 * var12, var14 - par4 * var12, var15 - par5 * var12 - par7 * var12, var9, var11);
-        par1Tessellator.addVertexWithUV(var13 - par3 * var12 + par6 * var12, var14 + par4 * var12, var15 - par5 * var12 + par7 * var12, var9, var10);
-        par1Tessellator.addVertexWithUV(var13 + par3 * var12 + par6 * var12, var14 + par4 * var12, var15 + par5 * var12 + par7 * var12, var8, var10);
-        par1Tessellator.addVertexWithUV(var13 + par3 * var12 - par6 * var12, var14 - par4 * var12, var15 + par5 * var12 - par7 * var12, var8, var11);
+        par1Tessellator.addVertexWithUV(
+            var13 - par3 * var12 - par6 * var12,
+            var14 - par4 * var12,
+            var15 - par5 * var12 - par7 * var12,
+            var9,
+            var11);
+        par1Tessellator.addVertexWithUV(
+            var13 - par3 * var12 + par6 * var12,
+            var14 + par4 * var12,
+            var15 - par5 * var12 + par7 * var12,
+            var9,
+            var10);
+        par1Tessellator.addVertexWithUV(
+            var13 + par3 * var12 + par6 * var12,
+            var14 + par4 * var12,
+            var15 + par5 * var12 + par7 * var12,
+            var8,
+            var10);
+        par1Tessellator.addVertexWithUV(
+            var13 + par3 * var12 - par6 * var12,
+            var14 - par4 * var12,
+            var15 + par5 * var12 - par7 * var12,
+            var8,
+            var11);
     }
 
     /**
@@ -136,8 +168,17 @@ public class ClosingRiftFX extends EntityFX {
             this.motionZ *= 0.699999988079071D;
         }
 
-        if (this.field_92054_ax && this.particleAge < this.particleMaxAge / 2 && (this.particleAge + this.particleMaxAge) % 2 == 0) {
-            ClosingRiftFX var1 = new ClosingRiftFX(this.worldObj, this.posX, this.posY, this.posZ, 0.0D, 0.0D, 0.0D, this.field_92047_az);
+        if (this.field_92054_ax && this.particleAge < this.particleMaxAge / 2
+            && (this.particleAge + this.particleMaxAge) % 2 == 0) {
+            ClosingRiftFX var1 = new ClosingRiftFX(
+                this.worldObj,
+                this.posX,
+                this.posY,
+                this.posZ,
+                0.0D,
+                0.0D,
+                0.0D,
+                this.field_92047_az);
             var1.setRBGColorF(this.particleRed, this.particleGreen, this.particleBlue);
             var1.particleAge = var1.particleMaxAge / 2;
 

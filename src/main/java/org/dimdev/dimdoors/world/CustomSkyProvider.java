@@ -9,6 +9,7 @@ import net.minecraft.util.MathHelper;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.Vec3;
 import net.minecraftforge.client.IRenderHandler;
+
 import org.lwjgl.opengl.GL11;
 
 public class CustomSkyProvider extends IRenderHandler {
@@ -18,7 +19,6 @@ public class CustomSkyProvider extends IRenderHandler {
     int glSkyList2;
     private static final ResourceLocation locationEndSkyPng = new ResourceLocation("textures/environment/end_sky.png");
 
-
     public ResourceLocation getMoonRenderPath() {
         return null;
     }
@@ -26,7 +26,6 @@ public class CustomSkyProvider extends IRenderHandler {
     public ResourceLocation getSunRenderPath() {
         return null;
     }
-
 
     @Override
     public void render(float par1, WorldClient world, Minecraft mc) {
@@ -81,7 +80,11 @@ public class CustomSkyProvider extends IRenderHandler {
                 GL11.glShadeModel(GL11.GL_SMOOTH);
                 GL11.glPushMatrix();
                 GL11.glRotatef(90.0F, 1.0F, 0.0F, 0.0F);
-                GL11.glRotatef(MathHelper.sin(world.getCelestialAngleRadians(par1)) < 0.0F ? 180.0F : 0.0F, 0.0F, 0.0F, 1.0F);
+                GL11.glRotatef(
+                    MathHelper.sin(world.getCelestialAngleRadians(par1)) < 0.0F ? 180.0F : 0.0F,
+                    0.0F,
+                    0.0F,
+                    1.0F);
                 GL11.glRotatef(90.0F, 0.0F, 0.0F, 1.0F);
                 f4 = afloat[0];
                 f7 = afloat[1];

@@ -6,6 +6,7 @@ import net.minecraft.tileentity.TileEntity;
 import net.minecraft.world.World;
 
 public interface IDimDoor {
+
     /**
      * A function to enter a dim door and traverse its link, called when a player collides with an open door
      *

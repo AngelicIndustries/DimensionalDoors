@@ -1,5 +1,26 @@
 package org.dimdev.dimdoors.helpers;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileFilter;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Queue;
+import java.util.Random;
+import java.util.regex.Pattern;
+
+import net.minecraft.util.WeightedRandom;
+import net.minecraft.world.World;
+
+import org.dimdev.dimdoors.DimDoors;
 import org.dimdev.dimdoors.config.DDProperties;
 import org.dimdev.dimdoors.core.DimLink;
 import org.dimdev.dimdoors.core.LinkType;
@@ -12,17 +33,11 @@ import org.dimdev.dimdoors.dungeon.pack.DungeonPackConfig;
 import org.dimdev.dimdoors.dungeon.pack.DungeonPackConfigReader;
 import org.dimdev.dimdoors.dungeon.pack.DungeonType;
 import org.dimdev.dimdoors.items.ItemDimensionalDoor;
-import org.dimdev.dimdoors.DimDoors;
 import org.dimdev.dimdoors.util.FileFilters;
 import org.dimdev.dimdoors.util.WeightedContainer;
-import net.minecraft.util.WeightedRandom;
-import net.minecraft.world.World;
-
-import java.io.*;
-import java.util.*;
-import java.util.regex.Pattern;
 
 public class DungeonHelper {
+
     private static DungeonHelper instance = null;
     private static DDProperties properties = null;
 
@@ -44,8 +59,9 @@ public class DungeonHelper {
     private static final int START_PACK_SWITCH_CHANCE = MAX_PACK_SWITCH_CHANCE / 9;
 
     private static final int DEFAULT_DUNGEON_WEIGHT = 100;
-    public static final int MIN_DUNGEON_WEIGHT = 1; //Prevents MC's random selection algorithm from throwing an exception
-    public static final int MAX_DUNGEON_WEIGHT = 10000; //Used to prevent overflows and math breaking down
+    public static final int MIN_DUNGEON_WEIGHT = 1; // Prevents MC's random selection algorithm from throwing an
+                                                    // exception
+    public static final int MAX_DUNGEON_WEIGHT = 10000; // Used to prevent overflows and math breaking down
 
     private static final int MAX_EXPORT_RADIUS = 50;
     public static final short MAX_DUNGEON_WIDTH = 2 * MAX_EXPORT_RADIUS + 1;
@@ -63,9 +79,8 @@ public class DungeonHelper {
     private DungeonData defaultError;
 
     private DungeonHelper() {
-        //Load our reference to the DDProperties singleton
-        if (properties == null)
-            properties = DDProperties.instance();
+        // Load our reference to the DDProperties singleton
+        if (properties == null) properties = DDProperties.instance();
 
         registerDungeons();
     }
@@ -82,8 +97,8 @@ public class DungeonHelper {
 
     public static DungeonHelper instance() {
         if (instance == null) {
-            //This is to prevent some frustrating bugs that could arise when classes
-            //are loaded in the wrong order. Trust me, I had to squash a few...
+            // This is to prevent some frustrating bugs that could arise when classes
+            // are loaded in the wrong order. Trust me, I had to squash a few...
             throw new IllegalStateException("Instance of DungeonHelper requested before initialization");
         }
         return instance;
@@ -100,7 +115,8 @@ public class DungeonHelper {
         registerCustomDungeons(properties.CustomSchematicDirectory, reader);
     }
 
-    private static DungeonPackConfig loadDungeonPackConfig(String configPath, String name, boolean isInternal, DungeonPackConfigReader reader) {
+    private static DungeonPackConfig loadDungeonPackConfig(String configPath, String name, boolean isInternal,
+        DungeonPackConfigReader reader) {
         try {
             DungeonPackConfig config;
             if (isInternal) {
@@ -122,19 +138,21 @@ public class DungeonHelper {
         return null;
     }
 
-    private DungeonPack registerDungeonPack(String directory, Iterable<String> schematics, boolean isInternal, boolean verbose, DungeonPackConfigReader reader) {
-        //First determine the pack's name and validate it
+    private DungeonPack registerDungeonPack(String directory, Iterable<String> schematics, boolean isInternal,
+        boolean verbose, DungeonPackConfigReader reader) {
+        // First determine the pack's name and validate it
         File packDirectory = new File(directory);
-        String name = packDirectory.getName().toUpperCase();
-        //TODO: ADD VALIDATION HERE?
+        String name = packDirectory.getName()
+            .toUpperCase();
+        // TODO: ADD VALIDATION HERE?
 
-        //Check for naming conflicts
-        //That could happen if a user has a custom pack with a name that conflicts with a bundled pack,
-        //or if a user is running Linux and has two directories with names differing only by capitalization.
+        // Check for naming conflicts
+        // That could happen if a user has a custom pack with a name that conflicts with a bundled pack,
+        // or if a user is running Linux and has two directories with names differing only by capitalization.
 
         DungeonPack pack = dungeonPackMapping.get(name);
         if (pack == null) {
-            //Load the pack's configuration file
+            // Load the pack's configuration file
 
             String configPath;
             if (isInternal) {
@@ -148,18 +166,19 @@ public class DungeonHelper {
                 return null;
             }
 
-            //Register the pack
+            // Register the pack
             pack = new DungeonPack(config);
             dungeonPackMapping.put(name, pack);
             dungeonPackList.add(pack);
         } else {
-            //Show a warning that there is a naming conflict but keep going. People can use this to extend
-            //our built-in packs with custom schematics without tampering with our mod's JAR file.
-            System.err.println("A dungeon pack has the same name as another pack that has already been loaded: " + directory);
+            // Show a warning that there is a naming conflict but keep going. People can use this to extend
+            // our built-in packs with custom schematics without tampering with our mod's JAR file.
+            System.err
+                .println("A dungeon pack has the same name as another pack that has already been loaded: " + directory);
             System.err.println("We will try to load its schematics but will not check its config file.");
         }
 
-        //Register the dungeons! ^_^
+        // Register the dungeons! ^_^
         for (String schematicPath : schematics) {
             registerDungeon(schematicPath, pack, isInternal, verbose);
         }
@@ -179,7 +198,7 @@ public class DungeonHelper {
     }
 
     public DungeonPack getDungeonPack(String name) {
-        //TODO: This function might be obsolete after the new save format is implemented.
+        // TODO: This function might be obsolete after the new save format is implemented.
         return dungeonPackMapping.get(name.toUpperCase());
     }
 
@@ -193,7 +212,7 @@ public class DungeonHelper {
         if (dungeon != null) {
             pack = dungeon.dungeonType().Owner;
 
-            //Make sure the pack isn't null. This can happen for dungeons with the special UNKNOWN type.
+            // Make sure the pack isn't null. This can happen for dungeons with the special UNKNOWN type.
             if (pack == null) {
                 pack = RuinsPack;
             }
@@ -208,11 +227,11 @@ public class DungeonHelper {
     }
 
     public DimLink createCustomDungeonDoor(World world, int x, int y, int z) {
-        //Create a link above the specified position. Link to a new pocket dimension.
+        // Create a link above the specified position. Link to a new pocket dimension.
         NewDimData dimension = PocketManager.getDimensionData(world);
         DimLink link = dimension.createLink(x, y + 1, z, LinkType.POCKET, 3);
 
-        //Place a Warp Door linked to that pocket
+        // Place a Warp Door linked to that pocket
         ItemDimensionalDoor.placeDoorBlock(world, x, y, z, 3, DimDoors.warpDoor);
 
         return link;
@@ -225,35 +244,31 @@ public class DungeonHelper {
     public boolean validateSchematicName(String name, DungeonPack pack) {
         String[] dungeonData;
 
-        if (!name.endsWith(SCHEMATIC_FILE_EXTENSION))
-            return false;
+        if (!name.endsWith(SCHEMATIC_FILE_EXTENSION)) return false;
 
-        dungeonData = name.substring(0, name.length() - SCHEMATIC_FILE_EXTENSION.length()).split("_");
+        dungeonData = name.substring(0, name.length() - SCHEMATIC_FILE_EXTENSION.length())
+            .split("_");
 
-        //Check for a valid number of parts
-        if (dungeonData.length < 3 || dungeonData.length > 4)
-            return false;
+        // Check for a valid number of parts
+        if (dungeonData.length < 3 || dungeonData.length > 4) return false;
 
-        //Check if the dungeon type is valid
-        if (!validateDungeonType(dungeonData[0], pack))
-            return false;
+        // Check if the dungeon type is valid
+        if (!validateDungeonType(dungeonData[0], pack)) return false;
 
-        //Check if the name is valid
-        if (!SCHEMATIC_NAME_PATTERN.matcher(dungeonData[1]).matches())
-            return false;
+        // Check if the name is valid
+        if (!SCHEMATIC_NAME_PATTERN.matcher(dungeonData[1])
+            .matches()) return false;
 
-        //Check if the open/closed flag is present
-        if (!dungeonData[2].equalsIgnoreCase("open") && !dungeonData[2].equalsIgnoreCase("closed"))
-            return false;
+        // Check if the open/closed flag is present
+        if (!dungeonData[2].equalsIgnoreCase("open") && !dungeonData[2].equalsIgnoreCase("closed")) return false;
 
-        //If the weight is present, check that it is valid
+        // If the weight is present, check that it is valid
         if (dungeonData.length == 4) {
             try {
                 int weight = Integer.parseInt(dungeonData[3]);
-                if (weight < MIN_DUNGEON_WEIGHT || weight > MAX_DUNGEON_WEIGHT)
-                    return false;
+                if (weight < MIN_DUNGEON_WEIGHT || weight > MAX_DUNGEON_WEIGHT) return false;
             } catch (NumberFormatException e) {
-                //Not a number
+                // Not a number
                 return false;
             }
         }
@@ -261,21 +276,22 @@ public class DungeonHelper {
     }
 
     public void registerDungeon(String schematicPath, DungeonPack pack, boolean isInternal, boolean verbose) {
-        //We use schematicPath as the real path for internal files (inside our JAR) because it seems
-        //that File tries to interpret it as a local drive path and mangles it.
+        // We use schematicPath as the real path for internal files (inside our JAR) because it seems
+        // that File tries to interpret it as a local drive path and mangles it.
         File schematicFile = new File(schematicPath);
         String name = schematicFile.getName();
         String path = isInternal ? schematicPath : schematicFile.getAbsolutePath();
         try {
             if (validateSchematicName(name, pack)) {
-                //Strip off the file extension while splitting the file name
-                String[] dungeonData = name.substring(0, name.length() - SCHEMATIC_FILE_EXTENSION.length()).split("_");
+                // Strip off the file extension while splitting the file name
+                String[] dungeonData = name.substring(0, name.length() - SCHEMATIC_FILE_EXTENSION.length())
+                    .split("_");
 
                 DungeonType dungeonType = pack.getType(dungeonData[0]);
                 boolean isOpen = dungeonData[2].equalsIgnoreCase("open");
                 int weight = (dungeonData.length == 4) ? Integer.parseInt(dungeonData[3]) : DEFAULT_DUNGEON_WEIGHT;
 
-                //Add this custom dungeon to the list corresponding to its type
+                // Add this custom dungeon to the list corresponding to its type
                 DungeonData dungeon = new DungeonData(path, isInternal, dungeonType, isOpen, weight);
 
                 pack.addDungeon(dungeon);
@@ -285,9 +301,12 @@ public class DungeonHelper {
                 }
             } else {
                 if (verbose) {
-                    System.out.println("The following dungeon name is invalid for its given pack. It will not be generated naturally: " + schematicPath);
+                    System.out.println(
+                        "The following dungeon name is invalid for its given pack. It will not be generated naturally: "
+                            + schematicPath);
                 }
-                untaggedDungeons.add(new DungeonData(path, isInternal, DungeonType.UNKNOWN_TYPE, true, DEFAULT_DUNGEON_WEIGHT));
+                untaggedDungeons
+                    .add(new DungeonData(path, isInternal, DungeonType.UNKNOWN_TYPE, true, DEFAULT_DUNGEON_WEIGHT));
                 System.out.println("Registered untagged dungeon: " + name);
             }
         } catch (Exception e) {
@@ -304,12 +323,13 @@ public class DungeonHelper {
         File directory = new File(path);
         FileFilter schematicFileFilter = new FileFilters.FileExtensionFilter(SCHEMATIC_FILE_EXTENSION);
 
-        //Check that the Ruins pack has been loaded
+        // Check that the Ruins pack has been loaded
         if (RuinsPack == null) {
-            throw new IllegalStateException("Cannot register custom dungeons without first loading the Ruins dungeon pack.");
+            throw new IllegalStateException(
+                "Cannot register custom dungeons without first loading the Ruins dungeon pack.");
         }
 
-        //Load stray dungeons directly in the custom dungeons folder
+        // Load stray dungeons directly in the custom dungeons folder
         schematics = directory.listFiles(schematicFileFilter);
         if (schematics != null) {
             for (File schematicFile : schematics) {
@@ -318,17 +338,17 @@ public class DungeonHelper {
         } else {
             System.err.println("Could not retrieve the list of schematics stored in the custom dungeons directory!");
         }
-        schematics = null; //Release memory
+        schematics = null; // Release memory
 
-        //Load the custom dungeon packs
+        // Load the custom dungeon packs
         packDirectories = directory.listFiles(new FileFilters.DirectoryFilter());
         if (packDirectories != null) {
-            //Loop through each directory, which is assumed to be a dungeon pack
+            // Loop through each directory, which is assumed to be a dungeon pack
             for (File packDirectory : packDirectories) {
-                //List the schematics within the dungeon pack directory
+                // List the schematics within the dungeon pack directory
                 packFiles = packDirectory.listFiles(schematicFileFilter);
                 if (packFiles != null) {
-                    //Copy the pack files' paths into an ArrayList for use with registerDungeonPack()
+                    // Copy the pack files' paths into an ArrayList for use with registerDungeonPack()
                     packFilePaths = new ArrayList<String>(packFiles.length);
                     for (File packFile : packFiles) {
                         packFilePaths.add(packFile.getPath());
@@ -336,20 +356,27 @@ public class DungeonHelper {
 
                     registerDungeonPack(packDirectory.getAbsolutePath(), packFilePaths, false, true, reader);
                 } else {
-                    System.err.println("Could not retrieve the list of schematics in a dungeon pack: " + packDirectory.getPath());
+                    System.err.println(
+                        "Could not retrieve the list of schematics in a dungeon pack: " + packDirectory.getPath());
                 }
             }
         } else {
-            System.err.println("Could not retrieve the list of dungeon pack directories in the custom dungeons directory!");
+            System.err
+                .println("Could not retrieve the list of dungeon pack directories in the custom dungeons directory!");
         }
     }
 
     private void registerBundledDungeons(DungeonPackConfigReader reader) {
-        //Register the core schematics
-        //These are used for debugging and in case of unusual errors while loading dungeons
-        defaultError = new DungeonData(DEFAULT_ERROR_SCHEMATIC_PATH, true, DungeonType.UNKNOWN_TYPE, true, DEFAULT_DUNGEON_WEIGHT);
+        // Register the core schematics
+        // These are used for debugging and in case of unusual errors while loading dungeons
+        defaultError = new DungeonData(
+            DEFAULT_ERROR_SCHEMATIC_PATH,
+            true,
+            DungeonType.UNKNOWN_TYPE,
+            true,
+            DEFAULT_DUNGEON_WEIGHT);
 
-        //Open the list of dungeons packaged with our mod and register their schematics
+        // Open the list of dungeons packaged with our mod and register their schematics
         RuinsPack = registerBundledPack("Ruins", reader);
         NetherPack = registerBundledPack("Nether", reader);
 
@@ -361,7 +388,8 @@ public class DungeonHelper {
 
         String packPath = BUNDLED_PACK_BASE_PATH + name.toLowerCase();
         String listPath = packPath + ".txt";
-        InputStream listStream = this.getClass().getResourceAsStream(listPath);
+        InputStream listStream = this.getClass()
+            .getResourceAsStream(listPath);
 
         if (listStream == null) {
             throw new IllegalStateException("Failed to open the list of bundled dungeon schematics for " + name);
@@ -381,23 +409,34 @@ public class DungeonHelper {
             }
             listReader.close();
         } catch (IOException e) {
-            throw new RuntimeException("An unexpected error occured while trying to read the list of schematics for the " + name + " bundled dungeon pack. This would inevitably cause Dimensional Doors to crash during runtime.", e);
+            throw new RuntimeException(
+                "An unexpected error occured while trying to read the list of schematics for the " + name
+                    + " bundled dungeon pack. This would inevitably cause Dimensional Doors to crash during runtime.",
+                e);
         }
 
         // Register the pack
         DungeonPack pack = registerDungeonPack(packPath, schematics, true, false, reader);
         if (pack == null) {
-            throw new RuntimeException("Failed to load the " + name + " bundled dungeon pack. This would inevitably cause Dimensional Doors to crash during runtime.");
+            throw new RuntimeException(
+                "Failed to load the " + name
+                    + " bundled dungeon pack. This would inevitably cause Dimensional Doors to crash during runtime.");
         }
         return pack;
     }
 
     public boolean exportDungeon(World world, int centerX, int centerY, int centerZ, String exportPath) {
-        //Write schematic data to a file
+        // Write schematic data to a file
         try {
-            DungeonSchematic dungeon = DungeonSchematic.copyFromWorld(world,
-                    centerX - MAX_EXPORT_RADIUS, centerY - MAX_EXPORT_RADIUS, centerZ - MAX_EXPORT_RADIUS,
-                    MAX_DUNGEON_WIDTH, MAX_DUNGEON_HEIGHT, MAX_DUNGEON_LENGTH, true);
+            DungeonSchematic dungeon = DungeonSchematic.copyFromWorld(
+                world,
+                centerX - MAX_EXPORT_RADIUS,
+                centerY - MAX_EXPORT_RADIUS,
+                centerZ - MAX_EXPORT_RADIUS,
+                MAX_DUNGEON_WIDTH,
+                MAX_DUNGEON_HEIGHT,
+                MAX_DUNGEON_LENGTH,
+                true);
             dungeon.applyExportFilters(properties);
             dungeon.writeToFile(exportPath);
             return true;
@@ -434,7 +473,7 @@ public class DungeonHelper {
                 }
             }
 
-            //Pick the next dungeon
+            // Pick the next dungeon
             selection = selectedPack.getNextDungeon(parent, random);
         } catch (Exception e) {
             System.err.println("An exception occurred while selecting a dungeon:");
@@ -452,9 +491,10 @@ public class DungeonHelper {
     @SuppressWarnings("unchecked")
     private DungeonPack getRandomDungeonPack(DungeonPack current, Random random) {
         DungeonPack selection = current;
-        ArrayList<WeightedContainer<DungeonPack>> packs = new ArrayList<WeightedContainer<DungeonPack>>(dungeonPackList.size());
+        ArrayList<WeightedContainer<DungeonPack>> packs = new ArrayList<WeightedContainer<DungeonPack>>(
+            dungeonPackList.size());
 
-        //Load up a list of weighted items with any usable dungeon packs that is not the current pack
+        // Load up a list of weighted items with any usable dungeon packs that is not the current pack
         for (DungeonPack pack : dungeonPackList) {
             DungeonPackConfig config = pack.getConfig();
             if (pack != current && config.allowPackChangeIn() && !pack.isEmpty()) {
@@ -462,7 +502,7 @@ public class DungeonHelper {
             }
         }
         if (!packs.isEmpty()) {
-            //Pick a random dungeon pack
+            // Pick a random dungeon pack
             selection = ((WeightedContainer<DungeonPack>) WeightedRandom.getRandomItem(random, packs)).getData();
         }
         return selection;
@@ -476,7 +516,7 @@ public class DungeonHelper {
         dungeonNames.addAll(parseDungeonNames(registeredDungeons));
         dungeonNames.addAll(parseDungeonNames(untaggedDungeons));
 
-        //Sort dungeon names alphabetically
+        // Sort dungeon names alphabetically
         ArrayList<String> sortedNames = new ArrayList<String>(dungeonNames);
         Collections.sort(sortedNames, String.CASE_INSENSITIVE_ORDER);
         return sortedNames;
@@ -488,7 +528,7 @@ public class DungeonHelper {
         ArrayList<String> names = new ArrayList<String>(dungeons.size());
 
         for (DungeonData dungeon : dungeons) {
-            //Retrieve the file name and strip off the file extension
+            // Retrieve the file name and strip off the file extension
             schematic = new File(dungeon.schematicPath());
             name = schematic.getName();
             name = name.substring(0, name.length() - SCHEMATIC_FILE_EXTENSION.length());
@@ -498,7 +538,8 @@ public class DungeonHelper {
     }
 
     /**
-     * Lists all of the dungeons found by iterating through a dimension's ancestors. The search stops when a non-dungeon dimension is found or when the pack of a dungeon differs from the specified pack.
+     * Lists all of the dungeons found by iterating through a dimension's ancestors. The search stops when a non-dungeon
+     * dimension is found or when the pack of a dungeon differs from the specified pack.
      *
      * @param start   - the first dimension to include in the history
      * @param pack    - the pack to which any dungeons must belong in order to be listed
@@ -524,7 +565,8 @@ public class DungeonHelper {
     }
 
     /**
-     * Performs a breadth-first listing of all dungeons rooted at a specified dimension. Only dungeons from the specified pack will be included.
+     * Performs a breadth-first listing of all dungeons rooted at a specified dimension. Only dungeons from the
+     * specified pack will be included.
      *
      * @param root    - the pocket dimension that serves as the root for the dungeon tree
      * @param pack    - the pack to which any dungeons must belong in order to be listed
@@ -561,7 +603,8 @@ public class DungeonHelper {
      * @param dimension - the first dimension to include in the search
      * @param pack      - the pack to which the ancestors must belong
      * @param maxLevels - the maximum number of ancestors to check
-     * @return the highest ancestor that belongs to the specified pack within the specified levels, or <code>null</code> if none exists
+     * @return the highest ancestor that belongs to the specified pack within the specified levels, or <code>null</code>
+     *         if none exists
      */
     public static NewDimData getAncestor(NewDimData dimension, DungeonPack pack, int maxLevels) {
         // Find the ancestor of a dimension located a specified number of levels up.
@@ -572,8 +615,9 @@ public class DungeonHelper {
         // like a kind of virtual child dimension. Then "current" references the
         // highest valid ancestor found so far and "parent" references its parent
         for (int levels = 0; levels <= maxLevels; levels++) {
-            if (parent == null || parent.dungeon() == null ||
-                    parent.dungeon().dungeonType().Owner != pack) {
+            if (parent == null || parent.dungeon() == null
+                || parent.dungeon()
+                    .dungeonType().Owner != pack) {
                 break;
             }
             current = parent;

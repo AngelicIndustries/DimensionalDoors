@@ -1,15 +1,18 @@
 package org.dimdev.dimdoors.watcher;
 
+import java.io.IOException;
+
+import net.minecraft.nbt.NBTTagCompound;
+
 import org.dimdev.dimdoors.core.DDLock;
 import org.dimdev.dimdoors.core.DimLink;
 import org.dimdev.dimdoors.core.LinkType;
 import org.dimdev.dimdoors.util.Point4D;
-import io.netty.buffer.ByteBuf;
-import net.minecraft.nbt.NBTTagCompound;
 
-import java.io.IOException;
+import io.netty.buffer.ByteBuf;
 
 public class ClientLinkData {
+
     public final Point4D point;
     public final DDLock lock;
     public final LinkType type;
@@ -73,8 +76,7 @@ public class ClientLinkData {
     public static ClientLinkData readFromNBT(NBTTagCompound tag) {
         LinkType type = LinkType.getLinkTypeFromIndex(tag.getInteger("Type"));
         Point4D point = null;
-        if (tag.hasKey("Point"))
-            point = Point4D.readFromNBT(tag.getCompoundTag("Point"));
+        if (tag.hasKey("Point")) point = Point4D.readFromNBT(tag.getCompoundTag("Point"));
         DDLock lock = null;
         if (tag.hasKey("Lock")) {
             NBTTagCompound lockTag = tag.getCompoundTag("Lock");

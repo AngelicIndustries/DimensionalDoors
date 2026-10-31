@@ -1,14 +1,16 @@
 package org.dimdev.dimdoors.world.gateways;
 
+import net.minecraft.world.World;
+
 import org.dimdev.dimdoors.Point3D;
 import org.dimdev.dimdoors.config.DDProperties;
 import org.dimdev.dimdoors.core.LinkType;
 import org.dimdev.dimdoors.core.PocketManager;
 import org.dimdev.dimdoors.dungeon.DungeonSchematic;
 import org.dimdev.dimdoors.schematic.InvalidSchematicException;
-import net.minecraft.world.World;
 
 public abstract class BaseSchematicGateway extends BaseGateway {
+
     public BaseSchematicGateway(DDProperties properties) {
         super(properties);
     }
@@ -38,7 +40,8 @@ public abstract class BaseSchematicGateway extends BaseGateway {
         this.generateRandomBits(world, x, y, z);
 
         // Generate a dungeon link in the door
-        PocketManager.getDimensionData(world).createLink(x, y + doorLocation.getY(), z, LinkType.DUNGEON, orientation);
+        PocketManager.getDimensionData(world)
+            .createLink(x, y + doorLocation.getY(), z, LinkType.DUNGEON, orientation);
 
         return true;
     }
@@ -51,11 +54,11 @@ public abstract class BaseSchematicGateway extends BaseGateway {
      * @param y     - the y-coordinate of the block on which the gateway may be built
      * @param z     - the z-coordinate at which to center the gateway; usually where the door is placed
      */
-    protected void generateRandomBits(World world, int x, int y, int z) {
-    }
+    protected void generateRandomBits(World world, int x, int y, int z) {}
 
     /**
-     * Gets the path for the schematic file to be used for this gateway. Subsequent calls to this method may return other schematic paths.
+     * Gets the path for the schematic file to be used for this gateway. Subsequent calls to this method may return
+     * other schematic paths.
      *
      * @return the path to the schematic file for this gateway
      */

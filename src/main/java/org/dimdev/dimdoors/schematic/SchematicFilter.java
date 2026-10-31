@@ -15,12 +15,10 @@ public class SchematicFilter {
     }
 
     public boolean apply(Schematic schematic, Block[] blocks, byte[] metadata) {
-        if (!initialize(schematic, blocks, metadata))
-            return false;
+        if (!initialize(schematic, blocks, metadata)) return false;
 
         for (int index = 0; index < blocks.length; index++) {
-            if (applyToBlock(index, blocks, metadata) && terminates())
-                return false;
+            if (applyToBlock(index, blocks, metadata) && terminates()) return false;
         }
 
         return finish();

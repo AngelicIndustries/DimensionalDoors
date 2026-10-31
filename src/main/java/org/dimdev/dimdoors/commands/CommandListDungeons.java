@@ -1,11 +1,13 @@
 package org.dimdev.dimdoors.commands;
 
-import org.dimdev.dimdoors.helpers.DungeonHelper;
-import net.minecraft.entity.player.EntityPlayer;
-
 import java.util.ArrayList;
 
+import net.minecraft.entity.player.EntityPlayer;
+
+import org.dimdev.dimdoors.helpers.DungeonHelper;
+
 public class CommandListDungeons extends DDCommandBase {
+
     private static CommandListDungeons instance = null;
 
     private CommandListDungeons() {
@@ -13,8 +15,7 @@ public class CommandListDungeons extends DDCommandBase {
     }
 
     public static CommandListDungeons instance() {
-        if (instance == null)
-            instance = new CommandListDungeons();
+        if (instance == null) instance = new CommandListDungeons();
 
         return instance;
     }
@@ -39,7 +40,8 @@ public class CommandListDungeons extends DDCommandBase {
                 return DDCommandResult.INVALID_ARGUMENTS;
             }
         }
-        dungeonNames = DungeonHelper.instance().getDungeonNames();
+        dungeonNames = DungeonHelper.instance()
+            .getDungeonNames();
         pageCount = (dungeonNames.size() - 1) / 10 + 1;
         if (page < 1 || page > pageCount) {
             return DDCommandResult.INVALID_ARGUMENTS;

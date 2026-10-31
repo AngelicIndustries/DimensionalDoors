@@ -1,17 +1,18 @@
 package org.dimdev.dimdoors.tileentities;
 
-import org.dimdev.dimdoors.core.PocketManager;
-import org.dimdev.dimdoors.DimDoors;
-import org.dimdev.dimdoors.watcher.ClientLinkData;
+import java.util.Random;
+
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.network.NetworkManager;
 import net.minecraft.network.Packet;
 import net.minecraft.network.play.server.S35PacketUpdateTileEntity;
 
-import java.util.Random;
-
+import org.dimdev.dimdoors.DimDoors;
+import org.dimdev.dimdoors.core.PocketManager;
+import org.dimdev.dimdoors.watcher.ClientLinkData;
 
 public class TileEntityDimDoor extends DDTileEntityBase {
+
     public boolean openOrClosed;
     public int orientation;
     public boolean hasExit;
@@ -44,7 +45,8 @@ public class TileEntityDimDoor extends DDTileEntityBase {
 
         if (tag.hasKey("Link")) {
             ClientLinkData linkData = ClientLinkData.readFromNBT(tag.getCompoundTag("Link"));
-            PocketManager.getLinkWatcher().onCreated(linkData);
+            PocketManager.getLinkWatcher()
+                .onCreated(linkData);
         }
     }
 
@@ -77,7 +79,7 @@ public class TileEntityDimDoor extends DDTileEntityBase {
 
     @Override
     public float[] getRenderColor(Random rand) {
-        float[] rgbaColor = {1, 1, 1, 1};
+        float[] rgbaColor = { 1, 1, 1, 1 };
         if (this.worldObj.provider.dimensionId == DimDoors.NETHER_DIMENSION_ID) {
             rgbaColor[0] = rand.nextFloat() * 0.5F + 0.4F;
             rgbaColor[1] = rand.nextFloat() * 0.05F;

@@ -1,18 +1,20 @@
 package org.dimdev.dimdoors;
 
-import org.dimdev.dimdoors.dungeon.pack.DungeonPack;
-import org.dimdev.dimdoors.dungeon.pack.DungeonType;
-import org.dimdev.dimdoors.helpers.DungeonHelper;
-
 import java.io.File;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+import org.dimdev.dimdoors.dungeon.pack.DungeonPack;
+import org.dimdev.dimdoors.dungeon.pack.DungeonType;
+import org.dimdev.dimdoors.helpers.DungeonHelper;
+
 @Deprecated
 public class DungeonGenerator implements Serializable {
-    //This static field is hax so that I don't have to add an instance field to DungeonGenerator to support DungeonType.
-    //Otherwise it would have to be serializable and all sorts of problems would arise.
+
+    // This static field is hax so that I don't have to add an instance field to DungeonGenerator to support
+    // DungeonType.
+    // Otherwise it would have to be serializable and all sorts of problems would arise.
     private static final HashMap<DungeonGenerator, DungeonType> dungeonTypes = new HashMap<DungeonGenerator, DungeonType>();
 
     public int weight;
@@ -30,26 +32,29 @@ public class DungeonGenerator implements Serializable {
         this.schematicPath = schematicPath;
         this.isOpen = isOpen;
 
-        dungeonTypes.put(this, dungeonType); //Hax...
+        dungeonTypes.put(this, dungeonType); // Hax...
     }
 
     public DungeonType getDungeonType() {
         DungeonType type = dungeonTypes.get(this);
         if (type == null) {
-            //Infer the dungeon's type from its file name
-            //There is minimal risk of us applying this to untagged dungeons and this'll be phased out
-            //when we get the new save format.
+            // Infer the dungeon's type from its file name
+            // There is minimal risk of us applying this to untagged dungeons and this'll be phased out
+            // when we get the new save format.
             try {
                 File file = new File(schematicPath);
-                String typeName = file.getName().split("_")[0];
-                String packName = file.getParentFile().getName();
-                DungeonPack pack = DungeonHelper.instance().getDungeonPack(packName);
+                String typeName = file.getName()
+                    .split("_")[0];
+                String packName = file.getParentFile()
+                    .getName();
+                DungeonPack pack = DungeonHelper.instance()
+                    .getDungeonPack(packName);
                 if (pack == null) {
-                    pack = DungeonHelper.instance().getDungeonPack("ruins");
+                    pack = DungeonHelper.instance()
+                        .getDungeonPack("ruins");
                 }
                 type = pack.getType(typeName);
-            } catch (Exception e) {
-            }
+            } catch (Exception e) {}
             if (type == null) {
                 type = DungeonType.UNKNOWN_TYPE;
             }
@@ -69,7 +74,7 @@ public class DungeonGenerator implements Serializable {
     }
 
     public boolean equals(DungeonGenerator other) {
-        return ((this.schematicPath != null && this.schematicPath.equals(other.schematicPath)) ||
-                (this.schematicPath == other.schematicPath));
+        return ((this.schematicPath != null && this.schematicPath.equals(other.schematicPath))
+            || (this.schematicPath == other.schematicPath));
     }
 }

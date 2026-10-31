@@ -1,13 +1,14 @@
 package org.dimdev.dimdoors.items;
 
-import org.dimdev.dimdoors.blocks.BaseDimDoor;
-import org.dimdev.dimdoors.DimDoors;
+import java.util.List;
+
 import net.minecraft.block.material.Material;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemDoor;
 import net.minecraft.item.ItemStack;
 
-import java.util.List;
+import org.dimdev.dimdoors.DimDoors;
+import org.dimdev.dimdoors.blocks.BaseDimDoor;
 
 public class ItemGoldDimDoor extends BaseItemDoor {
 
@@ -15,7 +16,7 @@ public class ItemGoldDimDoor extends BaseItemDoor {
         super(material, door);
     }
 
-    @SuppressWarnings({"rawtypes", "unchecked"})
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     @Override
     public void addInformation(ItemStack par1ItemStack, EntityPlayer par2EntityPlayer, List par3List, boolean par4) {
         DimDoors.translateAndAdd("info.goldDimDoor", par3List);

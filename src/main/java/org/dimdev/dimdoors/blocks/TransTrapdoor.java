@@ -1,11 +1,7 @@
 package org.dimdev.dimdoors.blocks;
 
-import org.dimdev.dimdoors.core.*;
-import org.dimdev.dimdoors.items.ItemDDKey;
-import org.dimdev.dimdoors.DimDoors;
-import org.dimdev.dimdoors.tileentities.TileEntityTransTrapdoor;
-import cpw.mods.fml.relauncher.Side;
-import cpw.mods.fml.relauncher.SideOnly;
+import java.util.Random;
+
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockTrapDoor;
 import net.minecraft.block.ITileEntityProvider;
@@ -20,7 +16,17 @@ import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.MovingObjectPosition;
 import net.minecraft.world.World;
 
-import java.util.Random;
+import org.dimdev.dimdoors.DimDoors;
+import org.dimdev.dimdoors.core.DDTeleporter;
+import org.dimdev.dimdoors.core.DimLink;
+import org.dimdev.dimdoors.core.LinkType;
+import org.dimdev.dimdoors.core.NewDimData;
+import org.dimdev.dimdoors.core.PocketManager;
+import org.dimdev.dimdoors.items.ItemDDKey;
+import org.dimdev.dimdoors.tileentities.TileEntityTransTrapdoor;
+
+import cpw.mods.fml.relauncher.Side;
+import cpw.mods.fml.relauncher.SideOnly;
 
 public class TransTrapdoor extends BlockTrapDoor implements IDimDoor, ITileEntityProvider {
 
@@ -34,7 +40,7 @@ public class TransTrapdoor extends BlockTrapDoor implements IDimDoor, ITileEntit
         this.blockIcon = par1IconRegister.registerIcon(DimDoors.modid + ":" + this.getUnlocalizedName());
     }
 
-    //Teleports the player to the exit link of that dimension, assuming it is a pocket
+    // Teleports the player to the exit link of that dimension, assuming it is a pocket
     @Override
     public void onEntityCollidedWithBlock(World world, int x, int y, int z, Entity entity) {
         enterDimDoor(world, x, y, z, entity);
@@ -65,7 +71,8 @@ public class TransTrapdoor extends BlockTrapDoor implements IDimDoor, ITileEntit
         return false;
     }
 
-    public boolean onBlockActivated(World par1World, int par2, int par3, int par4, EntityPlayer par5EntityPlayer, int par6, float par7, float par8, float par9) {
+    public boolean onBlockActivated(World par1World, int par2, int par3, int par4, EntityPlayer par5EntityPlayer,
+        int par6, float par7, float par8, float par9) {
         if (this.checkCanOpen(par1World, par2, par3, par4, par5EntityPlayer)) {
             return super.onBlockActivated(par1World, par2, par3, par4, par5EntityPlayer, par6, par7, par8, par9);
         }

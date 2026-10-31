@@ -1,15 +1,18 @@
 package org.dimdev.dimdoors.world;
 
-import org.dimdev.dimdoors.CloudRenderBlank;
-import org.dimdev.dimdoors.config.DDProperties;
-import org.dimdev.dimdoors.ticking.CustomLimboPopulator;
-import cpw.mods.fml.relauncher.Side;
-import cpw.mods.fml.relauncher.SideOnly;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.Vec3;
 import net.minecraftforge.client.IRenderHandler;
 
+import org.dimdev.dimdoors.CloudRenderBlank;
+import org.dimdev.dimdoors.config.DDProperties;
+import org.dimdev.dimdoors.ticking.CustomLimboPopulator;
+
+import cpw.mods.fml.relauncher.Side;
+import cpw.mods.fml.relauncher.SideOnly;
+
 public class PersonalPocketProvider extends PocketProvider {
+
     private DDProperties properties;
     private CustomLimboPopulator spawner;
     private IRenderHandler skyRenderer;

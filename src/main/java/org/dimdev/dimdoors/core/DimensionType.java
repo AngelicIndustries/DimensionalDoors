@@ -1,6 +1,7 @@
 package org.dimdev.dimdoors.core;
 
 public enum DimensionType {
+
     // WARNING: Don't modify these values carelessly or you'll risk breaking existing worlds!
     ROOT(0, false),
     POCKET(1, true),

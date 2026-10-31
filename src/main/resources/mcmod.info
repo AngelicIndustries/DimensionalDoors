@@ -3,14 +3,14 @@
 "modList":
 [
 {
-"modid": "dimdoors",
-"name": "Dimensional Doors",
+"modid": "${modId}",
+"name": "${modName}",
 "description": "Bend and twist reality itself, creating pocket dimensions, rifts, and much more",
-"version": "2.2.5-test",
+"version": "${modVersion}",
 "credits": "Created by StevenRS11, Coded by StevenRS11 and SenseiKiwi, Logo and Testing by Jaitsu",
 "logoFile": "/dimdoors_logo.png",
-"mcversion": "1.7.10",
-"url": "http://www.minecraftforum.net/topic/1650007-147smpssplan-dimensional-doors-v110-physics-what-physics-updated-with-fancy-opengl/",
+"mcversion": "${minecraftVersion}",
+"url": "https://github.com/AngelicIndustries/DimensionalDoors",
 "updateUrl": "",
 "authorList": [ "StevenRS11", "SenseiKiwi" ],
 "parent":"",

@@ -4,6 +4,7 @@ import org.dimdev.dimdoors.core.LinkType;
 import org.dimdev.dimdoors.util.Point4D;
 
 public class PackedLinkTail {
+
     public final Point4D destination;
     public final int linkType;
 

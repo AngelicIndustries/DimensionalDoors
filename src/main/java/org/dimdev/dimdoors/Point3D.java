@@ -1,8 +1,8 @@
 package org.dimdev.dimdoors;
 
-import org.dimdev.dimdoors.util.Point4D;
-
 import java.io.Serializable;
+
+import org.dimdev.dimdoors.util.Point4D;
 
 public class Point3D implements Serializable {
 
@@ -54,15 +54,13 @@ public class Point3D implements Serializable {
     }
 
     public int[] toIntArray() {
-        return new int[]{x, y, z};
+        return new int[] { x, y, z };
     }
 
     public boolean equals(Point3D other) {
-        if (other == null)
-            return false;
+        if (other == null) return false;
 
-        if (this == other)
-            return true;
+        if (this == other) return true;
 
         return (this.x == other.x && this.y == other.y && this.z == other.z);
     }
@@ -74,13 +72,14 @@ public class Point3D implements Serializable {
 
     @Override
     public int hashCode() {
-        //Time for some witchcraft.
-        //The code here is inspired by a discussion on Stack Overflow regarding hash codes for 3D.
-        //Source: http://stackoverflow.com/questions/9858376/hashcode-for-3d-integer-coordinates-with-high-spatial-coherence
+        // Time for some witchcraft.
+        // The code here is inspired by a discussion on Stack Overflow regarding hash codes for 3D.
+        // Source:
+        // http://stackoverflow.com/questions/9858376/hashcode-for-3d-integer-coordinates-with-high-spatial-coherence
 
-        //I believe that most of the time, any points we might be hashing will be in close proximity to each other.
-        //For instance, points that are within the same chunk or within a few neighboring chunks. Only the low-order
-        //bits of each component would differ. I'll use 8 bits from Y and the 12 bits from X and Z. ~SenseiKiwi
+        // I believe that most of the time, any points we might be hashing will be in close proximity to each other.
+        // For instance, points that are within the same chunk or within a few neighboring chunks. Only the low-order
+        // bits of each component would differ. I'll use 8 bits from Y and the 12 bits from X and Z. ~SenseiKiwi
 
         int bit;
         int hash;

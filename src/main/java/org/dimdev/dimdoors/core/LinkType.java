@@ -1,6 +1,7 @@
 package org.dimdev.dimdoors.core;
 
 public enum LinkType {
+
     // WARNING: Don't modify these values carelessly or you'll risk breaking links in existing worlds!
     NORMAL(0),
     POCKET(1),

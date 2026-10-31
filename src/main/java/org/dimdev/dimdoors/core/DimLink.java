@@ -1,13 +1,15 @@
 package org.dimdev.dimdoors.core;
 
-import org.dimdev.dimdoors.util.Point4D;
-import net.minecraft.item.ItemStack;
-import net.minecraft.world.ChunkCoordIntPair;
-
 import java.util.LinkedList;
 import java.util.List;
 
+import net.minecraft.item.ItemStack;
+import net.minecraft.world.ChunkCoordIntPair;
+
+import org.dimdev.dimdoors.util.Point4D;
+
 public abstract class DimLink {
+
     protected Point4D point;
     protected int orientation;
     protected DDLock lock;
@@ -31,12 +33,13 @@ public abstract class DimLink {
     }
 
     protected DimLink(Point4D point, int orientation, DDLock lock, LinkType linkType) {
-        /**This really cant happen anymore, I guess.
+        /**
+         * This really cant happen anymore, I guess.
          *
-         if ((linkType < LinkTypes.ENUM_MIN || linkType > LinkTypes.ENUM_MAX) && linkType != LinkTypes.CLIENT_SIDE)
-         {
-         throw new IllegalArgumentException("The specified link type is invalid.");
-         }
+         * if ((linkType < LinkTypes.ENUM_MIN || linkType > LinkTypes.ENUM_MAX) && linkType != LinkTypes.CLIENT_SIDE)
+         * {
+         * throw new IllegalArgumentException("The specified link type is invalid.");
+         * }
          **/
 
         this.lock = lock;
@@ -52,13 +55,13 @@ public abstract class DimLink {
     }
 
     public void clear() {
-        //Release children
+        // Release children
         for (DimLink child : children) {
             child.parent = null;
         }
         children.clear();
 
-        //Release parent
+        // Release parent
         if (parent != null) {
             parent.children.remove(this);
         }
@@ -103,7 +106,6 @@ public abstract class DimLink {
     public LinkType linkType() {
         return tail.getLinkType();
     }
-
 
     /**
      * Tries to open this lock. Returns true if the lock is open or if the key can open it

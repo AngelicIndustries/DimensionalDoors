@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class UpdateWatcherProxy<T> implements IUpdateWatcher<T> {
+
     private final List<IUpdateWatcher<T>> watchers;
 
     public UpdateWatcherProxy() {

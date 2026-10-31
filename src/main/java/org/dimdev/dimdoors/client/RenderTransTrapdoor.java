@@ -1,33 +1,34 @@
 package org.dimdev.dimdoors.client;
 
-import org.dimdev.dimdoors.blocks.TransTrapdoor;
-import org.dimdev.dimdoors.config.DDProperties;
-import org.dimdev.dimdoors.DimDoors;
-import org.dimdev.dimdoors.tileentities.TileEntityTransTrapdoor;
-import cpw.mods.fml.relauncher.Side;
-import cpw.mods.fml.relauncher.SideOnly;
+import java.nio.FloatBuffer;
+import java.util.Random;
+
 import net.minecraft.block.BlockTrapDoor;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GLAllocation;
 import net.minecraft.client.renderer.tileentity.TileEntitySpecialRenderer;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.ResourceLocation;
+
+import org.dimdev.dimdoors.DimDoors;
+import org.dimdev.dimdoors.blocks.TransTrapdoor;
+import org.dimdev.dimdoors.config.DDProperties;
+import org.dimdev.dimdoors.tileentities.TileEntityTransTrapdoor;
 import org.lwjgl.opengl.GL11;
 
-import java.nio.FloatBuffer;
-import java.util.Random;
+import cpw.mods.fml.relauncher.Side;
+import cpw.mods.fml.relauncher.SideOnly;
 
 @SideOnly(Side.CLIENT)
 public class RenderTransTrapdoor extends TileEntitySpecialRenderer {
+
     private final FloatBuffer field_76908_a = GLAllocation.createDirectFloatBuffer(16);
     private static DDProperties properties = null;
     private final ResourceLocation riftPath = new ResourceLocation(DimDoors.modid + ":textures/other/RIFT.png");
     private final ResourceLocation warpPath = new ResourceLocation(DimDoors.modid + ":textures/other/WARP.png");
 
-
     public RenderTransTrapdoor() {
-        if (properties == null)
-            properties = DDProperties.instance();
+        if (properties == null) properties = DDProperties.instance();
     }
 
     /**
@@ -36,7 +37,8 @@ public class RenderTransTrapdoor extends TileEntitySpecialRenderer {
     public void renderTransTrapdoorTileEntity(TileEntityTransTrapdoor tile, double x, double y, double z, float par8) {
         GL11.glDisable(GL11.GL_LIGHTING);
         Random random = new Random(31100L);
-        int metadata = tile.getWorldObj().getBlockMetadata(tile.xCoord, tile.yCoord, tile.zCoord);
+        int metadata = tile.getWorldObj()
+            .getBlockMetadata(tile.xCoord, tile.yCoord, tile.zCoord);
 
         for (int count = 0; count < 16; ++count) {
             GL11.glPushMatrix();
@@ -74,7 +76,6 @@ public class RenderTransTrapdoor extends TileEntitySpecialRenderer {
             GL11.glTexGen(GL11.GL_T, GL11.GL_OBJECT_PLANE, this.getFloatBuffer(0.0F, 0.0F, 1.0F, 0.0F));
             GL11.glTexGen(GL11.GL_R, GL11.GL_OBJECT_PLANE, this.getFloatBuffer(0.0F, 0.0F, 0.0F, 1.0F));
             GL11.glTexGen(GL11.GL_Q, GL11.GL_EYE_PLANE, this.getFloatBuffer(0.0F, 1.0F, 0.0F, 0.0F));
-
 
             GL11.glEnable(GL11.GL_TEXTURE_GEN_S);
             GL11.glEnable(GL11.GL_TEXTURE_GEN_T);
@@ -141,7 +142,10 @@ public class RenderTransTrapdoor extends TileEntitySpecialRenderer {
 
     private FloatBuffer getFloatBuffer(float par1, float par2, float par3, float par4) {
         this.field_76908_a.clear();
-        this.field_76908_a.put(par1).put(par2).put(par3).put(par4);
+        this.field_76908_a.put(par1)
+            .put(par2)
+            .put(par3)
+            .put(par4);
         this.field_76908_a.flip();
         return this.field_76908_a;
     }

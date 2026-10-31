@@ -1,13 +1,15 @@
 package org.dimdev.dimdoors.watcher;
 
-import org.dimdev.dimdoors.core.DimensionType;
-import org.dimdev.dimdoors.core.NewDimData;
-import io.netty.buffer.ByteBuf;
-
 import java.io.IOException;
 
+import org.dimdev.dimdoors.core.DimensionType;
+import org.dimdev.dimdoors.core.NewDimData;
+
+import io.netty.buffer.ByteBuf;
+
 public class ClientDimData {
-    //We'll use public fields since this is just a data container and it's immutable
+
+    // We'll use public fields since this is just a data container and it's immutable
     public final int ID;
     public final int rootID;
     public final DimensionType type;
@@ -20,7 +22,8 @@ public class ClientDimData {
 
     public ClientDimData(NewDimData dimension) {
         ID = dimension.id();
-        this.rootID = dimension.root().id();
+        this.rootID = dimension.root()
+            .id();
         this.type = dimension.type();
     }
 

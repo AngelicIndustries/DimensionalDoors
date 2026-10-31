@@ -1,13 +1,7 @@
 package org.dimdev.dimdoors.items;
 
-import org.dimdev.dimdoors.blocks.IDimDoor;
-import org.dimdev.dimdoors.core.DDLock;
-import org.dimdev.dimdoors.core.DimLink;
-import org.dimdev.dimdoors.core.PocketManager;
-import org.dimdev.dimdoors.DimDoors;
-import org.dimdev.dimdoors.watcher.ClientLinkData;
-import cpw.mods.fml.relauncher.Side;
-import cpw.mods.fml.relauncher.SideOnly;
+import java.util.List;
+
 import net.minecraft.block.Block;
 import net.minecraft.client.renderer.texture.IIconRegister;
 import net.minecraft.entity.player.EntityPlayer;
@@ -18,9 +12,18 @@ import net.minecraft.util.MovingObjectPosition;
 import net.minecraft.util.StatCollector;
 import net.minecraft.world.World;
 
-import java.util.List;
+import org.dimdev.dimdoors.DimDoors;
+import org.dimdev.dimdoors.blocks.IDimDoor;
+import org.dimdev.dimdoors.core.DDLock;
+import org.dimdev.dimdoors.core.DimLink;
+import org.dimdev.dimdoors.core.PocketManager;
+import org.dimdev.dimdoors.watcher.ClientLinkData;
+
+import cpw.mods.fml.relauncher.Side;
+import cpw.mods.fml.relauncher.SideOnly;
 
 public class ItemDDKey extends Item {
+
     public static final int TIME_TO_UNLOCK = 30;
 
     public ItemDDKey() {
@@ -44,7 +47,10 @@ public class ItemDDKey extends Item {
 
     @Override
     public void registerIcons(IIconRegister par1IconRegister) {
-        this.itemIcon = par1IconRegister.registerIcon(DimDoors.modid + ":" + this.getUnlocalizedName().replace("item.", ""));
+        this.itemIcon = par1IconRegister.registerIcon(
+            DimDoors.modid + ":"
+                + this.getUnlocalizedName()
+                    .replace("item.", ""));
     }
 
     @Override
@@ -53,15 +59,15 @@ public class ItemDDKey extends Item {
         return !DDLock.hasCreatedLock(par1ItemStack);
     }
 
-    public boolean onItemUse(ItemStack itemStack, EntityPlayer player, World par3World, int par4, int par5, int par6, int par7, float par8, float par9,
-                             float par10) {
+    public boolean onItemUse(ItemStack itemStack, EntityPlayer player, World par3World, int par4, int par5, int par6,
+        int par7, float par8, float par9, float par10) {
         player.setItemInUse(itemStack, this.getMaxItemUseDuration(itemStack));
 
         return false;
     }
 
-    public boolean onItemUseFirst(ItemStack itemStack, EntityPlayer player, World world, int x, int y, int z, int side, float playerX, float playerY,
-                                  float playerZ) {
+    public boolean onItemUseFirst(ItemStack itemStack, EntityPlayer player, World world, int x, int y, int z, int side,
+        float playerX, float playerY, float playerZ) {
         if (world.isRemote) {
             return false;
         }
@@ -89,8 +95,10 @@ public class ItemDDKey extends Item {
                 } else {
                     world.playSoundAtEntity(player, DimDoors.modid + ":keyLock", 1F, 1F);
                 }
-                PocketManager.getDimensionData(world).lock(link, !link.getLockState());
-                PocketManager.getLinkWatcher().update(new ClientLinkData(link));
+                PocketManager.getDimensionData(world)
+                    .lock(link, !link.getLockState());
+                PocketManager.getLinkWatcher()
+                    .update(new ClientLinkData(link));
 
             } else {
                 world.playSoundAtEntity(player, DimDoors.modid + ":doorLocked", 1F, 1F);
@@ -98,8 +106,10 @@ public class ItemDDKey extends Item {
         } else {
             if (!DDLock.hasCreatedLock(itemStack)) {
                 world.playSoundAtEntity(player, DimDoors.modid + ":keyLock", 1F, 1F);
-                PocketManager.getDimensionData(world).createLock(link, itemStack, world.rand.nextInt(Integer.MAX_VALUE));
-                PocketManager.getLinkWatcher().update(new ClientLinkData(link));
+                PocketManager.getDimensionData(world)
+                    .createLock(link, itemStack, world.rand.nextInt(Integer.MAX_VALUE));
+                PocketManager.getLinkWatcher()
+                    .update(new ClientLinkData(link));
             }
         }
         return false;
@@ -112,15 +122,16 @@ public class ItemDDKey extends Item {
     public void onPlayerStoppedUsing(ItemStack itemStack, World world, EntityPlayer player, int heldTime) {
         int j = this.getMaxItemUseDuration(itemStack) - heldTime;
         if (j >= TIME_TO_UNLOCK) {
-            //Raytrace to make sure we are still looking at a door
+            // Raytrace to make sure we are still looking at a door
             MovingObjectPosition pos = getMovingObjectPositionFromPlayer(player.worldObj, player, true);
             if (pos != null && pos.typeOfHit == MovingObjectPosition.MovingObjectType.BLOCK) {
-                //make sure we have a link and it has a lock
+                // make sure we have a link and it has a lock
                 DimLink link = PocketManager.getLink(pos.blockX, pos.blockY, pos.blockZ, player.worldObj);
                 if (link != null && link.hasLock()) {
-                    //make sure the given key is able to access the lock
+                    // make sure the given key is able to access the lock
                     if (link.doesKeyUnlock(itemStack) && !world.isRemote) {
-                        PocketManager.getDimensionData(world).removeLock(link, itemStack);
+                        PocketManager.getDimensionData(world)
+                            .removeLock(link, itemStack);
                         world.playSoundAtEntity(player, DimDoors.modid + ":doorLockRemoved", 1F, 1F);
 
                     }

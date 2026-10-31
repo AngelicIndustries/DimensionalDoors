@@ -1,11 +1,12 @@
 package org.dimdev.dimdoors.dungeon;
 
+import java.util.ArrayList;
+
+import net.minecraft.block.Block;
+
 import org.dimdev.dimdoors.Point3D;
 import org.dimdev.dimdoors.schematic.Schematic;
 import org.dimdev.dimdoors.schematic.SchematicFilter;
-import net.minecraft.block.Block;
-
-import java.util.ArrayList;
 
 public class SpecialBlockFinder extends SchematicFilter {
 

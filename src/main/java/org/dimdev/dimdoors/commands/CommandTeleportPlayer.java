@@ -1,26 +1,27 @@
 package org.dimdev.dimdoors.commands;
 
-import org.dimdev.dimdoors.core.DDTeleporter;
-import org.dimdev.dimdoors.core.NewDimData;
-import org.dimdev.dimdoors.core.PocketManager;
-import org.dimdev.dimdoors.util.Point4D;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.World;
 
+import org.dimdev.dimdoors.core.DDTeleporter;
+import org.dimdev.dimdoors.core.NewDimData;
+import org.dimdev.dimdoors.core.PocketManager;
+import org.dimdev.dimdoors.util.Point4D;
+
 public class CommandTeleportPlayer extends DDCommandBase {
+
     private static CommandTeleportPlayer instance = null;
 
     private CommandTeleportPlayer() {
-        super("dd-tp", new String[]{
-                "<player name> <dimension number>",
-                "<player name> <x> <y> <z>",
-                "<player name> <dimension number> <x> <y> <z>"});
+        super(
+            "dd-tp",
+            new String[] { "<player name> <dimension number>", "<player name> <x> <y> <z>",
+                "<player name> <dimension number> <x> <y> <z>" });
     }
 
     public static CommandTeleportPlayer instance() {
-        if (instance == null)
-            instance = new CommandTeleportPlayer();
+        if (instance == null) instance = new CommandTeleportPlayer();
 
         return instance;
     }
@@ -53,7 +54,9 @@ public class CommandTeleportPlayer extends DDCommandBase {
             }
         }
         // Check if the target player is logged in
-        targetPlayer = MinecraftServer.getServer().getConfigurationManager().func_152612_a(command[0]);
+        targetPlayer = MinecraftServer.getServer()
+            .getConfigurationManager()
+            .func_152612_a(command[0]);
         if (targetPlayer == null) {
             return DDCommandResult.PLAYER_OFFLINE;
         }

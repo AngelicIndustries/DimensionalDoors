@@ -1,14 +1,5 @@
 package org.dimdev.dimdoors.world;
 
-import org.dimdev.dimdoors.CloudRenderBlank;
-import org.dimdev.dimdoors.config.DDProperties;
-import org.dimdev.dimdoors.core.DimensionType;
-import org.dimdev.dimdoors.core.NewDimData;
-import org.dimdev.dimdoors.core.PocketManager;
-import org.dimdev.dimdoors.DimDoors;
-import org.dimdev.dimdoors.ticking.CustomLimboPopulator;
-import cpw.mods.fml.relauncher.Side;
-import cpw.mods.fml.relauncher.SideOnly;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.util.Vec3;
@@ -17,7 +8,19 @@ import net.minecraft.world.biome.WorldChunkManagerHell;
 import net.minecraft.world.chunk.IChunkProvider;
 import net.minecraftforge.client.IRenderHandler;
 
+import org.dimdev.dimdoors.CloudRenderBlank;
+import org.dimdev.dimdoors.DimDoors;
+import org.dimdev.dimdoors.config.DDProperties;
+import org.dimdev.dimdoors.core.DimensionType;
+import org.dimdev.dimdoors.core.NewDimData;
+import org.dimdev.dimdoors.core.PocketManager;
+import org.dimdev.dimdoors.ticking.CustomLimboPopulator;
+
+import cpw.mods.fml.relauncher.Side;
+import cpw.mods.fml.relauncher.SideOnly;
+
 public class PocketProvider extends WorldProvider {
+
     private final DDProperties properties;
     protected CustomLimboPopulator spawner;
     protected IRenderHandler skyRenderer;
@@ -99,9 +102,9 @@ public class PocketProvider extends WorldProvider {
 
     @Override
     public String getDimensionName() {
-        //TODO: This should be a proper name. We need to show people proper names for things whenever possible.
-        //The question is whether this should be "Pocket Dimension" or "Pocket Dimension #" -- I'm not going to change
-        //it out of concern that it could break something. ~SenseiKiwi
+        // TODO: This should be a proper name. We need to show people proper names for things whenever possible.
+        // The question is whether this should be "Pocket Dimension" or "Pocket Dimension #" -- I'm not going to change
+        // it out of concern that it could break something. ~SenseiKiwi
         return "PocketDim " + this.dimensionId;
     }
 
@@ -112,7 +115,9 @@ public class PocketProvider extends WorldProvider {
         if (properties.LimboEnabled) {
             respawnDim = properties.LimboDimensionID;
         } else {
-            respawnDim = PocketManager.getDimensionData(this.dimensionId).root().id();
+            respawnDim = PocketManager.getDimensionData(this.dimensionId)
+                .root()
+                .id();
         }
         // TODO: Are we sure we need to load the dimension as well? Why can't the game handle that?
         PocketManager.loadDimension(respawnDim);

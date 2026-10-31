@@ -4,6 +4,7 @@ import net.minecraft.block.Block;
 import net.minecraft.world.World;
 
 public class WorldBlockSetter implements IBlockSetter {
+
     public final int BLOCK_UPDATES_FLAG = 1;
     public final int NOTIFY_CLIENT_FLAG = 2;
 

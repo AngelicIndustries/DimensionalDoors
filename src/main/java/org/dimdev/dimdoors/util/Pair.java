@@ -1,8 +1,8 @@
 package org.dimdev.dimdoors.util;
 
 public class Pair<P, Q> {
-    //Pair is an implementation of a 2-tuple with generic parameters for strongly-typed elements.
-    //It's used instead of Minecraft's Tuple type because Tuple doesn't have strongly-typed elements.
+    // Pair is an implementation of a 2-tuple with generic parameters for strongly-typed elements.
+    // It's used instead of Minecraft's Tuple type because Tuple doesn't have strongly-typed elements.
 
     private final P first;
     private final Q second;

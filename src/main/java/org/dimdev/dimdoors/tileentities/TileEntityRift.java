@@ -1,12 +1,8 @@
 package org.dimdev.dimdoors.tileentities;
 
-import org.dimdev.dimdoors.config.DDProperties;
-import org.dimdev.dimdoors.core.DimLink;
-import org.dimdev.dimdoors.core.NewDimData;
-import org.dimdev.dimdoors.core.PocketManager;
-import org.dimdev.dimdoors.DimDoors;
-import org.dimdev.dimdoors.util.Point4D;
-import org.dimdev.dimdoors.watcher.ClientLinkData;
+import java.util.List;
+import java.util.Random;
+
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.monster.EntityEnderman;
 import net.minecraft.entity.player.EntityPlayer;
@@ -16,10 +12,16 @@ import net.minecraft.network.Packet;
 import net.minecraft.network.play.server.S35PacketUpdateTileEntity;
 import net.minecraft.util.AxisAlignedBB;
 
-import java.util.List;
-import java.util.Random;
+import org.dimdev.dimdoors.DimDoors;
+import org.dimdev.dimdoors.config.DDProperties;
+import org.dimdev.dimdoors.core.DimLink;
+import org.dimdev.dimdoors.core.NewDimData;
+import org.dimdev.dimdoors.core.PocketManager;
+import org.dimdev.dimdoors.util.Point4D;
+import org.dimdev.dimdoors.watcher.ClientLinkData;
 
 public class TileEntityRift extends DDTileEntityBase {
+
     private static final int RIFT_INTERACTION_RANGE = 5;
     private static final int MAX_ANCESTOR_LINKS = 2;
     private static final int MAX_CHILD_LINKS = 1;
@@ -69,7 +71,6 @@ public class TileEntityRift extends DDTileEntityBase {
             return;
         }
 
-
         // Check if this rift should render white closing particles and
         // spread the closing effect to other rifts nearby.
         if (shouldClose) {
@@ -102,8 +103,10 @@ public class TileEntityRift extends DDTileEntityBase {
         if (random.nextInt(MAX_ENDERMAN_SPAWNING_CHANCE) < ENDERMAN_SPAWNING_CHANCE) {
             // Endermen will only spawn from groups of rifts
             if (updateNearestRift()) {
-                List<Entity> list = worldObj.getEntitiesWithinAABB(EntityEnderman.class,
-                        AxisAlignedBB.getBoundingBox(xCoord - 9, yCoord - 3, zCoord - 9, xCoord + 9, yCoord + 3, zCoord + 9));
+                List<EntityEnderman> list = worldObj.getEntitiesWithinAABB(
+                    EntityEnderman.class,
+                    AxisAlignedBB
+                        .getBoundingBox(xCoord - 9, yCoord - 3, zCoord - 9, xCoord + 9, yCoord + 3, zCoord + 9));
 
                 if (list.isEmpty()) {
                     EntityEnderman enderman = new EntityEnderman(worldObj);
@@ -126,7 +129,8 @@ public class TileEntityRift extends DDTileEntityBase {
         if (growth < CLOSING_PERIOD / 2) {
             for (DimLink riftLink : dimension.findRiftsInRange(worldObj, 6, xCoord, yCoord, zCoord)) {
                 Point4D location = riftLink.source();
-                TileEntityRift rift = (TileEntityRift) worldObj.getTileEntity(location.getX(), location.getY(), location.getZ());
+                TileEntityRift rift = (TileEntityRift) worldObj
+                    .getTileEntity(location.getX(), location.getY(), location.getZ());
                 if (rift != null && !rift.shouldClose) {
                     rift.shouldClose = true;
                     rift.markDirty();
@@ -147,14 +151,14 @@ public class TileEntityRift extends DDTileEntityBase {
 
     public boolean updateNearestRift() {
         Point4D previousNearest = nearestRiftLocation;
-        DimLink nearestRiftLink = PocketManager.createDimensionData(worldObj).findNearestRift(
-                worldObj, RIFT_INTERACTION_RANGE, xCoord, yCoord, zCoord);
+        DimLink nearestRiftLink = PocketManager.createDimensionData(worldObj)
+            .findNearestRift(worldObj, RIFT_INTERACTION_RANGE, xCoord, yCoord, zCoord);
 
         nearestRiftLocation = (nearestRiftLink == null) ? null : nearestRiftLink.source();
 
         // If the nearest rift location changed, then update particle offsets
-        if (previousNearest != nearestRiftLocation &&
-                (previousNearest == null || nearestRiftLocation == null || !previousNearest.equals(nearestRiftLocation))) {
+        if (previousNearest != nearestRiftLocation && (previousNearest == null || nearestRiftLocation == null
+            || !previousNearest.equals(nearestRiftLocation))) {
             updateParticleOffsets();
         }
         return (nearestRiftLocation != null);
@@ -187,7 +191,8 @@ public class TileEntityRift extends DDTileEntityBase {
 
     public void spread(DDProperties properties) {
         if (worldObj.isRemote || !properties.RiftSpreadEnabled
-                || random.nextInt(MAX_RIFT_SPREAD_CHANCE) < RIFT_SPREAD_CHANCE || this.shouldClose) {
+            || random.nextInt(MAX_RIFT_SPREAD_CHANCE) < RIFT_SPREAD_CHANCE
+            || this.shouldClose) {
             return;
         }
 
@@ -201,7 +206,8 @@ public class TileEntityRift extends DDTileEntityBase {
         // The probability of rifts trying to spread increases if more rifts are nearby.
         // Players should see rifts spread faster within clusters than at the edges of clusters.
         // Also, single rifts CANNOT spread.
-        int nearRifts = dimension.findRiftsInRange(worldObj, RIFT_INTERACTION_RANGE, xCoord, yCoord, zCoord).size();
+        int nearRifts = dimension.findRiftsInRange(worldObj, RIFT_INTERACTION_RANGE, xCoord, yCoord, zCoord)
+            .size();
         if (nearRifts == 0 || random.nextInt(nearRifts) == 0) {
             return;
         }
@@ -259,7 +265,8 @@ public class TileEntityRift extends DDTileEntityBase {
 
         if (tag.hasKey("Link")) {
             ClientLinkData linkData = ClientLinkData.readFromNBT(tag.getCompoundTag("Link"));
-            PocketManager.getLinkWatcher().onCreated(linkData);
+            PocketManager.getLinkWatcher()
+                .onCreated(linkData);
         }
     }
 

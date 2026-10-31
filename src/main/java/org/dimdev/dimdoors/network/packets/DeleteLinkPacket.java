@@ -1,16 +1,17 @@
 package org.dimdev.dimdoors.network.packets;
 
+import java.io.IOException;
+
 import org.dimdev.dimdoors.watcher.ClientLinkData;
+
 import cpw.mods.fml.common.network.simpleimpl.IMessage;
 import io.netty.buffer.ByteBuf;
 
-import java.io.IOException;
-
 public class DeleteLinkPacket implements IMessage {
+
     private ClientLinkData linkData;
 
-    public DeleteLinkPacket() {
-    }
+    public DeleteLinkPacket() {}
 
     public DeleteLinkPacket(ClientLinkData linkData) {
         this.linkData = linkData;

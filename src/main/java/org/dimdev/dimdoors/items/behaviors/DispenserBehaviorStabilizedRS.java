@@ -1,6 +1,5 @@
 package org.dimdev.dimdoors.items.behaviors;
 
-import org.dimdev.dimdoors.items.ItemStabilizedRiftSignature;
 import net.minecraft.block.BlockDispenser;
 import net.minecraft.dispenser.BehaviorDefaultDispenseItem;
 import net.minecraft.dispenser.IBlockSource;
@@ -8,7 +7,10 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.world.World;
 
+import org.dimdev.dimdoors.items.ItemStabilizedRiftSignature;
+
 public class DispenserBehaviorStabilizedRS extends BehaviorDefaultDispenseItem {
+
     @Override
     public ItemStack dispenseStack(IBlockSource dispenser, ItemStack stack) {
         // Search for a non-air block up to 3 blocks in front of a dispenser.

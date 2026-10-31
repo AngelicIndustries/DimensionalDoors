@@ -3,6 +3,7 @@ package org.dimdev.dimdoors.helpers;
 import java.io.File;
 
 public class DeleteFolder {
+
     public static boolean deleteFolder(File directory) {
         try {
             File[] contents = directory.listFiles();

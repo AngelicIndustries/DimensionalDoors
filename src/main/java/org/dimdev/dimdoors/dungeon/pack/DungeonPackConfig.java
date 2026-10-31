@@ -3,6 +3,7 @@ package org.dimdev.dimdoors.dungeon.pack;
 import java.util.ArrayList;
 
 public class DungeonPackConfig {
+
     private String name;
     private ArrayList<String> typeNames;
     private boolean allowDuplicatesInChain;
@@ -13,8 +14,7 @@ public class DungeonPackConfig {
     private int duplicateSearchLevels;
     private ArrayList<DungeonChainRuleDefinition> rules;
 
-    public DungeonPackConfig() {
-    }
+    public DungeonPackConfig() {}
 
     @SuppressWarnings("unchecked")
     private DungeonPackConfig(DungeonPackConfig source) {
@@ -30,12 +30,9 @@ public class DungeonPackConfig {
     }
 
     public void validate() {
-        if (this.name == null)
-            throw new NullPointerException("name cannot be null");
-        if (this.typeNames == null)
-            throw new NullPointerException("typeNames cannot be null");
-        if (this.rules == null)
-            throw new NullPointerException("rules cannot be null");
+        if (this.name == null) throw new NullPointerException("name cannot be null");
+        if (this.typeNames == null) throw new NullPointerException("typeNames cannot be null");
+        if (this.rules == null) throw new NullPointerException("rules cannot be null");
     }
 
     @Override

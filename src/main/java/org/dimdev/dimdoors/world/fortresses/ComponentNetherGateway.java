@@ -1,10 +1,8 @@
 package org.dimdev.dimdoors.world.fortresses;
 
-import org.dimdev.dimdoors.core.DimLink;
-import org.dimdev.dimdoors.core.LinkType;
-import org.dimdev.dimdoors.core.NewDimData;
-import org.dimdev.dimdoors.core.PocketManager;
-import org.dimdev.dimdoors.DimDoors;
+import java.util.List;
+import java.util.Random;
+
 import net.minecraft.init.Blocks;
 import net.minecraft.item.ItemDoor;
 import net.minecraft.nbt.NBTTagCompound;
@@ -12,8 +10,11 @@ import net.minecraft.world.World;
 import net.minecraft.world.gen.structure.StructureBoundingBox;
 import net.minecraft.world.gen.structure.StructureComponent;
 
-import java.util.List;
-import java.util.Random;
+import org.dimdev.dimdoors.DimDoors;
+import org.dimdev.dimdoors.core.DimLink;
+import org.dimdev.dimdoors.core.LinkType;
+import org.dimdev.dimdoors.core.NewDimData;
+import org.dimdev.dimdoors.core.PocketManager;
 
 public class ComponentNetherGateway extends StructureComponent {
     // Note: In this case, it doesn't really matter which class we extend, since this class will
@@ -31,22 +32,30 @@ public class ComponentNetherGateway extends StructureComponent {
     /**
      * Creates and returns a new component piece. Or null if it could not find enough room to place it.
      */
-    public static ComponentNetherGateway createValidComponent(List components, Random random, int minX, int minY, int minZ, int coordBaseMode, int componentType) {
-        StructureBoundingBox bounds = StructureBoundingBox.getComponentToAddBoundingBox(minX, minY, minZ, -2, 0, 0, 7, 9, 7, coordBaseMode);
-        return isAboveGround(bounds) && StructureComponent.findIntersecting(components, bounds) == null ? new ComponentNetherGateway(componentType, random, bounds, coordBaseMode) : null;
+    public static ComponentNetherGateway createValidComponent(List components, Random random, int minX, int minY,
+        int minZ, int coordBaseMode, int componentType) {
+        StructureBoundingBox bounds = StructureBoundingBox
+            .getComponentToAddBoundingBox(minX, minY, minZ, -2, 0, 0, 7, 9, 7, coordBaseMode);
+        return isAboveGround(bounds) && StructureComponent.findIntersecting(components, bounds) == null
+            ? new ComponentNetherGateway(componentType, random, bounds, coordBaseMode)
+            : null;
     }
 
     public static ComponentNetherGateway createFromComponent(StructureComponent component, Random random) {
         // Create an instance of our gateway component using the same data as another component,
         // likely a component that we intend to replace during generation
-        return new ComponentNetherGateway(component.getComponentType(), random,
-                component.getBoundingBox(), getCoordBaseMode(component));
+        return new ComponentNetherGateway(
+            component.getComponentType(),
+            random,
+            component.getBoundingBox(),
+            getCoordBaseMode(component));
     }
 
     private static int getCoordBaseMode(StructureComponent component) {
         // This is a hack to get the value of a component's coordBaseMode field.
         // It's essentially the orientation of the component... with a weird name.
-        return component.func_143010_b().getInteger("O");
+        return component.func_143010_b()
+            .getInteger("O");
     }
 
     /**
@@ -71,14 +80,47 @@ public class ComponentNetherGateway extends StructureComponent {
 
         // Build the fence at the back of the room
         this.fillWithBlocks(world, bounds, 1, 2, 6, 5, 2, 6, Blocks.nether_brick, Blocks.nether_brick, false);
-        this.fillWithBlocks(world, bounds, 1, 3, 6, 5, 3, 6, Blocks.nether_brick_fence, Blocks.nether_brick_fence, false);
+        this.fillWithBlocks(
+            world,
+            bounds,
+            1,
+            3,
+            6,
+            5,
+            3,
+            6,
+            Blocks.nether_brick_fence,
+            Blocks.nether_brick_fence,
+            false);
 
         // Build the fences at the sides of the room
         this.fillWithBlocks(world, bounds, 0, 2, 0, 0, 2, 6, Blocks.nether_brick, Blocks.nether_brick, false);
-        this.fillWithBlocks(world, bounds, 0, 3, 0, 0, 3, 6, Blocks.nether_brick_fence, Blocks.nether_brick_fence, false);
+        this.fillWithBlocks(
+            world,
+            bounds,
+            0,
+            3,
+            0,
+            0,
+            3,
+            6,
+            Blocks.nether_brick_fence,
+            Blocks.nether_brick_fence,
+            false);
 
         this.fillWithBlocks(world, bounds, 6, 2, 0, 6, 2, 6, Blocks.nether_brick, Blocks.nether_brick, false);
-        this.fillWithBlocks(world, bounds, 6, 3, 0, 6, 3, 6, Blocks.nether_brick_fence, Blocks.nether_brick_fence, false);
+        this.fillWithBlocks(
+            world,
+            bounds,
+            6,
+            3,
+            0,
+            6,
+            3,
+            6,
+            Blocks.nether_brick_fence,
+            Blocks.nether_brick_fence,
+            false);
 
         // Build the fence portions closest to the entrance
         this.placeBlockAtCurrentPosition(world, Blocks.nether_brick, 0, 1, 2, 0, bounds);
@@ -89,7 +131,20 @@ public class ComponentNetherGateway extends StructureComponent {
 
         // Build the first layer of the gateway
         this.fillWithBlocks(world, bounds, 1, 2, 2, 5, 2, 5, Blocks.nether_brick, Blocks.nether_brick, false);
-        this.fillWithMetadataBlocks(world, bounds, 1, 2, 1, 5, 2, 1, Blocks.stone_slab, NETHER_SLAB_METADATA, Blocks.stone_slab, NETHER_SLAB_METADATA, false);
+        this.fillWithMetadataBlocks(
+            world,
+            bounds,
+            1,
+            2,
+            1,
+            5,
+            2,
+            1,
+            Blocks.stone_slab,
+            NETHER_SLAB_METADATA,
+            Blocks.stone_slab,
+            NETHER_SLAB_METADATA,
+            false);
 
         this.placeBlockAtCurrentPosition(world, Blocks.stone_slab, NETHER_SLAB_METADATA, 1, 2, 2, bounds);
         this.placeBlockAtCurrentPosition(world, Blocks.stone_slab, NETHER_SLAB_METADATA, 5, 2, 2, bounds);
@@ -104,23 +159,92 @@ public class ComponentNetherGateway extends StructureComponent {
         // Build the third layer of the gateway
         // We add 4 to get the rotated metadata for upside-down stairs
         // because Minecraft only supports metadata rotations for normal stairs -_-
-        this.fillWithMetadataBlocks(world, bounds, 2, 4, 4, 4, 4, 4, Blocks.nether_brick_stairs, orientation, Blocks.nether_brick_stairs, orientation, false);
+        this.fillWithMetadataBlocks(
+            world,
+            bounds,
+            2,
+            4,
+            4,
+            4,
+            4,
+            4,
+            Blocks.nether_brick_stairs,
+            orientation,
+            Blocks.nether_brick_stairs,
+            orientation,
+            false);
 
-        this.placeBlockAtCurrentPosition(world, Blocks.nether_brick_stairs, this.getMetadataWithOffset(Blocks.nether_brick_stairs, 0) + 4, 2, 4, 3, bounds);
-        this.placeBlockAtCurrentPosition(world, Blocks.nether_brick_stairs, this.getMetadataWithOffset(Blocks.nether_brick_stairs, 1) + 4, 4, 4, 3, bounds);
+        this.placeBlockAtCurrentPosition(
+            world,
+            Blocks.nether_brick_stairs,
+            this.getMetadataWithOffset(Blocks.nether_brick_stairs, 0) + 4,
+            2,
+            4,
+            3,
+            bounds);
+        this.placeBlockAtCurrentPosition(
+            world,
+            Blocks.nether_brick_stairs,
+            this.getMetadataWithOffset(Blocks.nether_brick_stairs, 1) + 4,
+            4,
+            4,
+            3,
+            bounds);
 
         // Build the fourth layer of the gateway
         this.placeBlockAtCurrentPosition(world, Blocks.nether_brick, 0, 3, 5, 3, bounds);
 
         this.placeBlockAtCurrentPosition(world, Blocks.netherrack, 0, 2, 5, 3, bounds);
-        this.placeBlockAtCurrentPosition(world, Blocks.nether_brick_stairs, this.getMetadataWithOffset(Blocks.nether_brick_stairs, 0) + 4, 1, 5, 3, bounds);
-        this.placeBlockAtCurrentPosition(world, Blocks.nether_brick_stairs, this.getMetadataWithOffset(Blocks.nether_brick_stairs, 3) + 4, 2, 5, 2, bounds);
-        this.placeBlockAtCurrentPosition(world, Blocks.nether_brick_stairs, this.getMetadataWithOffset(Blocks.nether_brick_stairs, 2) + 4, 2, 5, 4, bounds);
+        this.placeBlockAtCurrentPosition(
+            world,
+            Blocks.nether_brick_stairs,
+            this.getMetadataWithOffset(Blocks.nether_brick_stairs, 0) + 4,
+            1,
+            5,
+            3,
+            bounds);
+        this.placeBlockAtCurrentPosition(
+            world,
+            Blocks.nether_brick_stairs,
+            this.getMetadataWithOffset(Blocks.nether_brick_stairs, 3) + 4,
+            2,
+            5,
+            2,
+            bounds);
+        this.placeBlockAtCurrentPosition(
+            world,
+            Blocks.nether_brick_stairs,
+            this.getMetadataWithOffset(Blocks.nether_brick_stairs, 2) + 4,
+            2,
+            5,
+            4,
+            bounds);
 
         this.placeBlockAtCurrentPosition(world, Blocks.netherrack, 0, 4, 5, 3, bounds);
-        this.placeBlockAtCurrentPosition(world, Blocks.nether_brick_stairs, this.getMetadataWithOffset(Blocks.nether_brick_stairs, 1) + 4, 5, 5, 3, bounds);
-        this.placeBlockAtCurrentPosition(world, Blocks.nether_brick_stairs, this.getMetadataWithOffset(Blocks.nether_brick_stairs, 3) + 4, 4, 5, 2, bounds);
-        this.placeBlockAtCurrentPosition(world, Blocks.nether_brick_stairs, this.getMetadataWithOffset(Blocks.nether_brick_stairs, 2) + 4, 4, 5, 4, bounds);
+        this.placeBlockAtCurrentPosition(
+            world,
+            Blocks.nether_brick_stairs,
+            this.getMetadataWithOffset(Blocks.nether_brick_stairs, 1) + 4,
+            5,
+            5,
+            3,
+            bounds);
+        this.placeBlockAtCurrentPosition(
+            world,
+            Blocks.nether_brick_stairs,
+            this.getMetadataWithOffset(Blocks.nether_brick_stairs, 3) + 4,
+            4,
+            5,
+            2,
+            bounds);
+        this.placeBlockAtCurrentPosition(
+            world,
+            Blocks.nether_brick_stairs,
+            this.getMetadataWithOffset(Blocks.nether_brick_stairs, 2) + 4,
+            4,
+            5,
+            4,
+            bounds);
 
         // Build the top layer of the gateway
         this.placeBlockAtCurrentPosition(world, Blocks.nether_brick_fence, 0, 3, 6, 3, bounds);
@@ -164,10 +288,8 @@ public class ComponentNetherGateway extends StructureComponent {
     }
 
     @Override
-    protected void func_143012_a(NBTTagCompound tag) {
-    }
+    protected void func_143012_a(NBTTagCompound tag) {}
 
     @Override
-    protected void func_143011_b(NBTTagCompound tag) {
-    }
+    protected void func_143011_b(NBTTagCompound tag) {}
 }

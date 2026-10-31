@@ -1,9 +1,8 @@
 package org.dimdev.dimdoors.blocks;
 
-import org.dimdev.dimdoors.DimDoors;
-import org.dimdev.dimdoors.client.PrivatePocketRender;
-import cpw.mods.fml.relauncher.Side;
-import cpw.mods.fml.relauncher.SideOnly;
+import java.util.List;
+import java.util.Random;
+
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockContainer;
 import net.minecraft.block.material.Material;
@@ -17,10 +16,14 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.util.IIcon;
 import net.minecraft.world.World;
 
-import java.util.List;
-import java.util.Random;
+import org.dimdev.dimdoors.DimDoors;
+import org.dimdev.dimdoors.client.PrivatePocketRender;
+
+import cpw.mods.fml.relauncher.Side;
+import cpw.mods.fml.relauncher.SideOnly;
 
 public class BlockDimWall extends Block {
+
     private static final float SUPER_HIGH_HARDNESS = 10000000000000F;
     private static final float SUPER_EXPLOSION_RESISTANCE = 18000000F;
     private final IIcon[] blockIcon = new IIcon[3];
@@ -40,7 +43,8 @@ public class BlockDimWall extends Block {
     }
 
     @Override
-    public float getExplosionResistance(Entity entity, World world, int x, int y, int z, double explosionX, double explosionY, double explosionZ) {
+    public float getExplosionResistance(Entity entity, World world, int x, int y, int z, double explosionX,
+        double explosionY, double explosionZ) {
         if (world.getBlockMetadata(x, y, z) != 1) {
             return super.getExplosionResistance(entity, world, x, y, z, explosionX, explosionY, explosionZ);
         } else {
@@ -56,7 +60,8 @@ public class BlockDimWall extends Block {
     public void registerBlockIcons(IIconRegister par1IconRegister) {
         this.blockIcon[0] = par1IconRegister.registerIcon(DimDoors.modid + ":" + this.getUnlocalizedName());
         this.blockIcon[1] = par1IconRegister.registerIcon(DimDoors.modid + ":" + this.getUnlocalizedName() + "Perm");
-        this.blockIcon[2] = par1IconRegister.registerIcon(DimDoors.modid + ":" + this.getUnlocalizedName() + "Personal");
+        this.blockIcon[2] = par1IconRegister
+            .registerIcon(DimDoors.modid + ":" + this.getUnlocalizedName() + "Personal");
     }
 
     @SideOnly(Side.CLIENT)
@@ -76,12 +81,12 @@ public class BlockDimWall extends Block {
 
     @Override
     public int damageDropped(int metadata) {
-        //Return 0 to avoid dropping Ancient Fabric even if the player somehow manages to break it
+        // Return 0 to avoid dropping Ancient Fabric even if the player somehow manages to break it
         return metadata == 1 ? 0 : metadata;
     }
 
     @Override
-    @SuppressWarnings({"rawtypes", "unchecked"})
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     @SideOnly(Side.CLIENT)
     public void getSubBlocks(Item unknown, CreativeTabs tab, List subItems) {
         for (int ix = 0; ix < 3; ix++) {
@@ -90,8 +95,7 @@ public class BlockDimWall extends Block {
     }
 
     @Override
-    public void onBlockDestroyedByPlayer(World par1World, int par2, int par3, int par4, int par5) {
-    }
+    public void onBlockDestroyedByPlayer(World par1World, int par2, int par3, int par4, int par5) {}
 
     @Override
     protected boolean canSilkHarvest() {
@@ -104,13 +108,16 @@ public class BlockDimWall extends Block {
     }
 
     /**
-     * replaces the block clicked with the held block, instead of placing the block on top of it. Shift click to disable.
+     * replaces the block clicked with the held block, instead of placing the block on top of it. Shift click to
+     * disable.
      */
     @Override
-    public boolean onBlockActivated(World world, int x, int y, int z, EntityPlayer entityPlayer, int par6, float par7, float par8, float par9) {
-        //Check if the metadata value is 0 -- we don't want the user to replace Ancient Fabric
+    public boolean onBlockActivated(World world, int x, int y, int z, EntityPlayer entityPlayer, int par6, float par7,
+        float par8, float par9) {
+        // Check if the metadata value is 0 -- we don't want the user to replace Ancient Fabric
         if (entityPlayer.getCurrentEquippedItem() != null && world.getBlockMetadata(x, y, z) != 1) {
-            Item playerEquip = entityPlayer.getCurrentEquippedItem().getItem();
+            Item playerEquip = entityPlayer.getCurrentEquippedItem()
+                .getItem();
 
             if (playerEquip instanceof ItemBlock) {
                 // SenseiKiwi: Using getBlockID() rather than the raw itemID is critical.
@@ -126,7 +133,15 @@ public class BlockDimWall extends Block {
                     if (!entityPlayer.capabilities.isCreativeMode) {
                         entityPlayer.getCurrentEquippedItem().stackSize--;
                     }
-                    world.setBlock(x, y, z, block, playerEquipItemBlock.getMetadata(entityPlayer.getCurrentEquippedItem().getItemDamage()), 0);
+                    world.setBlock(
+                        x,
+                        y,
+                        z,
+                        block,
+                        playerEquipItemBlock.getMetadata(
+                            entityPlayer.getCurrentEquippedItem()
+                                .getItemDamage()),
+                        0);
                 }
                 return true;
             }

@@ -1,22 +1,35 @@
 package org.dimdev.dimdoors.core;
 
-import org.dimdev.dimdoors.Point3D;
-import org.dimdev.dimdoors.config.DDProperties;
-import org.dimdev.dimdoors.dungeon.DungeonData;
-import org.dimdev.dimdoors.dungeon.pack.DungeonPack;
-import org.dimdev.dimdoors.DimDoors;
-import org.dimdev.dimdoors.saving.*;
-import org.dimdev.dimdoors.util.Point4D;
-import org.dimdev.dimdoors.watcher.ClientLinkData;
-import org.dimdev.dimdoors.watcher.IUpdateWatcher;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
+import java.util.Stack;
+import java.util.TreeMap;
+
 import net.minecraft.item.ItemStack;
 import net.minecraft.world.ChunkCoordIntPair;
 import net.minecraft.world.World;
 
-import java.util.*;
+import org.dimdev.dimdoors.DimDoors;
+import org.dimdev.dimdoors.Point3D;
+import org.dimdev.dimdoors.config.DDProperties;
+import org.dimdev.dimdoors.dungeon.DungeonData;
+import org.dimdev.dimdoors.dungeon.pack.DungeonPack;
+import org.dimdev.dimdoors.saving.IPackable;
+import org.dimdev.dimdoors.saving.PackedDimData;
+import org.dimdev.dimdoors.saving.PackedDungeonData;
+import org.dimdev.dimdoors.saving.PackedLinkData;
+import org.dimdev.dimdoors.saving.PackedLinkTail;
+import org.dimdev.dimdoors.util.Point4D;
+import org.dimdev.dimdoors.watcher.ClientLinkData;
+import org.dimdev.dimdoors.watcher.IUpdateWatcher;
 
 public abstract class NewDimData implements IPackable<PackedDimData> {
+
     private static class InnerDimLink extends DimLink {
+
         public InnerDimLink(Point4D source, DimLink parent, int orientation, DDLock lock) {
             super(source, orientation, lock, parent);
         }
@@ -34,7 +47,7 @@ public abstract class NewDimData implements IPackable<PackedDimData> {
                 throw new IllegalArgumentException("nextParent cannot be null.");
             }
             if (this == nextParent) {
-                //Ignore this request silently
+                // Ignore this request silently
                 return false;
             }
             if (nextParent.point.getDimension() != point.getDimension()) {
@@ -42,18 +55,18 @@ public abstract class NewDimData implements IPackable<PackedDimData> {
                 throw new IllegalArgumentException("source and parent.source must have the same dimension.");
             }
 
-            //Release children
+            // Release children
             for (DimLink child : children) {
                 child.parent = null;
             }
             children.clear();
 
-            //Release parent
+            // Release parent
             if (parent != null) {
                 parent.children.remove(this);
             }
 
-            //Attach to new parent
+            // Attach to new parent
             parent = nextParent;
             tail = nextParent.tail;
             nextParent.children.add(this);
@@ -62,21 +75,21 @@ public abstract class NewDimData implements IPackable<PackedDimData> {
         }
 
         public void overwrite(LinkType linkType, int orientation) {
-            //Release children
+            // Release children
             for (DimLink child : children) {
                 child.parent = null;
             }
             children.clear();
 
-            //Release parent
+            // Release parent
             if (parent != null) {
                 parent.children.remove(this);
             }
 
-            //Attach to new parent
+            // Attach to new parent
             parent = null;
             tail = new LinkTail(linkType, null);
-            //Set new orientation
+            // Set new orientation
             this.orientation = orientation;
         }
 
@@ -111,7 +124,6 @@ public abstract class NewDimData implements IPackable<PackedDimData> {
 
     }
 
-
     private static final int EXPECTED_LINKS_PER_CHUNK = 2;
     protected static Random random = new Random();
 
@@ -131,18 +143,18 @@ public abstract class NewDimData implements IPackable<PackedDimData> {
     protected boolean modified;
     public IUpdateWatcher<ClientLinkData> linkWatcher;
 
-
     // Don't write this field to a file - it should be recreated on startup
     private final Map<ChunkCoordIntPair, List<InnerDimLink>> chunkMapping;
 
     protected NewDimData(int id, NewDimData parent, DimensionType type, IUpdateWatcher<ClientLinkData> linkWatcher) {
         if (type != DimensionType.ROOT && (parent == null)) {
-            throw new NullPointerException("Dimensions can be pocket dimensions if and only if they have a parent dimension.");
+            throw new NullPointerException(
+                "Dimensions can be pocket dimensions if and only if they have a parent dimension.");
         }
 
         this.id = id;
-        this.linkMapping = new TreeMap<Point4D, InnerDimLink>(); //Should be stored in oct tree -- temporary solution
-        this.linkList = new ArrayList<InnerDimLink>(); //Should be stored in oct tree -- temporary solution
+        this.linkMapping = new TreeMap<Point4D, InnerDimLink>(); // Should be stored in oct tree -- temporary solution
+        this.linkList = new ArrayList<InnerDimLink>(); // Should be stored in oct tree -- temporary solution
         this.children = new ArrayList<NewDimData>();
         this.parent = parent;
         this.packDepth = 0;
@@ -155,9 +167,9 @@ public abstract class NewDimData implements IPackable<PackedDimData> {
         this.chunkMapping = new HashMap<ChunkCoordIntPair, List<InnerDimLink>>();
         this.modified = true;
 
-        //Register with parent
+        // Register with parent
         if (parent != null) {
-            //We don't need to raise an update event for adding a child because the child's creation will be signaled.
+            // We don't need to raise an update event for adding a child because the child's creation will be signaled.
             this.root = parent.root;
             this.depth = parent.depth + 1;
             parent.children.add(this);
@@ -175,8 +187,8 @@ public abstract class NewDimData implements IPackable<PackedDimData> {
         }
 
         this.id = id;
-        this.linkMapping = new TreeMap<Point4D, InnerDimLink>(); //Should be stored in oct tree -- temporary solution
-        this.linkList = new ArrayList<InnerDimLink>(); //Should be stored in oct tree -- temporary solution
+        this.linkMapping = new TreeMap<Point4D, InnerDimLink>(); // Should be stored in oct tree -- temporary solution
+        this.linkList = new ArrayList<InnerDimLink>(); // Should be stored in oct tree -- temporary solution
         this.children = new ArrayList<NewDimData>();
         this.parent = null;
         this.packDepth = 0;
@@ -191,11 +203,11 @@ public abstract class NewDimData implements IPackable<PackedDimData> {
         this.chunkMapping = null;
     }
 
-
     public DimLink findNearestRift(World world, int range, int x, int y, int z) {
         // Sanity check...
         if (world.provider.dimensionId != id) {
-            throw new IllegalArgumentException("Attempted to search for links in a World instance for a different dimension!");
+            throw new IllegalArgumentException(
+                "Attempted to search for links in a World instance for a different dimension!");
         }
 
         // Note: Only detect rifts at a distance > 0, so we ignore the rift
@@ -212,7 +224,8 @@ public abstract class NewDimData implements IPackable<PackedDimData> {
             for (j = -range; j <= range; j++) {
                 for (k = -range; k <= range; k++) {
                     distance = getAbsoluteSum(i, j, k);
-                    if (distance > 0 && distance < minDistance && world.getBlock(x + i, y + j, z + k) == DimDoors.blockRift) {
+                    if (distance > 0 && distance < minDistance
+                        && world.getBlock(x + i, y + j, z + k) == DimDoors.blockRift) {
                         link = getLink(x + i, y + j, z + k);
                         if (link != null) {
                             nearest = link;
@@ -229,7 +242,8 @@ public abstract class NewDimData implements IPackable<PackedDimData> {
     public ArrayList<DimLink> findRiftsInRange(World world, int range, int x, int y, int z) {
         // Sanity check...
         if (world.provider.dimensionId != id) {
-            throw new IllegalArgumentException("Attempted to search for links in a World instance for a different dimension!");
+            throw new IllegalArgumentException(
+                "Attempted to search for links in a World instance for a different dimension!");
         }
 
         // Note: Only detect rifts at a distance > 0, so we ignore the rift
@@ -288,7 +302,7 @@ public abstract class NewDimData implements IPackable<PackedDimData> {
         }
         modified = true;
 
-        //Link created!
+        // Link created!
         if (linkType != LinkType.CLIENT) {
             linkWatcher.onCreated(new ClientLinkData(link));
         }
@@ -312,7 +326,6 @@ public abstract class NewDimData implements IPackable<PackedDimData> {
             linkMapping.put(source, link);
             linkList.add(link);
 
-
             // If this code is running on the server side, add this link to chunkMapping.
             // Granted, the client side code should never create child links anyway...
             if (link.linkType() != LinkType.CLIENT) {
@@ -329,7 +342,7 @@ public abstract class NewDimData implements IPackable<PackedDimData> {
             linkWatcher.onCreated(new ClientLinkData(link));
         } else {
             if (link.overwrite((InnerDimLink) parent, parent.orientation)) {
-                //Link created!
+                // Link created!
                 linkWatcher.onCreated(new ClientLinkData(link));
             }
         }
@@ -338,7 +351,8 @@ public abstract class NewDimData implements IPackable<PackedDimData> {
     }
 
     public boolean deleteLink(DimLink link) {
-        if (link.source().getDimension() != id) {
+        if (link.source()
+            .getDimension() != id) {
             throw new IllegalArgumentException("Attempted to delete a link from another dimension.");
         }
         InnerDimLink target = linkMapping.remove(link.source());
@@ -355,8 +369,7 @@ public abstract class NewDimData implements IPackable<PackedDimData> {
             }
 
             // Raise deletion event
-            if (linkWatcher != null)
-                linkWatcher.onDeleted(new ClientLinkData(link));
+            if (linkWatcher != null) linkWatcher.onDeleted(new ClientLinkData(link));
             target.clear();
             modified = true;
         }
@@ -381,8 +394,7 @@ public abstract class NewDimData implements IPackable<PackedDimData> {
     }
 
     public DimLink getLink(Point4D location) {
-        if (location.getDimension() != id)
-            return null;
+        if (location.getDimension() != id) return null;
 
         return linkMapping.get(location);
     }
@@ -458,7 +470,8 @@ public abstract class NewDimData implements IPackable<PackedDimData> {
         return linkList;
     }
 
-    public void initializeDungeon(int originX, int originY, int originZ, int orientation, DimLink incoming, DungeonData dungeon) {
+    public void initializeDungeon(int originX, int originY, int originZ, int orientation, DimLink incoming,
+        DungeonData dungeon) {
         if (this.type != DimensionType.DUNGEON) {
             throw new IllegalStateException("Cannot invoke initializeDungeon() on a non-dungeon dimension.");
         }
@@ -640,11 +653,16 @@ public abstract class NewDimData implements IPackable<PackedDimData> {
         PackedDungeonData packedDungeon = null;
 
         if (this.dungeon != null) {
-            packedDungeon = new PackedDungeonData(dungeon.weight(), dungeon.isOpen(), dungeon.isInternal(),
-                    dungeon.schematicPath(), dungeon.schematicName(), dungeon.dungeonType().Name,
-                    dungeon.dungeonType().Owner.getName());
+            packedDungeon = new PackedDungeonData(
+                dungeon.weight(),
+                dungeon.isOpen(),
+                dungeon.isInternal(),
+                dungeon.schematicPath(),
+                dungeon.schematicName(),
+                dungeon.dungeonType().Name,
+                dungeon.dungeonType().Owner.getName());
         }
-        //Make a list of children
+        // Make a list of children
         for (NewDimData data : this.children) {
             ChildIDs.add(data.id);
         }
@@ -656,7 +674,9 @@ public abstract class NewDimData implements IPackable<PackedDimData> {
             }
 
             for (DimLink childLink : link.children) {
-                children.add(childLink.source().toPoint3D());
+                children.add(
+                    childLink.source()
+                        .toPoint3D());
             }
             PackedLinkTail tail = new PackedLinkTail(link.tail.getDestination(), link.tail.getLinkType());
             Links.add(new PackedLinkData(link.point, parentPoint, tail, link.orientation, children, link.lock));
@@ -665,7 +685,6 @@ public abstract class NewDimData implements IPackable<PackedDimData> {
             if (Tails.contains(tempTail)) {
                 Tails.add(tempTail);
             }
-
 
         }
         int parentID = this.id;
@@ -676,10 +695,23 @@ public abstract class NewDimData implements IPackable<PackedDimData> {
         if (this.origin != null) {
             originPoint = this.origin.toPoint3D();
         }
-        return new PackedDimData(this.id, depth, this.packDepth, parentID, this.root().id(), orientation,
-                type, isFilled, packedDungeon, originPoint, ChildIDs, Links, Tails);
+        return new PackedDimData(
+            this.id,
+            depth,
+            this.packDepth,
+            parentID,
+            this.root()
+                .id(),
+            orientation,
+            type,
+            isFilled,
+            packedDungeon,
+            originPoint,
+            ChildIDs,
+            Links,
+            Tails);
         // FIXME: IMPLEMENTATION PLZTHX
-        //I tried
+        // I tried
     }
 
     @Override

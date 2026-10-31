@@ -1,23 +1,24 @@
 package org.dimdev.dimdoors.commands;
 
-import org.dimdev.dimdoors.config.DDProperties;
-import org.dimdev.dimdoors.helpers.DungeonHelper;
-import net.minecraft.entity.player.EntityPlayer;
-
 import java.io.File;
 
+import net.minecraft.entity.player.EntityPlayer;
+
+import org.dimdev.dimdoors.config.DDProperties;
+import org.dimdev.dimdoors.helpers.DungeonHelper;
+
 public class CommandExportDungeon extends DDCommandBase {
+
     private static CommandExportDungeon instance = null;
 
     private CommandExportDungeon() {
-        super("dd-export", new String[]{
-                "<dungeon type> <dungeon name> <'open' | 'closed'> [weight]",
-                "<schematic name> override"});
+        super(
+            "dd-export",
+            new String[] { "<dungeon type> <dungeon name> <'open' | 'closed'> [weight]", "<schematic name> override" });
     }
 
     public static CommandExportDungeon instance() {
-        if (instance == null)
-            instance = new CommandExportDungeon();
+        if (instance == null) instance = new CommandExportDungeon();
 
         return instance;
     }
@@ -27,7 +28,6 @@ public class CommandExportDungeon extends DDCommandBase {
         /*
          * There are two versions of this command. One version takes 3 to 4 arguments consisting
          * of the information needed for a proper schematic name.
-         *
          * If the user wishes to name his schematic in a different format, then he will have to use
          * the 2-argument version of this command, which accepts a schematic name and a mandatory
          * override argument.
@@ -42,53 +42,58 @@ public class CommandExportDungeon extends DDCommandBase {
             return DDCommandResult.TOO_MANY_ARGUMENTS;
         }
 
-        //Check if we received the 2-argument version
+        // Check if we received the 2-argument version
         if (command.length == 2) {
             if (command[1].equalsIgnoreCase("override")) {
-                //Check that the schematic name is a legal name
-                if (DungeonHelper.SCHEMATIC_NAME_PATTERN.matcher(command[0]).matches()) {
-                    //Export the schematic
+                // Check that the schematic name is a legal name
+                if (DungeonHelper.SCHEMATIC_NAME_PATTERN.matcher(command[0])
+                    .matches()) {
+                    // Export the schematic
                     return exportDungeon(sender, command[0]);
                 }
-                //The schematic name contains illegal characters. Inform the user.
-                return new DDCommandResult("Error: Invalid schematic name. Please use only letters, numbers, dashes, and underscores.");
+                // The schematic name contains illegal characters. Inform the user.
+                return new DDCommandResult(
+                    "Error: Invalid schematic name. Please use only letters, numbers, dashes, and underscores.");
             }
-            //The command is malformed in some way. Assume that the user meant to use
-            //the 3-argument version and report an error.
+            // The command is malformed in some way. Assume that the user meant to use
+            // the 3-argument version and report an error.
             return DDCommandResult.TOO_FEW_ARGUMENTS;
         }
 
-        //The user must have used the 3-argument version of this command
-        //TODO: This validation should be in DungeonHelper or in another class. We should move it
-        //during the save file format rewrite. ~SenseiKiwi
+        // The user must have used the 3-argument version of this command
+        // TODO: This validation should be in DungeonHelper or in another class. We should move it
+        // during the save file format rewrite. ~SenseiKiwi
 
         if (!dungeonHelper.validateDungeonType(command[0], dungeonHelper.getDungeonPack("ruins"))) {
             return new DDCommandResult("Error: Invalid dungeon type. Please use one of the existing types.");
         }
-        if (!DungeonHelper.DUNGEON_NAME_PATTERN.matcher(command[1]).matches()) {
+        if (!DungeonHelper.DUNGEON_NAME_PATTERN.matcher(command[1])
+            .matches()) {
             return new DDCommandResult("Error: Invalid dungeon name. Please use only letters, numbers, and dashes.");
         }
         if (!command[2].equalsIgnoreCase("open") && !command[2].equalsIgnoreCase("closed")) {
             return new DDCommandResult("Error: Please specify whether the dungeon is 'open' or 'closed'.");
         }
 
-        //If there are no more arguments, export the dungeon.
+        // If there are no more arguments, export the dungeon.
         if (command.length == 3) {
             return exportDungeon(sender, join(command, "_", 0, 3));
         }
 
-        //Validate the weight argument
+        // Validate the weight argument
         try {
             int weight = Integer.parseInt(command[3]);
             if (weight >= DungeonHelper.MIN_DUNGEON_WEIGHT && weight <= DungeonHelper.MAX_DUNGEON_WEIGHT) {
                 return exportDungeon(sender, join(command, "_", 0, 4));
             }
-        } catch (Exception e) {
-        }
+        } catch (Exception e) {}
 
-        //If we've reached this point, then we must have an invalid weight.
-        return new DDCommandResult("Invalid dungeon weight. Please specify a weight between "
-                + DungeonHelper.MIN_DUNGEON_WEIGHT + " and " + DungeonHelper.MAX_DUNGEON_WEIGHT + ", inclusive.");
+        // If we've reached this point, then we must have an invalid weight.
+        return new DDCommandResult(
+            "Invalid dungeon weight. Please specify a weight between " + DungeonHelper.MIN_DUNGEON_WEIGHT
+                + " and "
+                + DungeonHelper.MAX_DUNGEON_WEIGHT
+                + ", inclusive.");
     }
 
     private static DDCommandResult exportDungeon(EntityPlayer player, String name) {
@@ -108,8 +113,8 @@ public class CommandExportDungeon extends DDCommandBase {
     }
 
     private static String join(String[] source, String delimiter, int start, int end) {
-        //TODO: This function should be moved to a helper, but we have several single-function helpers as is.
-        //I find that to be worse than keeping this private. ~SenseiKiwi
+        // TODO: This function should be moved to a helper, but we have several single-function helpers as is.
+        // I find that to be worse than keeping this private. ~SenseiKiwi
 
         int index;
         int length = 0;

@@ -1,14 +1,26 @@
 package org.dimdev.dimdoors.network;
 
+import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.EntityPlayerMP;
+
 import org.dimdev.dimdoors.DimDoors;
-import org.dimdev.dimdoors.network.handlers.*;
-import org.dimdev.dimdoors.network.packets.*;
+import org.dimdev.dimdoors.network.handlers.ClientJoinHandler;
+import org.dimdev.dimdoors.network.handlers.CreateDimensionHandler;
+import org.dimdev.dimdoors.network.handlers.CreateLinkHandler;
+import org.dimdev.dimdoors.network.handlers.DeleteDimensionHandler;
+import org.dimdev.dimdoors.network.handlers.DeleteLinkHandler;
+import org.dimdev.dimdoors.network.handlers.UpdateLinkHandler;
+import org.dimdev.dimdoors.network.packets.ClientJoinPacket;
+import org.dimdev.dimdoors.network.packets.CreateDimensionPacket;
+import org.dimdev.dimdoors.network.packets.CreateLinkPacket;
+import org.dimdev.dimdoors.network.packets.DeleteDimensionPacket;
+import org.dimdev.dimdoors.network.packets.DeleteLinkPacket;
+import org.dimdev.dimdoors.network.packets.UpdateLinkPacket;
+
 import cpw.mods.fml.common.network.simpleimpl.IMessage;
 import cpw.mods.fml.common.network.simpleimpl.SimpleNetworkWrapper;
 import cpw.mods.fml.relauncher.Side;
 import io.netty.channel.ChannelHandler;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.entity.player.EntityPlayerMP;
 
 @ChannelHandler.Sharable
 public class DimDoorsNetwork extends SimpleNetworkWrapper {
@@ -33,7 +45,6 @@ public class DimDoorsNetwork extends SimpleNetworkWrapper {
     }
 
     public static void sendToPlayer(IMessage message, EntityPlayer player) {
-        if (player instanceof EntityPlayerMP)
-            INSTANCE.sendTo(message, (EntityPlayerMP) player);
+        if (player instanceof EntityPlayerMP) INSTANCE.sendTo(message, (EntityPlayerMP) player);
     }
 }

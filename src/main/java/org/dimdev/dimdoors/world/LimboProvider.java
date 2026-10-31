@@ -1,12 +1,5 @@
 package org.dimdev.dimdoors.world;
 
-import org.dimdev.dimdoors.CloudRenderBlank;
-import org.dimdev.dimdoors.config.DDProperties;
-import org.dimdev.dimdoors.DimDoors;
-import org.dimdev.dimdoors.ticking.CustomLimboPopulator;
-import org.dimdev.dimdoors.util.Point4D;
-import cpw.mods.fml.relauncher.Side;
-import cpw.mods.fml.relauncher.SideOnly;
 import net.minecraft.block.Block;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
@@ -20,7 +13,17 @@ import net.minecraft.world.biome.WorldChunkManagerHell;
 import net.minecraft.world.chunk.IChunkProvider;
 import net.minecraftforge.client.IRenderHandler;
 
+import org.dimdev.dimdoors.CloudRenderBlank;
+import org.dimdev.dimdoors.DimDoors;
+import org.dimdev.dimdoors.config.DDProperties;
+import org.dimdev.dimdoors.ticking.CustomLimboPopulator;
+import org.dimdev.dimdoors.util.Point4D;
+
+import cpw.mods.fml.relauncher.Side;
+import cpw.mods.fml.relauncher.SideOnly;
+
 public class LimboProvider extends WorldProvider {
+
     @Override
     public String getDimensionName() {
         return "Limbo";
@@ -63,7 +66,6 @@ public class LimboProvider extends WorldProvider {
         return false;
     }
 
-
     @Override
     public boolean canSnowAt(int x, int y, int z, boolean checkLight) {
         return false;
@@ -75,8 +77,9 @@ public class LimboProvider extends WorldProvider {
 
         for (int steps = 0; steps <= 15; ++steps) {
             float var3 = 1.0F - steps / 15.0F;
-            this.lightBrightnessTable[steps] = ((0.0F + var3) / (var3 * 3.0F + 1.0F) * (1.0F - modifier) + modifier) * 3;
-            //     System.out.println( this.lightBrightnessTable[steps]+"light");
+            this.lightBrightnessTable[steps] = ((0.0F + var3) / (var3 * 3.0F + 1.0F) * (1.0F - modifier) + modifier)
+                * 3;
+            // System.out.println( this.lightBrightnessTable[steps]+"light");
         }
     }
 
@@ -148,7 +151,7 @@ public class LimboProvider extends WorldProvider {
 
     @Override
     public IChunkProvider createChunkGenerator() {
-        //TODO: ...We're passing the LimboGenerator a fixed seed. We should be passing the world seed! @_@ ~SenseiKiwi
+        // TODO: ...We're passing the LimboGenerator a fixed seed. We should be passing the world seed! @_@ ~SenseiKiwi
         return new LimboGenerator(worldObj, 45, spawner, properties);
     }
 
@@ -158,8 +161,10 @@ public class LimboProvider extends WorldProvider {
     }
 
     public static Point4D getLimboSkySpawn(EntityPlayer player, DDProperties properties) {
-        int x = (int) (player.posX) + MathHelper.getRandomIntegerInRange(player.worldObj.rand, -properties.LimboEntryRange, properties.LimboEntryRange);
-        int z = (int) (player.posZ) + MathHelper.getRandomIntegerInRange(player.worldObj.rand, -properties.LimboEntryRange, properties.LimboEntryRange);
+        int x = (int) (player.posX) + MathHelper
+            .getRandomIntegerInRange(player.worldObj.rand, -properties.LimboEntryRange, properties.LimboEntryRange);
+        int z = (int) (player.posZ) + MathHelper
+            .getRandomIntegerInRange(player.worldObj.rand, -properties.LimboEntryRange, properties.LimboEntryRange);
         return new Point4D(x, 700, z, properties.LimboDimensionID);
     }
 

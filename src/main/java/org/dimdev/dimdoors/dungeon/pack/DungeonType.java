@@ -1,6 +1,7 @@
 package org.dimdev.dimdoors.dungeon.pack;
 
 public class DungeonType implements Comparable<DungeonType> {
+
     public static final DungeonType WILDCARD_TYPE = new DungeonType(null, "?", 0);
     public static final DungeonType UNKNOWN_TYPE = new DungeonType(null, "!", -1);
 
@@ -25,11 +26,9 @@ public class DungeonType implements Comparable<DungeonType> {
     }
 
     public boolean equals(DungeonType other) {
-        if (this == other)
-            return true;
+        if (this == other) return true;
 
-        if (this == null || other == null)
-            return false;
+        if (this == null || other == null) return false;
 
         return (this.ID == other.ID);
     }

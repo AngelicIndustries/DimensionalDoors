@@ -1,21 +1,25 @@
 package org.dimdev.dimdoors;
+
 /**
- * Class that contains all the information about a specific dim that is pertienent to Dim Doors. Holds all the rifts present in the dim sorted by x,y,z and
+ * Class that contains all the information about a specific dim that is pertienent to Dim Doors. Holds all the rifts
+ * present in the dim sorted by x,y,z and
  * wether or not the dim is a pocket or not, along with its depth.
  *
  * @Return
  */
 
-import org.dimdev.dimdoors.config.DDProperties;
-import net.minecraft.util.MathHelper;
-import net.minecraft.world.World;
-
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+import net.minecraft.util.MathHelper;
+import net.minecraft.world.World;
+
+import org.dimdev.dimdoors.config.DDProperties;
+
 @Deprecated
 public class DimData implements Serializable {
+
     public int dimID;
     public int depth;
     public int dimOrientation;
@@ -29,7 +33,7 @@ public class DimData implements Serializable {
     public boolean hasDoor = false;
     public boolean isDimRandomRift = false;
     public Object dungeonGenerator = null;
-    //public boolean isPrivatePocket = false;
+    // public boolean isPrivatePocket = false;
     public HashMap<Integer, HashMap<Integer, HashMap<Integer, LinkData>>> linksInThisDim = new HashMap();
     HashMap<Integer, LinkData> dimX;
     HashMap<Integer, HashMap<Integer, LinkData>> dimY;
@@ -59,7 +63,8 @@ public class DimData implements Serializable {
         while (i < range) {
             while (j < range) {
                 while (k < range) {
-                    if (world.getBlock(x + i, y + j, z + k) == DimDoors.blockRift && MathHelper.abs(i) + MathHelper.abs(j) + MathHelper.abs(k) < distance) {
+                    if (world.getBlock(x + i, y + j, z + k) == DimDoors.blockRift
+                        && MathHelper.abs(i) + MathHelper.abs(j) + MathHelper.abs(k) < distance) {
                         if (MathHelper.abs(i) + MathHelper.abs(j) + MathHelper.abs(k) != 0) {
                             nearest = this.findLinkAtCoords(x + i, y + j, z + k);
                             distance = MathHelper.abs(i) + MathHelper.abs(j) + MathHelper.abs(k);
@@ -76,7 +81,6 @@ public class DimData implements Serializable {
             i++;
 
         }
-
 
         return nearest;
 
@@ -113,11 +117,9 @@ public class DimData implements Serializable {
 
         }
 
-
         return rifts;
 
     }
-
 
     public LinkData addLinkToDim(LinkData link) {
         if (this.linksInThisDim.containsKey(link.locZCoord)) {
@@ -137,13 +139,24 @@ public class DimData implements Serializable {
         this.dimY.put(link.locYCoord, dimX);
         this.linksInThisDim.put(link.locZCoord, dimY);
 
-        //System.out.println("added link to dim "+this.dimID);
+        // System.out.println("added link to dim "+this.dimID);
         return link;
 
     }
 
-    public LinkData addLinkToDim(int destinationDimID, int locationXCoord, int locationYCoord, int locationZCoord, int destinationXCoord, int destinationYCoord, int destinationZCoord, int linkOrientation) {
-        LinkData linkData = new LinkData(this.dimID, destinationDimID, locationXCoord, locationYCoord, locationZCoord, destinationXCoord, destinationYCoord, destinationZCoord, this.isPocket, linkOrientation);
+    public LinkData addLinkToDim(int destinationDimID, int locationXCoord, int locationYCoord, int locationZCoord,
+        int destinationXCoord, int destinationYCoord, int destinationZCoord, int linkOrientation) {
+        LinkData linkData = new LinkData(
+            this.dimID,
+            destinationDimID,
+            locationXCoord,
+            locationYCoord,
+            locationZCoord,
+            destinationXCoord,
+            destinationYCoord,
+            destinationZCoord,
+            this.isPocket,
+            linkOrientation);
 
         return this.addLinkToDim(linkData);
     }
@@ -196,8 +209,8 @@ public class DimData implements Serializable {
     }
 
     public ArrayList<LinkData> getLinksInDim() {
-        //TODO: We might want to modify this function, but I'm afraid of breaking something right now.
-        //To begin with, the name is wrong. This doesn't print anything! >_o ~SenseiKiwi
+        // TODO: We might want to modify this function, but I'm afraid of breaking something right now.
+        // To begin with, the name is wrong. This doesn't print anything! >_o ~SenseiKiwi
 
         ArrayList<LinkData> links = new ArrayList<LinkData>();
         if (this.linksInThisDim == null) {

@@ -7,7 +7,7 @@ import org.dimdev.dimdoors.world.LimboDecay;
  */
 public class LimboDecayScheduler implements IRegularTickReceiver {
 
-    private static final int LIMBO_DECAY_INTERVAL = 10; //Apply fast decay every 10 ticks
+    private static final int LIMBO_DECAY_INTERVAL = 10; // Apply fast decay every 10 ticks
 
     private final LimboDecay decay;
 

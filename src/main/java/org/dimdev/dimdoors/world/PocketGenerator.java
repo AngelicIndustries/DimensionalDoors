@@ -1,8 +1,7 @@
 package org.dimdev.dimdoors.world;
 
-import org.dimdev.dimdoors.core.NewDimData;
-import org.dimdev.dimdoors.core.PocketManager;
-import org.dimdev.dimdoors.ticking.CustomLimboPopulator;
+import java.util.List;
+
 import net.minecraft.block.Block;
 import net.minecraft.entity.EnumCreatureType;
 import net.minecraft.world.ChunkPosition;
@@ -11,9 +10,12 @@ import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.chunk.IChunkProvider;
 import net.minecraft.world.gen.ChunkProviderGenerate;
 
-import java.util.List;
+import org.dimdev.dimdoors.core.NewDimData;
+import org.dimdev.dimdoors.core.PocketManager;
+import org.dimdev.dimdoors.ticking.CustomLimboPopulator;
 
 public class PocketGenerator extends ChunkProviderGenerate {
+
     private final World worldObj;
 
     private final CustomLimboPopulator spawner;
@@ -61,8 +63,11 @@ public class PocketGenerator extends ChunkProviderGenerate {
     @Override
     public List getPossibleCreatures(EnumCreatureType var1, int var2, int var3, int var4) {
         NewDimData dimension = PocketManager.createDimensionData(this.worldObj);
-        if (dimension != null && dimension.dungeon() != null && !dimension.dungeon().isOpen()) {
-            return this.worldObj.getBiomeGenForCoords(var2, var3).getSpawnableList(var1);
+        if (dimension != null && dimension.dungeon() != null
+            && !dimension.dungeon()
+                .isOpen()) {
+            return this.worldObj.getBiomeGenForCoords(var2, var3)
+                .getSpawnableList(var1);
         }
         return null;
     }

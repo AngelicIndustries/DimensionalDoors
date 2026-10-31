@@ -1,13 +1,7 @@
 package org.dimdev.dimdoors.items;
 
-import org.dimdev.dimdoors.core.DimLink;
-import org.dimdev.dimdoors.core.NewDimData;
-import org.dimdev.dimdoors.core.PocketManager;
-import org.dimdev.dimdoors.DimDoors;
-import org.dimdev.dimdoors.tileentities.TileEntityRift;
-import cpw.mods.fml.client.FMLClientHandler;
-import cpw.mods.fml.relauncher.Side;
-import cpw.mods.fml.relauncher.SideOnly;
+import java.util.List;
+
 import net.minecraft.block.material.Material;
 import net.minecraft.client.renderer.texture.IIconRegister;
 import net.minecraft.entity.player.EntityPlayer;
@@ -17,9 +11,18 @@ import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.MovingObjectPosition;
 import net.minecraft.world.World;
 
-import java.util.List;
+import org.dimdev.dimdoors.DimDoors;
+import org.dimdev.dimdoors.core.DimLink;
+import org.dimdev.dimdoors.core.NewDimData;
+import org.dimdev.dimdoors.core.PocketManager;
+import org.dimdev.dimdoors.tileentities.TileEntityRift;
+
+import cpw.mods.fml.client.FMLClientHandler;
+import cpw.mods.fml.relauncher.Side;
+import cpw.mods.fml.relauncher.SideOnly;
 
 public class itemRiftRemover extends Item {
+
     public itemRiftRemover(Material par2Material) {
         super();
         this.setMaxStackSize(1);
@@ -29,7 +32,10 @@ public class itemRiftRemover extends Item {
 
     @Override
     public void registerIcons(IIconRegister par1IconRegister) {
-        this.itemIcon = par1IconRegister.registerIcon(DimDoors.modid + ":" + this.getUnlocalizedName().replace("item.", ""));
+        this.itemIcon = par1IconRegister.registerIcon(
+            DimDoors.modid + ":"
+                + this.getUnlocalizedName()
+                    .replace("item.", ""));
     }
 
     @Override
@@ -50,18 +56,20 @@ public class itemRiftRemover extends Item {
             int hz = hit.blockZ;
             NewDimData dimension = PocketManager.createDimensionData(world);
             DimLink link = dimension.getLink(hx, hy, hz);
-            if (world.getBlock(hx, hy, hz) == DimDoors.blockRift && link != null &&
-                    player.canPlayerEdit(hx, hy, hz, hit.sideHit, stack)) {
+            if (world.getBlock(hx, hy, hz) == DimDoors.blockRift && link != null
+                && player.canPlayerEdit(hx, hy, hz, hit.sideHit, stack)) {
                 // Invoke onPlayerRightClick()
-                FMLClientHandler.instance().getClient().playerController.onPlayerRightClick(
-                        player, world, stack, hx, hy, hz, hit.sideHit, hit.hitVec);
+                FMLClientHandler.instance()
+                    .getClient().playerController
+                        .onPlayerRightClick(player, world, stack, hx, hy, hz, hit.sideHit, hit.hitVec);
             }
         }
         return stack;
     }
 
     @Override
-    public boolean onItemUseFirst(ItemStack stack, EntityPlayer player, World world, int x, int y, int z, int side, float hitX, float hitY, float hitZ) {
+    public boolean onItemUseFirst(ItemStack stack, EntityPlayer player, World world, int x, int y, int z, int side,
+        float hitX, float hitY, float hitZ) {
 
         // We want to use onItemUseFirst() here so that this code will run on the server side,
         // so we don't need the client to send link-related updates to the server. Still,
@@ -78,8 +86,8 @@ public class itemRiftRemover extends Item {
 
             NewDimData dimension = PocketManager.createDimensionData(world);
             DimLink link = dimension.getLink(x, y, z);
-            if (world.getBlock(x, y, z) == DimDoors.blockRift && link != null &&
-                    player.canPlayerEdit(x, y, z, side, stack)) {
+            if (world.getBlock(x, y, z) == DimDoors.blockRift && link != null
+                && player.canPlayerEdit(x, y, z, side, stack)) {
                 // Tell the rift's tile entity to do its removal animation
                 TileEntity tileEntity = world.getTileEntity(x, y, z);
                 if (tileEntity != null && tileEntity instanceof TileEntityRift) {
@@ -108,7 +116,7 @@ public class itemRiftRemover extends Item {
     /**
      * allows items to add custom lines of information to the mouseover description
      */
-    @SuppressWarnings({"unchecked", "rawtypes"})
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     @SideOnly(Side.CLIENT)
     @Override
     public void addInformation(ItemStack par1ItemStack, EntityPlayer par2EntityPlayer, List par3List, boolean par4) {

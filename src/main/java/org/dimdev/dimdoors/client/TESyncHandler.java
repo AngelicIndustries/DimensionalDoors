@@ -1,6 +1,7 @@
 package org.dimdev.dimdoors.client;
 
 public class TESyncHandler {
+
     public void onServerChanges() {
 
     }

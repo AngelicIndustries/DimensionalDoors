@@ -1,9 +1,7 @@
 package org.dimdev.dimdoors.blocks;
 
-import org.dimdev.dimdoors.DimDoors;
-import org.dimdev.dimdoors.world.LimboDecay;
-import cpw.mods.fml.relauncher.Side;
-import cpw.mods.fml.relauncher.SideOnly;
+import java.util.Random;
+
 import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
 import net.minecraft.client.renderer.texture.IIconRegister;
@@ -11,9 +9,14 @@ import net.minecraft.util.IIcon;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
 
-import java.util.Random;
+import org.dimdev.dimdoors.DimDoors;
+import org.dimdev.dimdoors.world.LimboDecay;
+
+import cpw.mods.fml.relauncher.Side;
+import cpw.mods.fml.relauncher.SideOnly;
 
 public class BlockLimbo extends Block {
+
     private final int limboDimensionID;
     private final LimboDecay decay;
 
@@ -49,7 +52,7 @@ public class BlockLimbo extends Block {
      */
     @Override
     public void updateTick(World world, int x, int y, int z, Random random) {
-        //Make sure this block is in Limbo
+        // Make sure this block is in Limbo
         if (world.provider.dimensionId == limboDimensionID) {
             decay.applySpreadDecay(world, x, y, z);
         }

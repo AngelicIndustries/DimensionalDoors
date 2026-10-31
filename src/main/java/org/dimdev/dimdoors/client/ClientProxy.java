@@ -1,5 +1,11 @@
 package org.dimdev.dimdoors.client;
 
+import net.minecraft.client.Minecraft;
+import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.tileentity.TileEntity;
+import net.minecraft.world.World;
+import net.minecraftforge.common.MinecraftForge;
+
 import org.dimdev.dimdoors.CommonProxy;
 import org.dimdev.dimdoors.blocks.BaseDimDoor;
 import org.dimdev.dimdoors.config.DDProperties;
@@ -8,25 +14,20 @@ import org.dimdev.dimdoors.core.PocketManager;
 import org.dimdev.dimdoors.ticking.MobMonolith;
 import org.dimdev.dimdoors.tileentities.TileEntityDimDoor;
 import org.dimdev.dimdoors.tileentities.TileEntityTransTrapdoor;
+
 import cpw.mods.fml.client.registry.ClientRegistry;
 import cpw.mods.fml.client.registry.RenderingRegistry;
 import cpw.mods.fml.common.network.simpleimpl.MessageContext;
-import net.minecraft.client.Minecraft;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.tileentity.TileEntity;
-import net.minecraft.world.World;
-import net.minecraftforge.common.MinecraftForge;
-
 
 public class ClientProxy extends CommonProxy {
 
     @Override
     public void registerRenderers() {
-        //MinecraftForgeClient.preloadTexture(BLOCK_PNG);
+        // MinecraftForgeClient.preloadTexture(BLOCK_PNG);
         ClientRegistry.bindTileEntitySpecialRenderer(TileEntityDimDoor.class, new RenderDimDoor());
         ClientRegistry.bindTileEntitySpecialRenderer(TileEntityTransTrapdoor.class, new RenderTransTrapdoor());
 
-        //MinecraftForgeClient.preloadTexture(RIFT2_PNG);
+        // MinecraftForgeClient.preloadTexture(RIFT2_PNG);
         RenderingRegistry.registerEntityRenderingHandler(MobMonolith.class, new RenderMobObelisk(.5F));
         RenderingRegistry.registerBlockHandler(new PrivatePocketRender(RenderingRegistry.getNextAvailableRenderId()));
 
@@ -46,16 +47,17 @@ public class ClientProxy extends CommonProxy {
     }
 
     @Override
-    public void printStringClient(String string) {
-    }
+    public void printStringClient(String string) {}
 
     @Override
     public void registerSidedHooks(DDProperties properties) {
         ClientOnlyHooks hooks = new ClientOnlyHooks(properties);
         MinecraftForge.EVENT_BUS.register(hooks);
         MinecraftForge.TERRAIN_GEN_BUS.register(hooks);
-        PocketManager.getDimwatcher().registerReceiver(new PocketManager.ClientDimWatcher());
-        PocketManager.getLinkWatcher().registerReceiver(new PocketManager.ClientLinkWatcher());
+        PocketManager.getDimwatcher()
+            .registerReceiver(new PocketManager.ClientDimWatcher());
+        PocketManager.getLinkWatcher()
+            .registerReceiver(new PocketManager.ClientLinkWatcher());
     }
 
     @Override

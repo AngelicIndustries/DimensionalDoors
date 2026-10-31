@@ -1,6 +1,6 @@
 package org.dimdev.dimdoors.util;
 
-import com.google.gson.*;
+import static java.util.Collections.singleton;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -8,7 +8,11 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import static java.util.Collections.singleton;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParseException;
+import com.google.gson.JsonPrimitive;
 
 public class JSONValidator {
 
@@ -26,7 +30,6 @@ public class JSONValidator {
     static final public String ENUM = "enum";
     static final public String REQUIRED = "required";
 
-
     JsonObject schema;
 
     public JsonObject getSchema() {
@@ -38,6 +41,7 @@ public class JSONValidator {
     }
 
     static class WrongType extends JsonParseException {
+
         /**
          *
          */
@@ -59,12 +63,26 @@ public class JSONValidator {
                 }
             }
 
-            return new WrongType("Invalid: Expected type " + typeList + " at '" + path + "', but " + "found type '" + found.getTypeString() + "'");
+            return new WrongType(
+                "Invalid: Expected type " + typeList
+                    + " at '"
+                    + path
+                    + "', but "
+                    + "found type '"
+                    + found.getTypeString()
+                    + "'");
         }
     }
 
     enum Type {
-        STRING("string"), NUMBER("number"), INTEGER("integer"), BOOLEAN("boolean"), OBJECT("object"), ARRAY("array"), NULL("null");
+
+        STRING("string"),
+        NUMBER("number"),
+        INTEGER("integer"),
+        BOOLEAN("boolean"),
+        OBJECT("object"),
+        ARRAY("array"),
+        NULL("null");
 
         String typeString;
 
@@ -91,7 +109,8 @@ public class JSONValidator {
 
     static Set<Type> getSimpleType(String path, String type) {
         for (Type t : Type.values()) {
-            if (t.getTypeString().equals(type)) {
+            if (t.getTypeString()
+                .equals(type)) {
                 if (t != Type.NUMBER) {
                     return singleton(t);
                 } else {
@@ -210,7 +229,8 @@ public class JSONValidator {
 
             if (newTarget == null) {
                 JsonPrimitive optional = definition.getAsJsonPrimitive(OPTIONAL);
-                boolean needed = ((optional == null) && requiredFields.contains(name)) || (optional != null && !optional.getAsBoolean());
+                boolean needed = ((optional == null) && requiredFields.contains(name))
+                    || (optional != null && !optional.getAsBoolean());
 
                 if (needed) {
                     throw new JsonParseException("Invalid: Required property '" + newPath + "' not found");
@@ -258,11 +278,13 @@ public class JSONValidator {
         }
 
         if (!attributeElement.isJsonPrimitive()) {
-            throw new JsonParseException("Bad Schema: '" + attributeName + "' attribute is not an integer at '" + path + "'");
+            throw new JsonParseException(
+                "Bad Schema: '" + attributeName + "' attribute is not an integer at '" + path + "'");
         }
         JsonPrimitive attributePrimitive = attributeElement.getAsJsonPrimitive();
         if (!attributePrimitive.isNumber()) {
-            throw new JsonParseException("Bad Schema: '" + attributeName + "' attribute is not an integer at '" + path + "'");
+            throw new JsonParseException(
+                "Bad Schema: '" + attributeName + "' attribute is not an integer at '" + path + "'");
         }
 
         return attributePrimitive.getAsInt();
@@ -276,11 +298,13 @@ public class JSONValidator {
         }
 
         if (!attributeElement.isJsonPrimitive()) {
-            throw new JsonParseException("Bad Schema: '" + attributeName + "' attribute is not a string at '" + path + "'");
+            throw new JsonParseException(
+                "Bad Schema: '" + attributeName + "' attribute is not a string at '" + path + "'");
         }
         JsonPrimitive attributePrimitive = attributeElement.getAsJsonPrimitive();
         if (!attributePrimitive.isString()) {
-            throw new JsonParseException("Bad Schema: '" + attributeName + "' attribute is not a string at '" + path + "'");
+            throw new JsonParseException(
+                "Bad Schema: '" + attributeName + "' attribute is not a string at '" + path + "'");
         }
 
         return attributePrimitive.getAsString();
@@ -294,11 +318,13 @@ public class JSONValidator {
         }
 
         if (!attributeElement.isJsonPrimitive()) {
-            throw new JsonParseException("Bad Schema: '" + attributeName + "' attribute is not a number at '" + path + "'");
+            throw new JsonParseException(
+                "Bad Schema: '" + attributeName + "' attribute is not a number at '" + path + "'");
         }
         JsonPrimitive attributePrimitive = attributeElement.getAsJsonPrimitive();
         if (!attributePrimitive.isNumber()) {
-            throw new JsonParseException("Bad Schema: '" + attributeName + "' attribute is not a number at '" + path + "'");
+            throw new JsonParseException(
+                "Bad Schema: '" + attributeName + "' attribute is not a number at '" + path + "'");
         }
 
         return attributePrimitive.getAsBigDecimal();
@@ -309,11 +335,19 @@ public class JSONValidator {
         Integer maxLength = getInt(path, MAX_LENGTH, schema);
 
         if ((minLength != null) && (str.length() < minLength)) {
-            throw new JsonParseException("Invalid: String '" + path + "' is too short.  The string needs to be more than " + minLength + " characters");
+            throw new JsonParseException(
+                "Invalid: String '" + path
+                    + "' is too short.  The string needs to be more than "
+                    + minLength
+                    + " characters");
         }
 
         if ((maxLength != null) && (str.length() > maxLength)) {
-            throw new JsonParseException("Invalid: String '" + path + "' is too long.  The string needs to be less than " + maxLength + " characters");
+            throw new JsonParseException(
+                "Invalid: String '" + path
+                    + "' is too long.  The string needs to be less than "
+                    + maxLength
+                    + " characters");
         }
 
         String pattern = getString(path, PATTERN, schema);
@@ -322,8 +356,8 @@ public class JSONValidator {
         }
     }
 
-    static void validateTuple(String path, JsonArray tupleSchema, JsonObject additionalSchema, JsonArray array) throws JsonParseException {
-    }
+    static void validateTuple(String path, JsonArray tupleSchema, JsonObject additionalSchema, JsonArray array)
+        throws JsonParseException {}
 
     static void validateArray(String path, JsonObject schema, JsonArray array) throws JsonParseException {
         JsonElement additionalProperties = schema.get(ADDITIONAL_PROPERTIES);
@@ -368,8 +402,7 @@ public class JSONValidator {
             return;
         }
 
-        if (!enumElement.isJsonArray()) {
-        }
+        if (!enumElement.isJsonArray()) {}
 
         JsonArray enumArray = enumElement.getAsJsonArray();
 
@@ -387,7 +420,12 @@ public class JSONValidator {
         BigDecimal minimum = getBigDecimal(path, MINIMUM, schema);
         if (minimum != null) {
             if (number.compareTo(minimum) < 0) {
-                throw new JsonParseException("Invalid: Property '" + path + "' has a value of '" + number + "' which is less than the minimum of '" + minimum
+                throw new JsonParseException(
+                    "Invalid: Property '" + path
+                        + "' has a value of '"
+                        + number
+                        + "' which is less than the minimum of '"
+                        + minimum
                         + "'.");
             }
         }
@@ -395,8 +433,13 @@ public class JSONValidator {
         BigDecimal maximum = getBigDecimal(path, MAXIMUM, schema);
         if (maximum != null) {
             if (number.compareTo(maximum) > 0) {
-                throw new JsonParseException("Invalid: Property '" + path + "' has a value of '" + number + "' which is greater than the maximum of '"
-                        + maximum + "'.");
+                throw new JsonParseException(
+                    "Invalid: Property '" + path
+                        + "' has a value of '"
+                        + number
+                        + "' which is greater than the maximum of '"
+                        + maximum
+                        + "'.");
             }
         }
     }

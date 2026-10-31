@@ -1,19 +1,21 @@
 package org.dimdev.dimdoors.commands;
 
+import java.util.Collection;
+
+import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.util.MathHelper;
+
+import org.dimdev.dimdoors.DimDoors;
 import org.dimdev.dimdoors.core.DimLink;
 import org.dimdev.dimdoors.core.LinkType;
 import org.dimdev.dimdoors.core.NewDimData;
 import org.dimdev.dimdoors.core.PocketManager;
 import org.dimdev.dimdoors.dungeon.DungeonData;
 import org.dimdev.dimdoors.helpers.DungeonHelper;
-import org.dimdev.dimdoors.DimDoors;
 import org.dimdev.dimdoors.world.PocketBuilder;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.util.MathHelper;
-
-import java.util.Collection;
 
 public class CommandCreateDungeonRift extends DDCommandBase {
+
     private static CommandCreateDungeonRift instance = null;
 
     private CommandCreateDungeonRift() {
@@ -21,8 +23,7 @@ public class CommandCreateDungeonRift extends DDCommandBase {
     }
 
     public static CommandCreateDungeonRift instance() {
-        if (instance == null)
-            instance = new CommandCreateDungeonRift();
+        if (instance == null) instance = new CommandCreateDungeonRift();
 
         return instance;
     }
@@ -59,30 +60,38 @@ public class CommandCreateDungeonRift extends DDCommandBase {
             if (PocketBuilder.generateSelectedDungeonPocket(link, DimDoors.properties, result)) {
                 // Create a rift to our selected dungeon and notify the player
                 sender.worldObj.setBlock(x, y + 1, z, DimDoors.blockRift, 0, 3);
-                sendChat(sender, "Created a rift to \"" + result.schematicName() + "\" dungeon (Dimension ID = " + link.destination().getDimension() + ").");
+                sendChat(
+                    sender,
+                    "Created a rift to \"" + result.schematicName()
+                        + "\" dungeon (Dimension ID = "
+                        + link.destination()
+                            .getDimension()
+                        + ").");
             } else {
                 // Dungeon generation failed somehow. Notify the user and remove the useless link.
                 dimension.deleteLink(link);
                 sendChat(sender, "Dungeon generation failed unexpectedly!");
             }
         } else {
-            //No matches!
-            return new DDCommandResult("Error: The specified dungeon was not found. Use 'dd-list' to see a list of the available dungeons.");
+            // No matches!
+            return new DDCommandResult(
+                "Error: The specified dungeon was not found. Use 'dd-list' to see a list of the available dungeons.");
         }
         return DDCommandResult.SUCCESS;
     }
 
     private static DungeonData findDungeonByPartialName(String query, Collection<DungeonData> dungeons) {
-        //Search for the shortest dungeon name that contains the lowercase query string.
+        // Search for the shortest dungeon name that contains the lowercase query string.
         String dungeonName;
         String normalQuery = query.toLowerCase();
         DungeonData bestMatch = null;
         int matchLength = Integer.MAX_VALUE;
 
         for (DungeonData dungeon : dungeons) {
-            //We need to extract the file's name. Comparing against schematicPath could
-            //yield false matches if the query string is contained within the path.
-            dungeonName = dungeon.schematicName().toLowerCase();
+            // We need to extract the file's name. Comparing against schematicPath could
+            // yield false matches if the query string is contained within the path.
+            dungeonName = dungeon.schematicName()
+                .toLowerCase();
             if (dungeonName.length() < matchLength && dungeonName.contains(normalQuery)) {
                 matchLength = dungeonName.length();
                 bestMatch = dungeon;

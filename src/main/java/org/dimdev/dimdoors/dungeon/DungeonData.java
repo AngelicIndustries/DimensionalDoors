@@ -1,12 +1,13 @@
 package org.dimdev.dimdoors.dungeon;
 
+import java.io.FileNotFoundException;
+
 import org.dimdev.dimdoors.dungeon.pack.DungeonType;
 import org.dimdev.dimdoors.helpers.DungeonHelper;
 import org.dimdev.dimdoors.schematic.InvalidSchematicException;
 
-import java.io.FileNotFoundException;
-
 public class DungeonData {
+
     private final int weight;
     private final boolean isOpen;
     private final boolean isInternal;
@@ -28,7 +29,8 @@ public class DungeonData {
         int indexB = schematicPath.lastIndexOf('/');
         indexA = Math.max(indexA, indexB) + 1;
 
-        return schematicPath.substring(indexA, schematicPath.length() - DungeonHelper.SCHEMATIC_FILE_EXTENSION.length());
+        return schematicPath
+            .substring(indexA, schematicPath.length() - DungeonHelper.SCHEMATIC_FILE_EXTENSION.length());
     }
 
     public int weight() {

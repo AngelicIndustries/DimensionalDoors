@@ -1,12 +1,18 @@
 package org.dimdev.dimdoors.commands;
 
-import org.dimdev.dimdoors.core.*;
-import net.minecraft.entity.player.EntityPlayer;
-
 import java.util.ArrayList;
 import java.util.HashSet;
 
+import net.minecraft.entity.player.EntityPlayer;
+
+import org.dimdev.dimdoors.core.DimLink;
+import org.dimdev.dimdoors.core.DimensionType;
+import org.dimdev.dimdoors.core.LinkType;
+import org.dimdev.dimdoors.core.NewDimData;
+import org.dimdev.dimdoors.core.PocketManager;
+
 public class CommandResetDungeons extends DDCommandBase {
+
     private static CommandResetDungeons instance = null;
 
     private CommandResetDungeons() {
@@ -14,8 +20,7 @@ public class CommandResetDungeons extends DDCommandBase {
     }
 
     public static CommandResetDungeons instance() {
-        if (instance == null)
-            instance = new CommandResetDungeons();
+        if (instance == null) instance = new CommandResetDungeons();
 
         return instance;
     }
@@ -68,7 +73,9 @@ public class CommandResetDungeons extends DDCommandBase {
 
             // Links to any deleted dungeons must be replaced
             for (DimLink link : dungeon.links()) {
-                if (link.hasDestination() && deletedDimensions.contains(link.destination().getDimension())) {
+                if (link.hasDestination() && deletedDimensions.contains(
+                    link.destination()
+                        .getDimension())) {
 
                     if (link.linkType() == LinkType.DUNGEON) {
                         dungeon.createLink(link.source(), LinkType.DUNGEON, link.orientation(), null);

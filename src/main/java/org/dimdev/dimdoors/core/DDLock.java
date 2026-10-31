@@ -1,13 +1,14 @@
 package org.dimdev.dimdoors.core;
 
-import org.dimdev.dimdoors.items.ItemDDKey;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 
+import org.dimdev.dimdoors.items.ItemDDKey;
+
 public class DDLock {
+
     private boolean lockState;
     private final int lockKey;
-
 
     public DDLock(boolean isLocked, int lockKey) {
         this.lockState = isLocked;
@@ -37,7 +38,6 @@ public class DDLock {
         this.lockState = flag;
     }
 
-
     /**
      * see if we could unlock this door if it where locked.
      *
@@ -66,6 +66,7 @@ public class DDLock {
 
     /**
      * sets the key/s to the given key/s
+     * 
      * @return
      * @return
      */
@@ -79,7 +80,8 @@ public class DDLock {
         if (!itemStack.hasTagCompound()) {
             initNBTTags(itemStack);
         }
-        return itemStack.getTagCompound().getIntArray("DDKeys");
+        return itemStack.getTagCompound()
+            .getIntArray("DDKeys");
     }
 
     /**
@@ -95,7 +97,6 @@ public class DDLock {
         System.arraycopy(keysToAdd, 0, newKeys, oldKeys.length, keysToAdd.length);
         setKeys(itemStack, newKeys);
     }
-
 
     /**
      * sets the key/s to the given key/s
@@ -128,7 +129,8 @@ public class DDLock {
     public static boolean hasCreatedLock(ItemStack key) {
         if (isItemKey(key)) {
             if (key.hasTagCompound()) {
-                return key.getTagCompound().getBoolean("HasCreatedLock");
+                return key.getTagCompound()
+                    .getBoolean("HasCreatedLock");
             }
             initNBTTags(key);
         }
@@ -139,12 +141,11 @@ public class DDLock {
         return key.getItem() instanceof ItemDDKey;
     }
 
-
     protected static DDLock generateLockKeyPair(ItemStack itemStack, int lockKey2) {
-        itemStack.getTagCompound().setBoolean("HasCreatedLock", true);
-        DDLock.setKeys(itemStack, new int[]{lockKey2});
+        itemStack.getTagCompound()
+            .setBoolean("HasCreatedLock", true);
+        DDLock.setKeys(itemStack, new int[] { lockKey2 });
         return new DDLock(true, lockKey2);
-
 
     }
 

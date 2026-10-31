@@ -1,16 +1,18 @@
 package org.dimdev.dimdoors.commands;
 
-import org.dimdev.dimdoors.core.DimLink;
-import org.dimdev.dimdoors.core.NewDimData;
-import org.dimdev.dimdoors.core.PocketManager;
-import org.dimdev.dimdoors.DimDoors;
-import org.dimdev.dimdoors.util.Point4D;
+import java.util.ArrayList;
+
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.world.World;
 
-import java.util.ArrayList;
+import org.dimdev.dimdoors.DimDoors;
+import org.dimdev.dimdoors.core.DimLink;
+import org.dimdev.dimdoors.core.NewDimData;
+import org.dimdev.dimdoors.core.PocketManager;
+import org.dimdev.dimdoors.util.Point4D;
 
 public class CommandDeleteRifts extends DDCommandBase {
+
     private static CommandDeleteRifts instance = null;
 
     private CommandDeleteRifts() {
@@ -18,8 +20,7 @@ public class CommandDeleteRifts extends DDCommandBase {
     }
 
     public static CommandDeleteRifts instance() {
-        if (instance == null)
-            instance = new CommandDeleteRifts();
+        if (instance == null) instance = new CommandDeleteRifts();
 
         return instance;
     }

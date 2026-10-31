@@ -1,18 +1,8 @@
 package org.dimdev.dimdoors.core;
 
-import org.dimdev.dimdoors.Point3D;
-import org.dimdev.dimdoors.blocks.BaseDimDoor;
-import org.dimdev.dimdoors.blocks.IDimDoor;
-import org.dimdev.dimdoors.config.DDProperties;
-import org.dimdev.dimdoors.helpers.yCoordHelper;
-import org.dimdev.dimdoors.DimDoors;
-import org.dimdev.dimdoors.schematic.BlockRotator;
-import org.dimdev.dimdoors.tileentities.TileEntityDimDoor;
-import org.dimdev.dimdoors.util.Point4D;
-import org.dimdev.dimdoors.watcher.ClientDimData;
-import org.dimdev.dimdoors.world.LimboProvider;
-import org.dimdev.dimdoors.world.PocketBuilder;
-import cpw.mods.fml.common.FMLCommonHandler;
+import java.util.ArrayList;
+import java.util.Random;
+
 import net.minecraft.block.Block;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityList;
@@ -32,16 +22,30 @@ import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
 import net.minecraftforge.common.DimensionManager;
 
-import java.util.ArrayList;
-import java.util.Random;
+import org.dimdev.dimdoors.DimDoors;
+import org.dimdev.dimdoors.Point3D;
+import org.dimdev.dimdoors.blocks.BaseDimDoor;
+import org.dimdev.dimdoors.blocks.IDimDoor;
+import org.dimdev.dimdoors.config.DDProperties;
+import org.dimdev.dimdoors.helpers.yCoordHelper;
+import org.dimdev.dimdoors.schematic.BlockRotator;
+import org.dimdev.dimdoors.tileentities.TileEntityDimDoor;
+import org.dimdev.dimdoors.util.Point4D;
+import org.dimdev.dimdoors.watcher.ClientDimData;
+import org.dimdev.dimdoors.world.LimboProvider;
+import org.dimdev.dimdoors.world.PocketBuilder;
+
+import cpw.mods.fml.common.FMLCommonHandler;
 
 public class DDTeleporter {
+
     private static final Random random = new Random();
     private static final int NETHER_DIMENSION_ID = -1;
     private static final int OVERWORLD_DIMENSION_ID = 0;
     private static final int END_DIMENSION_ID = 1;
     private static final int MAX_NETHER_EXIT_CHANCE = 100;
-    private static final int NETHER_EXIT_CHANCE = 20; //20% chance to compensate for frequent exit failures - the Nether often doesn't have enough space for an exit
+    private static final int NETHER_EXIT_CHANCE = 20; // 20% chance to compensate for frequent exit failures - the
+                                                      // Nether often doesn't have enough space for an exit
     private static final int MAX_OVERWORLD_EXIT_CHANCE = 100;
     private static final int OVERWORLD_EXIT_CHANCE = 15;
     private static final int MAX_ROOT_SHIFT_CHANCE = 100;
@@ -51,8 +55,7 @@ public class DDTeleporter {
 
     public static int cooldown = 0;
 
-    private DDTeleporter() {
-    }
+    private DDTeleporter() {}
 
     /**
      * Checks if the destination supplied is safe (i.e. filled by any replaceable or non-opaque blocks)
@@ -86,7 +89,8 @@ public class DDTeleporter {
         blockTop = world.getBlock(point.getX(), point.getY() + 1, point.getZ());
 
         if (blockBottom != null) {
-            if (!blockBottom.isReplaceable(world, point.getX(), point.getY(), point.getZ()) && world.isBlockNormalCubeDefault(point.getX(), point.getY(), point.getZ(), false)) {
+            if (!blockBottom.isReplaceable(world, point.getX(), point.getY(), point.getZ())
+                && world.isBlockNormalCubeDefault(point.getX(), point.getY(), point.getZ(), false)) {
                 return false;
             }
         }
@@ -96,7 +100,8 @@ public class DDTeleporter {
         return true;
     }
 
-    private static void placeInPortal(Entity entity, WorldServer world, Point4D destination, DDProperties properties, boolean checkOrientation) {
+    private static void placeInPortal(Entity entity, WorldServer world, Point4D destination, DDProperties properties,
+        boolean checkOrientation) {
         int x = destination.getX();
         int y = destination.getY();
         int z = destination.getZ();
@@ -197,15 +202,15 @@ public class DDTeleporter {
             throw new IllegalStateException("The destination world should be loaded!");
         }
 
-        //Check if the block below that point is actually a door
+        // Check if the block below that point is actually a door
         Block block = world.getBlock(door.getX(), door.getY() - 1, door.getZ());
         if (block == null || !(block instanceof IDimDoor)) {
-            //Return the pocket's orientation instead
-            return PocketManager.createDimensionData(world).orientation();
+            // Return the pocket's orientation instead
+            return PocketManager.createDimensionData(world)
+                .orientation();
         }
 
-
-        //Return the orientation portion of its metadata
+        // Return the orientation portion of its metadata
         return world.getBlockMetadata(door.getX(), door.getY() - 1, door.getZ()) & 3;
     }
 
@@ -216,7 +221,7 @@ public class DDTeleporter {
         if (destination == null) {
             throw new IllegalArgumentException("destination cannot be null.");
         }
-        //This beautiful teleport method is based off of xCompWiz's teleport function.
+        // This beautiful teleport method is based off of xCompWiz's teleport function.
 
         WorldServer oldWorld = (WorldServer) entity.worldObj;
         WorldServer newWorld;
@@ -245,7 +250,6 @@ public class DDTeleporter {
             newWorld = oldWorld;
         }
 
-
         // GreyMaria: What is this even accomplishing? We're doing the exact same thing at the end of this all.
         // TODO Check to see if this is actually vital.
         DDTeleporter.placeInPortal(entity, newWorld, destination, properties, checkOrientation);
@@ -255,49 +259,64 @@ public class DDTeleporter {
             if (player != null) // Are we working with a player?
             {
                 // We need to do all this special stuff to move a player between dimensions.
-                //Give the client the dimensionData for the destination
+                // Give the client the dimensionData for the destination
 
                 // FIXME: This violates the way we assume PocketManager works. DimWatcher should not be exposed
                 // to prevent us from doing bad things. Moreover, no dimension is being created, so if we ever
                 // tie code to that, it could cause confusing bugs.
                 // No hacky for you! ~SenseiKiwi
-                PocketManager.getDimwatcher().onCreated(new ClientDimData(PocketManager.createDimensionData(newWorld)));
+                PocketManager.getDimwatcher()
+                    .onCreated(new ClientDimData(PocketManager.createDimensionData(newWorld)));
 
                 // Set the new dimension and inform the client that it's moving to a new world.
                 player.dimension = destination.getDimension();
-                player.playerNetServerHandler.sendPacket(new S07PacketRespawn(player.dimension, player.worldObj.difficultySetting, newWorld.getWorldInfo().getTerrainType(), player.theItemInWorldManager.getGameType()));
+                player.playerNetServerHandler.sendPacket(
+                    new S07PacketRespawn(
+                        player.dimension,
+                        player.worldObj.difficultySetting,
+                        newWorld.getWorldInfo()
+                            .getTerrainType(),
+                        player.theItemInWorldManager.getGameType()));
 
                 // GreyMaria: Used the safe player entity remover before.
                 // This should fix an apparently unreported bug where
                 // the last non-sleeping player leaves the Overworld
                 // for a pocket dimension, causing all sleeping players
                 // to remain asleep instead of progressing to day.
-                ((WorldServer) entity.worldObj).getPlayerManager().removePlayer(player);
+                ((WorldServer) entity.worldObj).getPlayerManager()
+                    .removePlayer(player);
                 oldWorld.removePlayerEntityDangerously(player);
                 player.isDead = false;
 
                 // Creates sanity by ensuring that we're only known to exist where we're supposed to be known to exist.
-                oldWorld.getPlayerManager().removePlayer(player);
-                newWorld.getPlayerManager().addPlayer(player);
+                oldWorld.getPlayerManager()
+                    .removePlayer(player);
+                newWorld.getPlayerManager()
+                    .addPlayer(player);
 
                 player.theItemInWorldManager.setWorld(newWorld);
 
                 // Synchronize with the server so the client knows what time it is and what it's holding.
-                player.mcServer.getConfigurationManager().updateTimeAndWeatherForPlayer(player, newWorld);
-                player.mcServer.getConfigurationManager().syncPlayerInventory(player);
+                player.mcServer.getConfigurationManager()
+                    .updateTimeAndWeatherForPlayer(player, newWorld);
+                player.mcServer.getConfigurationManager()
+                    .syncPlayerInventory(player);
                 for (Object potionEffect : player.getActivePotionEffects()) {
                     PotionEffect effect = (PotionEffect) potionEffect;
                     player.playerNetServerHandler.sendPacket(new S1DPacketEntityEffect(player.getEntityId(), effect));
                 }
 
-                player.playerNetServerHandler.sendPacket(new S1FPacketSetExperience(player.experience, player.experienceTotal, player.experienceLevel));
+                player.playerNetServerHandler.sendPacket(
+                    new S1FPacketSetExperience(player.experience, player.experienceTotal, player.experienceLevel));
             }
 
             // Creates sanity by removing the entity from its old location's chunk entity list, if applicable.
             int entX = entity.chunkCoordX;
             int entZ = entity.chunkCoordZ;
-            if ((entity.addedToChunk) && (oldWorld.getChunkProvider().chunkExists(entX, entZ))) {
-                oldWorld.getChunkFromChunkCoords(entX, entZ).removeEntity(entity);
+            if ((entity.addedToChunk) && (oldWorld.getChunkProvider()
+                .chunkExists(entX, entZ))) {
+                oldWorld.getChunkFromChunkCoords(entX, entZ)
+                    .removeEntity(entity);
                 oldWorld.getChunkFromChunkCoords(entX, entZ).isModified = true;
             }
             // Memory concerns.
@@ -341,17 +360,23 @@ public class DDTeleporter {
 
         // Did we teleport a player? Load the chunk for them.
         if (player != null) {
-            newWorld.getChunkProvider().loadChunk(MathHelper.floor_double(entity.posX) >> 4, MathHelper.floor_double(entity.posZ) >> 4);
+            newWorld.getChunkProvider()
+                .loadChunk(MathHelper.floor_double(entity.posX) >> 4, MathHelper.floor_double(entity.posZ) >> 4);
             // Tell Forge we're moving its players so everyone else knows.
             // Let's try doing this down here in case this is what's killing NEI.
-            FMLCommonHandler.instance().firePlayerChangedDimensionEvent((EntityPlayer) entity, oldWorld.provider.dimensionId, newWorld.provider.dimensionId);
+            FMLCommonHandler.instance()
+                .firePlayerChangedDimensionEvent(
+                    (EntityPlayer) entity,
+                    oldWorld.provider.dimensionId,
+                    newWorld.provider.dimensionId);
         }
         DDTeleporter.placeInPortal(entity, newWorld, destination, properties, checkOrientation);
         return entity;
     }
 
     /**
-     * Primary function used to teleport the player using doors. Performs numerous null checks, and also generates the destination door/pocket if it has not done so already.
+     * Primary function used to teleport the player using doors. Performs numerous null checks, and also generates the
+     * destination door/pocket if it has not done so already.
      * Also ensures correct orientation relative to the door.
      *
      * @param world  - world the player is currently in
@@ -388,7 +413,8 @@ public class DDTeleporter {
             Point4D randomDestination = getRandomDestination();
             if (randomDestination != null) {
                 entity = teleportEntity(entity, randomDestination, true);
-                entity.worldObj.playSoundEffect(entity.posX, entity.posY, entity.posZ, "mob.endermen.portal", 1.0F, 1.0F);
+                entity.worldObj
+                    .playSoundEffect(entity.posX, entity.posY, entity.posZ, "mob.endermen.portal", 1.0F, 1.0F);
             }
         } else {
             buildExitDoor(door, link, DDProperties.instance());
@@ -399,14 +425,18 @@ public class DDTeleporter {
 
     private static boolean initializeDestination(DimLink link, DDProperties properties, Entity entity, Block door) {
         if (link.hasDestination() && link.linkType() != LinkType.PERSONAL) {
-            if (PocketManager.isBlackListed(link.destination().getDimension())) {
+            if (PocketManager.isBlackListed(
+                link.destination()
+                    .getDimension())) {
 
                 // This link leads to a dimension that has been blacklisted.
                 // That means that it was a pocket and it was deleted.
                 // Depending on the link type, we must overwrite it or cancel
                 // the teleport operation. We don't need to assign 'link' with
                 // a different value. NewDimData will overwrite it in-place.
-                NewDimData start = PocketManager.getDimensionData(link.source().getDimension());
+                NewDimData start = PocketManager.getDimensionData(
+                    link.source()
+                        .getDimension());
                 if (link.linkType() == LinkType.DUNGEON) {
                     // Ovewrite the link into a dungeon link with no destination
                     start.createLink(link.source(), LinkType.DUNGEON, link.orientation(), null);
@@ -462,7 +492,10 @@ public class DDTeleporter {
         }
 
         EntityPlayer player = (EntityPlayer) entity;
-        NewDimData dim = PocketManager.getPersonalDimensionForPlayer(player.getGameProfile().getId().toString());
+        NewDimData dim = PocketManager.getPersonalDimensionForPlayer(
+            player.getGameProfile()
+                .getId()
+                .toString());
         if (dim == null) {
             return PocketBuilder.generateNewPersonalPocket(link, properties, player, door);
         }
@@ -470,7 +503,17 @@ public class DDTeleporter {
         DimLink personalHomeLink = dim.getLink(dim.origin());
         if (personalHomeLink != null) {
             link.tail.setDestination(personalHomeLink.source());
-            PocketManager.getDimensionData(link.source().getDimension()).setLinkDestination(personalHomeLink, link.source().getX(), link.source().getY(), link.source().getZ());
+            PocketManager.getDimensionData(
+                link.source()
+                    .getDimension())
+                .setLinkDestination(
+                    personalHomeLink,
+                    link.source()
+                        .getX(),
+                    link.source()
+                        .getY(),
+                    link.source()
+                        .getZ());
         }
 
         return true;
@@ -517,14 +560,17 @@ public class DDTeleporter {
 
         if (current.isPocketDimension()) {
             Point4D source = link.source();
-            World world = PocketManager.loadDimension(current.root().id());
+            World world = PocketManager.loadDimension(
+                current.root()
+                    .id());
             if (world == null) {
                 return false;
             }
 
             Point3D destination = yCoordHelper.findDropPoint(world, source.getX(), source.getY() + 1, source.getZ());
             if (destination != null) {
-                current.root().setLinkDestination(link, destination.getX(), destination.getY(), destination.getZ());
+                current.root()
+                    .setLinkDestination(link, destination.getX(), destination.getY(), destination.getZ());
                 return true;
             }
         }
@@ -532,26 +578,69 @@ public class DDTeleporter {
     }
 
     private static void buildExitDoor(Block door, DimLink link, DDProperties prop) {
-        World startWorld = PocketManager.loadDimension(link.source().getDimension());
-        World destWorld = PocketManager.loadDimension(link.destination().getDimension());
-        TileEntity doorTE = startWorld.getTileEntity(link.source().getX(), link.source().getY(), link.point.getZ());
+        World startWorld = PocketManager.loadDimension(
+            link.source()
+                .getDimension());
+        World destWorld = PocketManager.loadDimension(
+            link.destination()
+                .getDimension());
+        TileEntity doorTE = startWorld.getTileEntity(
+            link.source()
+                .getX(),
+            link.source()
+                .getY(),
+            link.point.getZ());
         if (doorTE instanceof TileEntityDimDoor) {
             if ((((TileEntityDimDoor) doorTE).hasGennedPair)) {
                 return;
             }
             ((TileEntityDimDoor) doorTE).hasGennedPair = true;
-            Block blockToReplace = destWorld.getBlock(link.destination().getX(), link.destination().getY(), link.destination().getZ());
+            Block blockToReplace = destWorld.getBlock(
+                link.destination()
+                    .getX(),
+                link.destination()
+                    .getY(),
+                link.destination()
+                    .getZ());
 
-            if (!destWorld.isAirBlock(link.destination().getX(), link.destination().getY(), link.destination().getZ())) {
-                if (!blockToReplace.isReplaceable(destWorld, link.destination().getX(), link.destination().getY(), link.destination().getZ())) {
+            if (!destWorld.isAirBlock(
+                link.destination()
+                    .getX(),
+                link.destination()
+                    .getY(),
+                link.destination()
+                    .getZ())) {
+                if (!blockToReplace.isReplaceable(
+                    destWorld,
+                    link.destination()
+                        .getX(),
+                    link.destination()
+                        .getY(),
+                    link.destination()
+                        .getZ())) {
                     return;
                 }
             }
 
-            ItemDoor.placeDoorBlock(destWorld, link.destination().getX(), link.destination().getY() - 1, link.destination().getZ(), link.getDestinationOrientation(), door);
+            ItemDoor.placeDoorBlock(
+                destWorld,
+                link.destination()
+                    .getX(),
+                link.destination()
+                    .getY() - 1,
+                link.destination()
+                    .getZ(),
+                link.getDestinationOrientation(),
+                door);
 
-            TileEntity doorDestTE = ((BaseDimDoor) door).initDoorTE(destWorld, link.destination().getX(), link.destination().getY(), link.destination().getZ());
-
+            TileEntity doorDestTE = ((BaseDimDoor) door).initDoorTE(
+                destWorld,
+                link.destination()
+                    .getX(),
+                link.destination()
+                    .getY(),
+                link.destination()
+                    .getZ());
 
             if (doorDestTE instanceof TileEntityDimDoor) {
                 ((TileEntityDimDoor) doorDestTE).hasGennedPair = true;
@@ -577,11 +666,19 @@ public class DDTeleporter {
         int shiftChance = START_ROOT_SHIFT_CHANCE + ROOT_SHIFT_CHANCE_PER_LEVEL * (current.packDepth() - 1);
 
         if (random.nextInt(MAX_ROOT_SHIFT_CHANCE) < shiftChance) {
-            if (current.root().id() != OVERWORLD_DIMENSION_ID && random.nextInt(MAX_OVERWORLD_EXIT_CHANCE) < OVERWORLD_EXIT_CHANCE) {
-                return generateSafeExit(PocketManager.createDimensionDataDangerously(OVERWORLD_DIMENSION_ID), link, properties);
+            if (current.root()
+                .id() != OVERWORLD_DIMENSION_ID && random.nextInt(MAX_OVERWORLD_EXIT_CHANCE) < OVERWORLD_EXIT_CHANCE) {
+                return generateSafeExit(
+                    PocketManager.createDimensionDataDangerously(OVERWORLD_DIMENSION_ID),
+                    link,
+                    properties);
             }
-            if (current.root().id() != NETHER_DIMENSION_ID && random.nextInt(MAX_NETHER_EXIT_CHANCE) < NETHER_EXIT_CHANCE) {
-                return generateSafeExit(PocketManager.createDimensionDataDangerously(NETHER_DIMENSION_ID), link, properties);
+            if (current.root()
+                .id() != NETHER_DIMENSION_ID && random.nextInt(MAX_NETHER_EXIT_CHANCE) < NETHER_EXIT_CHANCE) {
+                return generateSafeExit(
+                    PocketManager.createDimensionDataDangerously(NETHER_DIMENSION_ID),
+                    link,
+                    properties);
             }
             for (int attempts = 0; attempts < 10; attempts++) {
                 NewDimData selection = roots.get(random.nextInt(roots.size()));
@@ -664,7 +761,9 @@ public class DDTeleporter {
 
             // Create a reverse link for returning
             int orientation = getDestinationOrientation(source, properties);
-            NewDimData sourceDim = PocketManager.getDimensionData(link.source().getDimension());
+            NewDimData sourceDim = PocketManager.getDimensionData(
+                link.source()
+                    .getDimension());
             DimLink reverse = destinationDim.createLink(x, y + 2, z, LinkType.REVERSE, orientation);
 
             sourceDim.setLinkDestination(reverse, source.getX(), source.getY(), source.getZ());

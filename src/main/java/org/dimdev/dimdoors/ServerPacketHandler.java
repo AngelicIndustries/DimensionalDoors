@@ -2,18 +2,24 @@ package org.dimdev.dimdoors;
 
 import org.dimdev.dimdoors.core.PocketManager;
 import org.dimdev.dimdoors.network.DimDoorsNetwork;
-import org.dimdev.dimdoors.network.packets.*;
+import org.dimdev.dimdoors.network.packets.CreateDimensionPacket;
+import org.dimdev.dimdoors.network.packets.CreateLinkPacket;
+import org.dimdev.dimdoors.network.packets.DeleteDimensionPacket;
+import org.dimdev.dimdoors.network.packets.DeleteLinkPacket;
+import org.dimdev.dimdoors.network.packets.UpdateLinkPacket;
 import org.dimdev.dimdoors.watcher.ClientDimData;
 import org.dimdev.dimdoors.watcher.ClientLinkData;
 import org.dimdev.dimdoors.watcher.IUpdateWatcher;
 
 public class ServerPacketHandler {
+
     public ServerPacketHandler() {
         PocketManager.registerDimWatcher(new DimWatcher());
         PocketManager.registerLinkWatcher(new LinkWatcher());
     }
 
     private static class DimWatcher implements IUpdateWatcher<ClientDimData> {
+
         @Override
         public void onCreated(ClientDimData message) {
             DimDoorsNetwork.sendToAllPlayers(new CreateDimensionPacket(message));
@@ -32,6 +38,7 @@ public class ServerPacketHandler {
     }
 
     private static class LinkWatcher implements IUpdateWatcher<ClientLinkData> {
+
         @Override
         public void onCreated(ClientLinkData message) {
             DimDoorsNetwork.sendToAllPlayers(new CreateLinkPacket(message));

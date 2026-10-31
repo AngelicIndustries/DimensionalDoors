@@ -1,5 +1,12 @@
 package org.dimdev.dimdoors.saving;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+
 import org.dimdev.dimdoors.DimData;
 import org.dimdev.dimdoors.LinkData;
 import org.dimdev.dimdoors.ObjectSaveInputStream;
@@ -8,14 +15,8 @@ import org.dimdev.dimdoors.core.DimensionType;
 import org.dimdev.dimdoors.core.LinkType;
 import org.dimdev.dimdoors.util.Point4D;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-
 public class OldSaveImporter {
+
     public static void importOldSave(File file) throws IOException, ClassNotFoundException {
         FileInputStream saveFile = new FileInputStream(file);
         ObjectSaveInputStream save = new ObjectSaveInputStream(saveFile);
@@ -34,17 +35,19 @@ public class OldSaveImporter {
             return;
         }
 
-        //build the child list
+        // build the child list
         HashMap<Integer, ArrayList<Integer>> parentChildMapping = new HashMap<Integer, ArrayList<Integer>>();
         for (DimData data : dimMap.values()) {
             if (data.isPocket) {
                 LinkData link = data.exitDimLink;
 
                 if (parentChildMapping.containsKey(link.destDimID)) {
-                    parentChildMapping.get(link.destDimID).add(data.dimID);
+                    parentChildMapping.get(link.destDimID)
+                        .add(data.dimID);
                 } else {
                     parentChildMapping.put(link.destDimID, new ArrayList<Integer>());
-                    parentChildMapping.get(link.destDimID).add(data.dimID);
+                    parentChildMapping.get(link.destDimID)
+                        .add(data.dimID);
                 }
                 parentChildMapping.remove(data.dimID);
             }
@@ -65,7 +68,13 @@ public class OldSaveImporter {
                 PackedLinkTail tail = new PackedLinkTail(destintion, LinkType.NORMAL);
                 List<Point3D> children = new ArrayList<Point3D>();
 
-                PackedLinkData newPackedLink = new PackedLinkData(source, new Point3D(-1, -1, -1), tail, link.linkOrientation, children, null);
+                PackedLinkData newPackedLink = new PackedLinkData(
+                    source,
+                    new Point3D(-1, -1, -1),
+                    tail,
+                    link.linkOrientation,
+                    children,
+                    null);
 
                 newPackedLinkData.add(newPackedLink);
                 allPackedLinks.add(newPackedLink);
@@ -83,9 +92,35 @@ public class OldSaveImporter {
                 type = DimensionType.ROOT;
             }
             if (data.isPocket) {
-                dim = new PackedDimData(data.dimID, data.depth, data.depth, data.exitDimLink.locDimID, data.exitDimLink.locDimID, 0, type, data.hasBeenFilled, null, new Point3D(0, 64, 0), childDims, newPackedLinkData, null);
+                dim = new PackedDimData(
+                    data.dimID,
+                    data.depth,
+                    data.depth,
+                    data.exitDimLink.locDimID,
+                    data.exitDimLink.locDimID,
+                    0,
+                    type,
+                    data.hasBeenFilled,
+                    null,
+                    new Point3D(0, 64, 0),
+                    childDims,
+                    newPackedLinkData,
+                    null);
             } else {
-                dim = new PackedDimData(data.dimID, data.depth, data.depth, data.dimID, data.dimID, 0, type, data.hasBeenFilled, null, new Point3D(0, 64, 0), childDims, newPackedLinkData, null);
+                dim = new PackedDimData(
+                    data.dimID,
+                    data.depth,
+                    data.depth,
+                    data.dimID,
+                    data.dimID,
+                    0,
+                    type,
+                    data.hasBeenFilled,
+                    null,
+                    new Point3D(0, 64, 0),
+                    childDims,
+                    newPackedLinkData,
+                    null);
             }
             newPackedDimData.put(dim.ID, dim);
         }

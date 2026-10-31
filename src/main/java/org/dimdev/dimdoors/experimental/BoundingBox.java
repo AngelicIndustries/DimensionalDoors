@@ -3,6 +3,7 @@ package org.dimdev.dimdoors.experimental;
 import org.dimdev.dimdoors.Point3D;
 
 public class BoundingBox {
+
     protected Point3D minCorner;
     protected Point3D maxCorner;
 
@@ -37,22 +38,24 @@ public class BoundingBox {
     }
 
     public boolean contains(int x, int y, int z) {
-        return ((minCorner.getX() <= x && x <= maxCorner.getX()) &&
-                (minCorner.getY() <= y && y <= maxCorner.getY()) &&
-                (minCorner.getZ() <= z && z <= maxCorner.getZ()));
+        return ((minCorner.getX() <= x && x <= maxCorner.getX()) && (minCorner.getY() <= y && y <= maxCorner.getY())
+            && (minCorner.getZ() <= z && z <= maxCorner.getZ()));
     }
 
     public boolean intersects(BoundingBox other) {
         // To be clear, having one box inside another counts as intersecting
 
-        boolean xi = (this.minCorner.getX() <= other.minCorner.getX() && other.minCorner.getX() <= this.maxCorner.getX()) ||
-                (other.minCorner.getX() <= this.minCorner.getX() && this.minCorner.getX() <= other.maxCorner.getX());
+        boolean xi = (this.minCorner.getX() <= other.minCorner.getX()
+            && other.minCorner.getX() <= this.maxCorner.getX())
+            || (other.minCorner.getX() <= this.minCorner.getX() && this.minCorner.getX() <= other.maxCorner.getX());
 
-        boolean yi = (this.minCorner.getY() <= other.minCorner.getY() && other.minCorner.getY() <= this.maxCorner.getY()) ||
-                (other.minCorner.getY() <= this.minCorner.getY() && this.minCorner.getY() <= other.maxCorner.getY());
+        boolean yi = (this.minCorner.getY() <= other.minCorner.getY()
+            && other.minCorner.getY() <= this.maxCorner.getY())
+            || (other.minCorner.getY() <= this.minCorner.getY() && this.minCorner.getY() <= other.maxCorner.getY());
 
-        boolean zi = (this.minCorner.getZ() <= other.minCorner.getZ() && other.minCorner.getZ() <= this.maxCorner.getZ()) ||
-                (other.minCorner.getZ() <= this.minCorner.getZ() && this.minCorner.getZ() <= other.maxCorner.getZ());
+        boolean zi = (this.minCorner.getZ() <= other.minCorner.getZ()
+            && other.minCorner.getZ() <= this.maxCorner.getZ())
+            || (other.minCorner.getZ() <= this.minCorner.getZ() && this.minCorner.getZ() <= other.maxCorner.getZ());
 
         return xi && yi && zi;
     }

@@ -1,6 +1,5 @@
 package org.dimdev.dimdoors.ticking;
 
-
 public interface IRegularTickReceiver {
 
     /**

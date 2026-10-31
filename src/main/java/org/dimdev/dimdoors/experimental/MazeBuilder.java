@@ -1,17 +1,18 @@
 package org.dimdev.dimdoors.experimental;
 
-import org.dimdev.dimdoors.Point3D;
+import java.util.Random;
+
 import net.minecraft.block.Block;
 import net.minecraft.init.Blocks;
 import net.minecraft.world.World;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.chunk.storage.ExtendedBlockStorage;
 
-import java.util.Random;
+import org.dimdev.dimdoors.Point3D;
 
 public class MazeBuilder {
-    private MazeBuilder() {
-    }
+
+    private MazeBuilder() {}
 
     public static void generate(World world, int x, int y, int z, Random random) {
         MazeDesign design = MazeDesigner.generate(random);
@@ -21,14 +22,14 @@ public class MazeBuilder {
         buildRooms(design.getRoomGraph(), world, offset);
         carveDoorways(design.getRoomGraph(), world, offset, decay, random);
 
-        //placeDoors(design, world, offset);
+        // placeDoors(design, world, offset);
 
         applyRandomDestruction(design, world, offset, decay, random);
     }
 
-    private static void applyRandomDestruction(MazeDesign design, World world,
-                                               Point3D offset, SphereDecayOperation decay, Random random) {
-        //final int DECAY_BOX_SIZE = 8
+    private static void applyRandomDestruction(MazeDesign design, World world, Point3D offset,
+        SphereDecayOperation decay, Random random) {
+        // final int DECAY_BOX_SIZE = 8
     }
 
     private static void buildRooms(DirectedGraph<PartitionNode, DoorwayData> roomGraph, World world, Point3D offset) {
@@ -38,8 +39,8 @@ public class MazeBuilder {
         }
     }
 
-    private static void carveDoorways(DirectedGraph<PartitionNode, DoorwayData> roomGraph, World world,
-                                      Point3D offset, SphereDecayOperation decay, Random random) {
+    private static void carveDoorways(DirectedGraph<PartitionNode, DoorwayData> roomGraph, World world, Point3D offset,
+        SphereDecayOperation decay, Random random) {
         char axis;
         Point3D lower;
         DoorwayData doorway;
@@ -49,15 +50,23 @@ public class MazeBuilder {
                 doorway = passage.data();
                 axis = doorway.axis();
                 lower = doorway.minCorner();
-                carveDoorway(world, axis, offset.getX() + lower.getX(), offset.getY() + lower.getY(),
-                        offset.getZ() + lower.getZ(), doorway.width(), doorway.height(), doorway.length(),
-                        decay, random);
+                carveDoorway(
+                    world,
+                    axis,
+                    offset.getX() + lower.getX(),
+                    offset.getY() + lower.getY(),
+                    offset.getZ() + lower.getZ(),
+                    doorway.width(),
+                    doorway.height(),
+                    doorway.length(),
+                    decay,
+                    random);
             }
         }
     }
 
-    private static void carveDoorway(World world, char axis, int x, int y, int z, int width, int height,
-                                     int length, SphereDecayOperation decay, Random random) {
+    private static void carveDoorway(World world, char axis, int x, int y, int z, int width, int height, int length,
+        SphereDecayOperation decay, Random random) {
         final int MIN_DOUBLE_DOOR_SPAN = 10;
 
         int gap;
@@ -110,9 +119,14 @@ public class MazeBuilder {
                     if (gap > 6) {
                         gap = 6;
                     }
-                    decay.apply(world,
-                            x + random.nextInt(width - gap - 1) + 1, y - 1,
-                            z + random.nextInt(length - gap - 1) + 1, gap, 4, gap);
+                    decay.apply(
+                        world,
+                        x + random.nextInt(width - gap - 1) + 1,
+                        y - 1,
+                        z + random.nextInt(length - gap - 1) + 1,
+                        gap,
+                        4,
+                        gap);
                 } else {
                     carveHole(world, x + 1, y, z + 1);
                 }
@@ -139,8 +153,8 @@ public class MazeBuilder {
         setBlockDirectly(world, x, y + 1, z, Blocks.air, 0);
     }
 
-
-    private static void buildBox(World world, Point3D offset, Point3D minCorner, Point3D maxCorner, Block block, int metadata) {
+    private static void buildBox(World world, Point3D offset, Point3D minCorner, Point3D maxCorner, Block block,
+        int metadata) {
         int minX = minCorner.getX() + offset.getX();
         int minY = minCorner.getY() + offset.getY();
         int minZ = minCorner.getZ() + offset.getZ();

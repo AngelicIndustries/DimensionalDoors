@@ -3,6 +3,7 @@ package org.dimdev.dimdoors.experimental;
 import org.dimdev.dimdoors.Point3D;
 
 public class DoorwayData {
+
     public static final char X_AXIS = 'X';
     public static final char Y_AXIS = 'Y';
     public static final char Z_AXIS = 'Z';

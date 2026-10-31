@@ -1,34 +1,50 @@
 package org.dimdev.dimdoors.world;
 
-import org.dimdev.dimdoors.config.DDProperties;
-import org.dimdev.dimdoors.DimDoors;
+import java.util.Random;
+
 import net.minecraft.block.Block;
 import net.minecraft.init.Blocks;
 import net.minecraft.util.MathHelper;
 import net.minecraft.world.World;
 import net.minecraft.world.gen.MapGenBase;
 
-import java.util.Random;
+import org.dimdev.dimdoors.DimDoors;
+import org.dimdev.dimdoors.config.DDProperties;
 
 public class CustomCaveGen extends MapGenBase {
+
     private static DDProperties properties = null;
 
     public CustomCaveGen() {
-        if (properties == null)
-            properties = DDProperties.instance();
+        if (properties == null) properties = DDProperties.instance();
     }
 
     /**
      * Generates a larger initial cave node than usual. Called 25% of the time.
      */
-    protected void generateLargeCaveNode(long par1, int par3, int par4, Block[] blocks, double par6, double par8, double par10) {
-        this.generateCaveNode(par1, par3, par4, blocks, par6, par8, par10, 1.0F + this.rand.nextFloat() * 6.0F, 0.0F, 0.0F, -1, -1, 0.5D);
+    protected void generateLargeCaveNode(long par1, int par3, int par4, Block[] blocks, double par6, double par8,
+        double par10) {
+        this.generateCaveNode(
+            par1,
+            par3,
+            par4,
+            blocks,
+            par6,
+            par8,
+            par10,
+            1.0F + this.rand.nextFloat() * 6.0F,
+            0.0F,
+            0.0F,
+            -1,
+            -1,
+            0.5D);
     }
 
     /**
      * Generates a node in the current cave system recursion tree.
      */
-    protected void generateCaveNode(long par1, int par3, int par4, Block[] blocks, double par6, double par8, double par10, float par12, float par13, float par14, int par15, int par16, double par17) {
+    protected void generateCaveNode(long par1, int par3, int par4, Block[] blocks, double par6, double par8,
+        double par10, float par12, float par13, float par14, int par15, int par16, double par17) {
         double var19 = par3 * 16 + 8;
         double var21 = par4 * 16 + 8;
         float var23 = 0.0F;
@@ -72,8 +88,34 @@ public class CustomCaveGen extends MapGenBase {
             var23 += (var25.nextFloat() - var25.nextFloat()) * var25.nextFloat() * 4.0F;
 
             if (!var54 && par15 == var27 && par12 > 1.0F && par16 > 0) {
-                this.generateCaveNode(var25.nextLong(), par3, par4, blocks, par6, par8, par10, var25.nextFloat() * 0.5F + 0.5F, par13 - ((float) Math.PI / 2F), par14 / 3.0F, par15, par16, 1.0D);
-                this.generateCaveNode(var25.nextLong(), par3, par4, blocks, par6, par8, par10, var25.nextFloat() * 0.5F + 0.5F, par13 + ((float) Math.PI / 2F), par14 / 3.0F, par15, par16, 1.0D);
+                this.generateCaveNode(
+                    var25.nextLong(),
+                    par3,
+                    par4,
+                    blocks,
+                    par6,
+                    par8,
+                    par10,
+                    var25.nextFloat() * 0.5F + 0.5F,
+                    par13 - ((float) Math.PI / 2F),
+                    par14 / 3.0F,
+                    par15,
+                    par16,
+                    1.0D);
+                this.generateCaveNode(
+                    var25.nextLong(),
+                    par3,
+                    par4,
+                    blocks,
+                    par6,
+                    par8,
+                    par10,
+                    var25.nextFloat() * 0.5F + 0.5F,
+                    par13 + ((float) Math.PI / 2F),
+                    par14 / 3.0F,
+                    par15,
+                    par16,
+                    1.0D);
                 return;
             }
 
@@ -87,7 +129,9 @@ public class CustomCaveGen extends MapGenBase {
                     return;
                 }
 
-                if (par6 >= var19 - 16.0D - var29 * 2.0D && par10 >= var21 - 16.0D - var29 * 2.0D && par6 <= var19 + 16.0D + var29 * 2.0D && par10 <= var21 + 16.0D + var29 * 2.0D) {
+                if (par6 >= var19 - 16.0D - var29 * 2.0D && par10 >= var21 - 16.0D - var29 * 2.0D
+                    && par6 <= var19 + 16.0D + var29 * 2.0D
+                    && par10 <= var21 + 16.0D + var29 * 2.0D) {
                     int var55 = MathHelper.floor_double(par6 - var29) - par3 * 16 - 1;
                     int var36 = MathHelper.floor_double(par6 + var29) - par3 * 16 + 1;
                     int var57 = MathHelper.floor_double(par8 - var31) - 1;
@@ -133,7 +177,10 @@ public class CustomCaveGen extends MapGenBase {
                                         var58 = true;
                                     }
 
-                                    if (var44 != var57 - 1 && var42 != var55 && var42 != var36 - 1 && var43 != var56 && var43 != var40 - 1) {
+                                    if (var44 != var57 - 1 && var42 != var55
+                                        && var42 != var36 - 1
+                                        && var43 != var56
+                                        && var43 != var40 - 1) {
                                         var44 = var57;
                                     }
                                 }
@@ -161,14 +208,17 @@ public class CustomCaveGen extends MapGenBase {
                                                 var49 = true;
                                             }
 
-                                            if (var53 == DimDoors.blockLimbo || var53 == Blocks.dirt || var53 == Blocks.grass) {
+                                            if (var53 == DimDoors.blockLimbo || var53 == Blocks.dirt
+                                                || var53 == Blocks.grass) {
                                                 if (var50 < 10) {
                                                     blocks[var48] = Blocks.flowing_lava;
                                                 } else {
                                                     blocks[var48] = Blocks.air;
 
                                                     if (var49 && blocks[var48 - 1] == Blocks.dirt) {
-                                                        blocks[var48 - 1] = this.worldObj.getBiomeGenForCoords(var42 + par3 * 16, var45 + par4 * 16).topBlock;
+                                                        blocks[var48 - 1] = this.worldObj.getBiomeGenForCoords(
+                                                            var42 + par3 * 16,
+                                                            var45 + par4 * 16).topBlock;
                                                     }
                                                 }
                                             }
@@ -220,7 +270,20 @@ public class CustomCaveGen extends MapGenBase {
                     var19 *= this.rand.nextFloat() * this.rand.nextFloat() * 3.0F + 1.0F;
                 }
 
-                this.generateCaveNode(this.rand.nextLong(), par4, par5, blocks, var9, var11, var13, var19, var17, var18, 0, 0, 1.0D);
+                this.generateCaveNode(
+                    this.rand.nextLong(),
+                    par4,
+                    par5,
+                    blocks,
+                    var9,
+                    var11,
+                    var13,
+                    var19,
+                    var17,
+                    var18,
+                    0,
+                    0,
+                    1.0D);
             }
         }
     }

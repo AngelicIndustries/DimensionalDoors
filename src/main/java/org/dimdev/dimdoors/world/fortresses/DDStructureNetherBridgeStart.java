@@ -1,6 +1,9 @@
 package org.dimdev.dimdoors.world.fortresses;
 
-import org.dimdev.dimdoors.config.DDProperties;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.Random;
+
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.world.World;
 import net.minecraft.world.gen.structure.StructureBoundingBox;
@@ -8,11 +11,10 @@ import net.minecraft.world.gen.structure.StructureComponent;
 import net.minecraft.world.gen.structure.StructureNetherBridgePieces;
 import net.minecraft.world.gen.structure.StructureStart;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.Random;
+import org.dimdev.dimdoors.config.DDProperties;
 
 public class DDStructureNetherBridgeStart extends StructureStart {
+
     public static final int MAX_GATEWAY_GENERATION_CHANCE = 100;
 
     private boolean hasGateway;
@@ -20,8 +22,7 @@ public class DDStructureNetherBridgeStart extends StructureStart {
     private int minY;
     private int minZ;
 
-    public DDStructureNetherBridgeStart() {
-    }
+    public DDStructureNetherBridgeStart() {}
 
     public DDStructureNetherBridgeStart(World world, Random random, int chunkX, int chunkZ, DDProperties properties) {
         // StructureNetherBridgeStart handles designing the fortress for us

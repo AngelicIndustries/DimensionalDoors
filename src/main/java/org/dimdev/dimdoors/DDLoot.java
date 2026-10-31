@@ -1,7 +1,9 @@
 package org.dimdev.dimdoors;
 
-import org.dimdev.dimdoors.config.DDProperties;
-import org.dimdev.dimdoors.util.WeightedContainer;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Random;
+
 import net.minecraft.enchantment.Enchantment;
 import net.minecraft.init.Items;
 import net.minecraft.inventory.IInventory;
@@ -13,16 +15,16 @@ import net.minecraft.util.WeightedRandom;
 import net.minecraft.util.WeightedRandomChestContent;
 import net.minecraftforge.common.ChestGenHooks;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Random;
+import org.dimdev.dimdoors.config.DDProperties;
+import org.dimdev.dimdoors.util.WeightedContainer;
 
 /*
  * Registers a category of loot chests for Dimensional Doors in Forge.
  */
 public class DDLoot {
 
-    private static final String[] SPECIAL_SKULL_OWNERS = new String[]{"stevenrs11", "kamikazekiwi3", "fbt", "Jaitsu", "XCompWiz", "skyboy026", "Wylker"};
+    private static final String[] SPECIAL_SKULL_OWNERS = new String[] { "stevenrs11", "kamikazekiwi3", "fbt", "Jaitsu",
+        "XCompWiz", "skyboy026", "Wylker" };
 
     private static final double MIN_ITEM_DAMAGE = 0.3;
     private static final double MAX_ITEM_DAMAGE = 0.9;
@@ -35,8 +37,7 @@ public class DDLoot {
     public static ChestGenHooks DungeonChestInfo = null;
     private static final int CHEST_SIZE = 6;
 
-    private DDLoot() {
-    }
+    private DDLoot() {}
 
     public static void registerInfo(DDProperties properties) {
         // Register the dimensional dungeon chest with ChestGenHooks. This isn't necessary, but allows
@@ -57,23 +58,27 @@ public class DDLoot {
         addContent(true, items, Items.emerald, 20, 1, 2);
         addContent(true, items, Items.golden_apple, 10);
 
-        addContent(properties.FabricOfRealityLootEnabled, items, Item.getItemFromBlock(DimDoors.blockDimWall), 20, 16, 64);
+        addContent(
+            properties.FabricOfRealityLootEnabled,
+            items,
+            Item.getItemFromBlock(DimDoors.blockDimWall),
+            20,
+            16,
+            64);
         addContent(properties.WorldThreadLootEnabled, items, DimDoors.itemWorldThread, 80, 2, 12);
 
         // Add all the items to our dungeon chest
         addItemsToContainer(DungeonChestInfo, items);
     }
 
-    private static void addContent(boolean include, ArrayList<WeightedRandomChestContent> items,
-                                   Item item, int weight) {
-        if (include)
-            items.add(new WeightedRandomChestContent(item, 0, 1, 1, weight));
+    private static void addContent(boolean include, ArrayList<WeightedRandomChestContent> items, Item item,
+        int weight) {
+        if (include) items.add(new WeightedRandomChestContent(item, 0, 1, 1, weight));
     }
 
-    private static void addContent(boolean include, ArrayList<WeightedRandomChestContent> items,
-                                   Item item, int weight, int minAmount, int maxAmount) {
-        if (include)
-            items.add(new WeightedRandomChestContent(item, 0, minAmount, maxAmount, weight));
+    private static void addContent(boolean include, ArrayList<WeightedRandomChestContent> items, Item item, int weight,
+        int minAmount, int maxAmount) {
+        if (include) items.add(new WeightedRandomChestContent(item, 0, minAmount, maxAmount, weight));
     }
 
     private static void addItemsToContainer(ChestGenHooks container, ArrayList<WeightedRandomChestContent> items) {
@@ -116,14 +121,20 @@ public class DDLoot {
         ArrayList<ItemStack> allStacks = new ArrayList<ItemStack>();
 
         for (int k = 0; k < count; k++) {
-            WeightedRandomChestContent selection = (WeightedRandomChestContent) WeightedRandom.getRandomItem(random, content);
+            WeightedRandomChestContent selection = (WeightedRandomChestContent) WeightedRandom
+                .getRandomItem(random, content);
 
             // Call getChestGenBase() to make sure we generate a different enchantment for books.
             // Don't just use a condition to check if the item is an instance of ItemEnchantedBook because
             // we don't know if other mods might add items that also need to be regenerated.
-            selection = selection.theItemId.getItem().getChestGenBase(chestInfo, random, selection);
+            selection = selection.theItemId.getItem()
+                .getChestGenBase(chestInfo, random, selection);
 
-            ItemStack[] stacks = ChestGenHooks.generateStacks(random, selection.theItemId, selection.theMinimumChanceToGenerateItem, selection.theMaximumChanceToGenerateItem);
+            ItemStack[] stacks = ChestGenHooks.generateStacks(
+                random,
+                selection.theItemId,
+                selection.theMinimumChanceToGenerateItem,
+                selection.theMaximumChanceToGenerateItem);
             Collections.addAll(allStacks, stacks);
         }
 
@@ -171,9 +182,18 @@ public class DDLoot {
 
         // Insert equipment
         // For each piece, 25% of an iron piece, 10% of a chainmail piece
-        addModifiedEquipment(getRandomItem(Items.iron_helmet, Items.chainmail_helmet, null, 25, 10, random), stacks, random);
-        addModifiedEquipment(getRandomItem(Items.iron_chestplate, Items.chainmail_chestplate, null, 25, 10, random), stacks, random);
-        addModifiedEquipment(getRandomItem(Items.iron_leggings, Items.chainmail_leggings, null, 25, 10, random), stacks, random);
+        addModifiedEquipment(
+            getRandomItem(Items.iron_helmet, Items.chainmail_helmet, null, 25, 10, random),
+            stacks,
+            random);
+        addModifiedEquipment(
+            getRandomItem(Items.iron_chestplate, Items.chainmail_chestplate, null, 25, 10, random),
+            stacks,
+            random);
+        addModifiedEquipment(
+            getRandomItem(Items.iron_leggings, Items.chainmail_leggings, null, 25, 10, random),
+            stacks,
+            random);
         addModifiedEquipment(getRandomItem(Items.iron_boots, Items.iron_boots, null, 25, 10, random), stacks, random);
 
         // Insert other random stuff
@@ -195,28 +215,38 @@ public class DDLoot {
     }
 
     private static void addModifiedEquipment(Item item, ArrayList<ItemStack> stacks, Random random) {
-        if (item == null)
-            return;
+        if (item == null) return;
 
-        stacks.add(getModifiedItem(item, random, new Enchantment[]{Enchantment.blastProtection, Enchantment.fireProtection, Enchantment.protection, Enchantment.projectileProtection}));
+        stacks.add(
+            getModifiedItem(
+                item,
+                random,
+                new Enchantment[] { Enchantment.blastProtection, Enchantment.fireProtection, Enchantment.protection,
+                    Enchantment.projectileProtection }));
     }
 
     private static void addModifiedSword(Item item, ArrayList<ItemStack> stacks, Random random) {
-        if (item == null)
-            return;
+        if (item == null) return;
 
-        stacks.add(getModifiedItem(item, random, new Enchantment[]{Enchantment.fireAspect, Enchantment.knockback, Enchantment.sharpness}));
+        stacks.add(
+            getModifiedItem(
+                item,
+                random,
+                new Enchantment[] { Enchantment.fireAspect, Enchantment.knockback, Enchantment.sharpness }));
     }
 
     private static void addModifiedTool(Item tool, ArrayList<ItemStack> stacks, Random random) {
-        if (tool == null)
-            return;
+        if (tool == null) return;
 
-        stacks.add(getModifiedItem(tool, random, new Enchantment[]{Enchantment.efficiency, Enchantment.unbreaking}));
+        stacks.add(getModifiedItem(tool, random, new Enchantment[] { Enchantment.efficiency, Enchantment.unbreaking }));
     }
 
     private static void addModifiedBow(ArrayList<ItemStack> stacks, Random random) {
-        stacks.add(getModifiedItem(Items.bow, random, new Enchantment[]{Enchantment.flame, Enchantment.power, Enchantment.punch}));
+        stacks.add(
+            getModifiedItem(
+                Items.bow,
+                random,
+                new Enchantment[] { Enchantment.flame, Enchantment.power, Enchantment.punch }));
     }
 
     private static ItemStack getModifiedItem(Item item, Random random, Enchantment[] enchantments) {
@@ -229,21 +259,21 @@ public class DDLoot {
 
     private static Item getRandomItem(Item a, Item b, Item c, int weightA, int weightB, Random random) {
         int roll = random.nextInt(100);
-        if (roll < weightA)
-            return a;
-        if (roll < weightA + weightB)
-            return b;
+        if (roll < weightA) return a;
+        if (roll < weightA + weightB) return b;
         return c;
     }
 
-    private static void addItemWithChance(ArrayList<ItemStack> stacks, Random random, int chance, Item item, int count) {
+    private static void addItemWithChance(ArrayList<ItemStack> stacks, Random random, int chance, Item item,
+        int count) {
         if (random.nextInt(100) < chance) {
             stacks.add(new ItemStack(item, count));
         }
     }
 
     private static ItemStack applyRandomDamage(Item item, Random random) {
-        int damage = (int) (item.getMaxDamage() * MathHelper.getRandomDoubleInRange(random, MIN_ITEM_DAMAGE, MAX_ITEM_DAMAGE));
+        int damage = (int) (item.getMaxDamage()
+            * MathHelper.getRandomDoubleInRange(random, MIN_ITEM_DAMAGE, MAX_ITEM_DAMAGE));
         return new ItemStack(item, 1, damage);
     }
 

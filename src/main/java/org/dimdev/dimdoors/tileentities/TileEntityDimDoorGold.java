@@ -1,14 +1,16 @@
 package org.dimdev.dimdoors.tileentities;
 
+import net.minecraftforge.common.ForgeChunkManager;
+import net.minecraftforge.common.ForgeChunkManager.Ticket;
+
 import org.dimdev.dimdoors.IChunkLoader;
 import org.dimdev.dimdoors.core.NewDimData;
 import org.dimdev.dimdoors.core.PocketManager;
 import org.dimdev.dimdoors.helpers.ChunkLoaderHelper;
 import org.dimdev.dimdoors.world.PocketBuilder;
-import net.minecraftforge.common.ForgeChunkManager;
-import net.minecraftforge.common.ForgeChunkManager.Ticket;
 
 public class TileEntityDimDoorGold extends TileEntityDimDoor implements IChunkLoader {
+
     private Ticket chunkTicket;
     private boolean initialized = false;
 
@@ -68,12 +70,13 @@ public class TileEntityDimDoorGold extends TileEntityDimDoor implements IChunkLo
     private boolean isValidChunkLoaderSetup(NewDimData dimension) {
         // Check the various conditions that make this a valid door setup.
         // 1. The door must be inside the pocket's XZ boundaries,
-        //		to prevent loading of chunks with a distant door
+        // to prevent loading of chunks with a distant door
         // 2. The dimension must be a pocket dimension
         // 3. The door must be linked so that it's clear that it's not a normal door
 
-        return (dimension.isPocketDimension() && dimension.getLink(xCoord, yCoord, zCoord) != null &&
-                PocketBuilder.calculateDefaultBounds(dimension).contains(xCoord, yCoord, zCoord));
+        return (dimension.isPocketDimension() && dimension.getLink(xCoord, yCoord, zCoord) != null
+            && PocketBuilder.calculateDefaultBounds(dimension)
+                .contains(xCoord, yCoord, zCoord));
     }
 
     @Override

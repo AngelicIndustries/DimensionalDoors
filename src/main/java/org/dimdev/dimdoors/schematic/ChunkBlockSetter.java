@@ -6,6 +6,7 @@ import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.chunk.storage.ExtendedBlockStorage;
 
 public class ChunkBlockSetter implements IBlockSetter {
+
     private final boolean ignoreAir;
 
     public ChunkBlockSetter(boolean ignoreAir) {

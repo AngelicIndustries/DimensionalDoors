@@ -1,6 +1,5 @@
 package org.dimdev.dimdoors.helpers;
 
-import org.dimdev.dimdoors.Point3D;
 import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
 import net.minecraft.util.MathHelper;
@@ -8,18 +7,21 @@ import net.minecraft.world.World;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.chunk.IChunkProvider;
 
+import org.dimdev.dimdoors.Point3D;
+
 public class yCoordHelper {
+
     private static final int MAXIMUM_UNCOVERED_Y = 245;
 
-    private yCoordHelper() {
-    }
+    private yCoordHelper() {}
 
     public static int getFirstUncovered(World world, int x, int yStart, int z) {
         return getFirstUncovered(world, x, yStart, z, false);
     }
 
     public static int getFirstUncovered(World world, int x, int yStart, int z, boolean fromTop) {
-        Chunk chunk = world.getChunkProvider().loadChunk(x >> 4, z >> 4);
+        Chunk chunk = world.getChunkProvider()
+            .loadChunk(x >> 4, z >> 4);
 
         int localX = x < 0 ? (x % 16) + 16 : (x % 16);
         int localZ = z < 0 ? (z % 16) + 16 : (z % 16);
@@ -47,12 +49,10 @@ public class yCoordHelper {
         Block block;
         Material material;
 
-        if (y < 0)
-            return false;
+        if (y < 0) return false;
 
         block = chunk.getBlock(localX, y, localZ);
-        if (block == null)
-            return false;
+        if (block == null) return false;
 
         material = block.getMaterial();
         return (material.isLiquid() || !material.isReplaceable());
@@ -94,8 +94,11 @@ public class yCoordHelper {
                 for (dz = -1; dz <= 1 && isSafe; dz++) {
                     block = chunk.getBlock(localX + dx, y, localZ + dz);
                     metadata = chunk.getBlockMetadata(localX + dx, y, localZ + dz);
-                    if (!block.isAir(world, x, y, z) && (!block.getMaterial().isReplaceable() || block.getMaterial().isLiquid())) {
-                        if (!block.getMaterial().isReplaceable() && (!block.isOpaqueCube() || block.hasTileEntity(metadata))) {
+                    if (!block.isAir(world, x, y, z) && (!block.getMaterial()
+                        .isReplaceable() || block.getMaterial()
+                            .isLiquid())) {
+                        if (!block.getMaterial()
+                            .isReplaceable() && (!block.isOpaqueCube() || block.hasTileEntity(metadata))) {
                             isSafe = false;
                         }
                         layers = 0;
@@ -146,8 +149,11 @@ public class yCoordHelper {
                 for (dz = -1; dz <= 1 && isSafe; dz++) {
                     block = chunk.getBlock(localX + dx, y, localZ + dz);
                     metadata = chunk.getBlockMetadata(localX + dx, y, localZ + dz);
-                    if (!block.isAir(world, x, y, z) && (!block.getMaterial().isReplaceable() || block.getMaterial().isLiquid())) {
-                        if (!block.getMaterial().isReplaceable() && (!block.isOpaqueCube() || block.hasTileEntity(metadata))) {
+                    if (!block.isAir(world, x, y, z) && (!block.getMaterial()
+                        .isReplaceable() || block.getMaterial()
+                            .isLiquid())) {
+                        if (!block.getMaterial()
+                            .isReplaceable() && (!block.isOpaqueCube() || block.hasTileEntity(metadata))) {
                             if (layers >= 3) {
                                 return new Point3D(localX + cornerX, y + 1, localZ + cornerZ);
                             }
@@ -207,7 +213,8 @@ public class yCoordHelper {
         for (y = Math.min(startY, height - 1); y > 0; y--) {
             for (dx = -1, index = 0; dx <= 1; dx++) {
                 for (dz = -1; dz <= 1; dz++, index++) {
-                    if (!chunk.getBlock(localX + dx, y, localZ + dz).isAir(world, x + dx, y, z + dz)) {
+                    if (!chunk.getBlock(localX + dx, y, localZ + dz)
+                        .isAir(world, x + dx, y, z + dz)) {
                         gaps[index] = 0;
                     } else {
                         gaps[index]++;
@@ -231,17 +238,17 @@ public class yCoordHelper {
     }
 
     public static int adjustDestinationY(int y, int worldHeight, int entranceY, int dungeonHeight) {
-        //The goal here is to guarantee that the dungeon fits within the vertical bounds
-        //of the world while shifting it as little as possible.
+        // The goal here is to guarantee that the dungeon fits within the vertical bounds
+        // of the world while shifting it as little as possible.
         int destY = y;
 
-        //Is the top of the dungeon going to be at Y < worldHeight?
+        // Is the top of the dungeon going to be at Y < worldHeight?
         int pocketTop = (dungeonHeight - 1) + destY - entranceY;
         if (pocketTop >= worldHeight) {
             destY = (worldHeight - 1) - (dungeonHeight - 1) + entranceY;
         }
 
-        //Is the bottom of the dungeon at Y >= 0?
+        // Is the bottom of the dungeon at Y >= 0?
         if (destY < entranceY) {
             destY = entranceY;
         }

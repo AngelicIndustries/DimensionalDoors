@@ -1,18 +1,11 @@
 package org.dimdev.dimdoors.blocks;
 
-import org.dimdev.dimdoors.Point3D;
-import org.dimdev.dimdoors.config.DDProperties;
-import org.dimdev.dimdoors.core.DimLink;
-import org.dimdev.dimdoors.core.NewDimData;
-import org.dimdev.dimdoors.core.PocketManager;
-import org.dimdev.dimdoors.DimDoors;
-import org.dimdev.dimdoors.tileentities.TileEntityRift;
-import org.dimdev.dimdoors.util.Point4D;
-import org.dimdev.dimdoors.client.ClosingRiftFX;
-import org.dimdev.dimdoors.client.GoggleRiftFX;
-import cpw.mods.fml.client.FMLClientHandler;
-import cpw.mods.fml.relauncher.Side;
-import cpw.mods.fml.relauncher.SideOnly;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.Queue;
+import java.util.Random;
+
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockLiquid;
 import net.minecraft.block.ITileEntityProvider;
@@ -30,9 +23,23 @@ import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
 import net.minecraftforge.fluids.IFluidBlock;
 
-import java.util.*;
+import org.dimdev.dimdoors.DimDoors;
+import org.dimdev.dimdoors.Point3D;
+import org.dimdev.dimdoors.client.ClosingRiftFX;
+import org.dimdev.dimdoors.client.GoggleRiftFX;
+import org.dimdev.dimdoors.config.DDProperties;
+import org.dimdev.dimdoors.core.DimLink;
+import org.dimdev.dimdoors.core.NewDimData;
+import org.dimdev.dimdoors.core.PocketManager;
+import org.dimdev.dimdoors.tileentities.TileEntityRift;
+import org.dimdev.dimdoors.util.Point4D;
+
+import cpw.mods.fml.client.FMLClientHandler;
+import cpw.mods.fml.relauncher.Side;
+import cpw.mods.fml.relauncher.SideOnly;
 
 public class BlockRift extends Block implements ITileEntityProvider {
+
     private static final float MIN_IMMUNE_RESISTANCE = 5000.0F;
     private static final int BLOCK_DESTRUCTION_RANGE = 4;
     private static final int RIFT_SPREAD_RANGE = 5;
@@ -44,7 +51,7 @@ public class BlockRift extends Block implements ITileEntityProvider {
     public static final int MAX_WORLD_THREAD_DROP_CHANCE = 1000;
 
     private final DDProperties properties;
-    private final ArrayList<Block> blocksImmuneToRift;    // List of Vanilla blocks immune to rifts
+    private final ArrayList<Block> blocksImmuneToRift; // List of Vanilla blocks immune to rifts
     private final ArrayList<Block> modBlocksImmuneToRift; // List of DD blocks immune to rifts
 
     public BlockRift(Material par2Material, DDProperties properties) {
@@ -123,7 +130,7 @@ public class BlockRift extends Block implements ITileEntityProvider {
 
     /**
      * Returns true if the given side of this block type should be rendered, if the adjacent block is at the given
-     * coordinates.  Args: blockAccess, x, y, z, side
+     * coordinates. Args: blockAccess, x, y, z, side
      */
     @Override
     @SideOnly(Side.CLIENT)
@@ -140,15 +147,15 @@ public class BlockRift extends Block implements ITileEntityProvider {
         return null;
     }
 
-    //function that regulates how many blocks it eats/ how fast it eats them.
+    // function that regulates how many blocks it eats/ how fast it eats them.
     @Override
     public void updateTick(World world, int x, int y, int z, Random random) {
-        if (properties.RiftGriefingEnabled && !world.isRemote &&
-                PocketManager.getLink(x, y, z, world.provider.dimensionId) != null) {
-            //Randomly decide whether to search for blocks to destroy. This reduces the frequency of search operations,
-            //moderates performance impact, and controls the apparent speed of block destruction.
-            if (random.nextInt(MAX_BLOCK_SEARCH_CHANCE) < BLOCK_SEARCH_CHANCE &&
-                    ((TileEntityRift) world.getTileEntity(x, y, z)).updateNearestRift()) {
+        if (properties.RiftGriefingEnabled && !world.isRemote
+            && PocketManager.getLink(x, y, z, world.provider.dimensionId) != null) {
+            // Randomly decide whether to search for blocks to destroy. This reduces the frequency of search operations,
+            // moderates performance impact, and controls the apparent speed of block destruction.
+            if (random.nextInt(MAX_BLOCK_SEARCH_CHANCE) < BLOCK_SEARCH_CHANCE
+                && ((TileEntityRift) world.getTileEntity(x, y, z)).updateNearestRift()) {
                 destroyNearbyBlocks(world, x, y, z, random);
             }
         }
@@ -202,23 +209,18 @@ public class BlockRift extends Block implements ITileEntityProvider {
     }
 
     public void dropWorldThread(Block block, World world, int x, int y, int z, Random random) {
-        if (!block.isAir(world, x, y, z) && (random.nextInt(MAX_WORLD_THREAD_DROP_CHANCE) < properties.WorldThreadDropChance)
-                && !(block instanceof BlockLiquid ||
-                block instanceof IFluidBlock)) {
+        if (!block.isAir(world, x, y, z)
+            && (random.nextInt(MAX_WORLD_THREAD_DROP_CHANCE) < properties.WorldThreadDropChance)
+            && !(block instanceof BlockLiquid || block instanceof IFluidBlock)) {
             ItemStack thread = new ItemStack(DimDoors.itemWorldThread, 1);
             world.spawnEntityInWorld(new EntityItem(world, x, y, z, thread));
         }
     }
 
-    private static void addAdjacentBlocks(int x, int y, int z, int distance, HashMap<Point3D, Integer> pointDistances, Queue<Point3D> points) {
-        Point3D[] neighbors = new Point3D[]{
-                new Point3D(x - 1, y, z),
-                new Point3D(x + 1, y, z),
-                new Point3D(x, y - 1, z),
-                new Point3D(x, y + 1, z),
-                new Point3D(x, y, z - 1),
-                new Point3D(x, y, z + 1)
-        };
+    private static void addAdjacentBlocks(int x, int y, int z, int distance, HashMap<Point3D, Integer> pointDistances,
+        Queue<Point3D> points) {
+        Point3D[] neighbors = new Point3D[] { new Point3D(x - 1, y, z), new Point3D(x + 1, y, z),
+            new Point3D(x, y - 1, z), new Point3D(x, y + 1, z), new Point3D(x, y, z - 1), new Point3D(x, y, z + 1) };
         for (int index = 0; index < neighbors.length; index++) {
             if (!pointDistances.containsKey(neighbors[index])) {
                 pointDistances.put(neighbors[index], distance + 1);
@@ -233,8 +235,13 @@ public class BlockRift extends Block implements ITileEntityProvider {
         Point4D source = parent.source();
 
         // Find reachable blocks that are vulnerable to rift damage and include air
-        ArrayList<Point3D> targets = findReachableBlocks(world, source.getX(), source.getY(), source.getZ(),
-                RIFT_SPREAD_RANGE, true);
+        ArrayList<Point3D> targets = findReachableBlocks(
+            world,
+            source.getX(),
+            source.getY(),
+            source.getZ(),
+            RIFT_SPREAD_RANGE,
+            true);
 
         if (!targets.isEmpty()) {
             // Choose randomly from among the possible locations where we can spawn a new rift
@@ -263,26 +270,47 @@ public class BlockRift extends Block implements ITileEntityProvider {
     }
 
     /**
-     * regulates the render effect, especially when multiple rifts start to link up. Has 3 main parts- Grows toward and away from nearest rft, bends toward it, and a randomization function
+     * regulates the render effect, especially when multiple rifts start to link up. Has 3 main parts- Grows toward and
+     * away from nearest rft, bends toward it, and a randomization function
      */
     @Override
     @SideOnly(Side.CLIENT)
 
     public void randomDisplayTick(World world, int x, int y, int z, Random rand) {
 
-
         ArrayList<Point3D> targets = findReachableBlocks(world, x, y, z, 2, false);
-
 
         TileEntityRift tile = (TileEntityRift) world.getTileEntity(x, y, z);
 
-
-        //renders an extra little blob on top of the actual rift location so its easier to find. Eventually will only render if the player has the goggles.
-        FMLClientHandler.instance().getClient().effectRenderer.addEffect(new GoggleRiftFX(world, x + .5, y + .5, z + .5, rand.nextGaussian() * 0.01D, rand.nextGaussian() * 0.01D, rand.nextGaussian() * 0.01D, FMLClientHandler.instance().getClient().effectRenderer));
+        // renders an extra little blob on top of the actual rift location so its easier to find. Eventually will only
+        // render if the player has the goggles.
+        FMLClientHandler.instance()
+            .getClient().effectRenderer.addEffect(
+                new GoggleRiftFX(
+                    world,
+                    x + .5,
+                    y + .5,
+                    z + .5,
+                    rand.nextGaussian() * 0.01D,
+                    rand.nextGaussian() * 0.01D,
+                    rand.nextGaussian() * 0.01D,
+                    FMLClientHandler.instance()
+                        .getClient().effectRenderer));
 
         if (tile.shouldClose) {
-            //renders an opposite color effect if it is being closed by the rift remover
-            FMLClientHandler.instance().getClient().effectRenderer.addEffect(new ClosingRiftFX(world, x + .5, y + .5, z + .5, rand.nextGaussian() * 0.01D, rand.nextGaussian() * 0.01D, rand.nextGaussian() * 0.01D, FMLClientHandler.instance().getClient().effectRenderer));
+            // renders an opposite color effect if it is being closed by the rift remover
+            FMLClientHandler.instance()
+                .getClient().effectRenderer.addEffect(
+                    new ClosingRiftFX(
+                        world,
+                        x + .5,
+                        y + .5,
+                        z + .5,
+                        rand.nextGaussian() * 0.01D,
+                        rand.nextGaussian() * 0.01D,
+                        rand.nextGaussian() * 0.01D,
+                        FMLClientHandler.instance()
+                            .getClient().effectRenderer));
 
         }
 
@@ -304,9 +332,8 @@ public class BlockRift extends Block implements ITileEntityProvider {
             // is designed to receive an entity, the source of the blast. We have no entity so
             // I've set this to access blockResistance directly. Might need changing later.
 
-            return (block.blockResistance >= MIN_IMMUNE_RESISTANCE ||
-                    modBlocksImmuneToRift.contains(block) ||
-                    blocksImmuneToRift.contains(block));
+            return (block.blockResistance >= MIN_IMMUNE_RESISTANCE || modBlocksImmuneToRift.contains(block)
+                || blocksImmuneToRift.contains(block));
         }
         return false;
     }

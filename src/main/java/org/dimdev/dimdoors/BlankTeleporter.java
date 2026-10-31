@@ -6,11 +6,9 @@ import net.minecraft.world.WorldServer;
 
 public class BlankTeleporter extends Teleporter {
 
-
     public BlankTeleporter(WorldServer worldServer) {
         super(worldServer);
     }
-
 
     /**
      * Create a new portal near an entity.
@@ -19,7 +17,6 @@ public class BlankTeleporter extends Teleporter {
     public void placeInPortal(Entity par1Entity, double par2, double par4, double par6, float par8) {
 
     }
-
 
     public void setEntityPosition(Entity entity, double x, double y, double z) {
         entity.lastTickPosX = entity.prevPosX = entity.posX = x;

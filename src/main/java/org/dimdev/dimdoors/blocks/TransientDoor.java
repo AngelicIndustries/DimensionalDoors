@@ -1,8 +1,5 @@
 package org.dimdev.dimdoors.blocks;
 
-import org.dimdev.dimdoors.config.DDProperties;
-import org.dimdev.dimdoors.core.*;
-import org.dimdev.dimdoors.DimDoors;
 import net.minecraft.block.material.Material;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
@@ -11,7 +8,16 @@ import net.minecraft.item.Item;
 import net.minecraft.util.AxisAlignedBB;
 import net.minecraft.world.World;
 
+import org.dimdev.dimdoors.DimDoors;
+import org.dimdev.dimdoors.config.DDProperties;
+import org.dimdev.dimdoors.core.DDTeleporter;
+import org.dimdev.dimdoors.core.DimLink;
+import org.dimdev.dimdoors.core.LinkType;
+import org.dimdev.dimdoors.core.NewDimData;
+import org.dimdev.dimdoors.core.PocketManager;
+
 public class TransientDoor extends BaseDimDoor {
+
     public TransientDoor(Material material, DDProperties properties) {
         super(material, properties);
     }

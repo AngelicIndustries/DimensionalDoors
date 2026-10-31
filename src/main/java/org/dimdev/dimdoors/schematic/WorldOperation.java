@@ -1,7 +1,8 @@
 package org.dimdev.dimdoors.schematic;
 
-import org.dimdev.dimdoors.Point3D;
 import net.minecraft.world.World;
+
+import org.dimdev.dimdoors.Point3D;
 
 public abstract class WorldOperation {
 
@@ -32,28 +33,25 @@ public abstract class WorldOperation {
     }
 
     public boolean apply(World world, int x, int y, int z, int width, int height, int length) {
-        if (!initialize(world, x, y, z, width, height, length))
-            return false;
+        if (!initialize(world, x, y, z, width, height, length)) return false;
 
         int cx, cy, cz;
         int limitX = x + width;
         int limitY = y + height;
         int limitZ = z + length;
 
-        //The order of these loops is important. Don't change it! It's used to avoid calculating
-        //indeces in some schematic operations. The proper order is YZX.
+        // The order of these loops is important. Don't change it! It's used to avoid calculating
+        // indeces in some schematic operations. The proper order is YZX.
         for (cy = y; cy < limitY; cy++) {
             for (cz = z; cz < limitZ; cz++) {
                 for (cx = x; cx < limitX; cx++) {
-                    if (!applyToBlock(world, cx, cy, cz))
-                        return false;
+                    if (!applyToBlock(world, cx, cy, cz)) return false;
                 }
             }
         }
 
         return finish();
     }
-
 
     public String getName() {
         return name;

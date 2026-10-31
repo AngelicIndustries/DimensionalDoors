@@ -1,8 +1,8 @@
 package org.dimdev.dimdoors.schematic;
 
-import net.minecraft.block.Block;
-
 import java.util.ArrayList;
+
+import net.minecraft.block.Block;
 
 public class CompoundFilter extends SchematicFilter {
 

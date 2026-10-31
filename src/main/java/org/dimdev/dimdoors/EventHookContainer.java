@@ -1,16 +1,5 @@
 package org.dimdev.dimdoors;
 
-import org.dimdev.dimdoors.config.DDProperties;
-import org.dimdev.dimdoors.config.DDWorldProperties;
-import org.dimdev.dimdoors.core.*;
-import org.dimdev.dimdoors.items.BaseItemDoor;
-import org.dimdev.dimdoors.items.ItemWarpDoor;
-import org.dimdev.dimdoors.ticking.RiftRegenerator;
-import org.dimdev.dimdoors.util.Point4D;
-import org.dimdev.dimdoors.world.LimboProvider;
-import org.dimdev.dimdoors.world.PocketProvider;
-import cpw.mods.fml.common.eventhandler.EventPriority;
-import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
@@ -26,7 +15,25 @@ import net.minecraftforge.event.terraingen.InitMapGenEvent;
 import net.minecraftforge.event.world.ChunkEvent;
 import net.minecraftforge.event.world.WorldEvent;
 
+import org.dimdev.dimdoors.config.DDProperties;
+import org.dimdev.dimdoors.config.DDWorldProperties;
+import org.dimdev.dimdoors.core.DDTeleporter;
+import org.dimdev.dimdoors.core.DimLink;
+import org.dimdev.dimdoors.core.DimensionType;
+import org.dimdev.dimdoors.core.NewDimData;
+import org.dimdev.dimdoors.core.PocketManager;
+import org.dimdev.dimdoors.items.BaseItemDoor;
+import org.dimdev.dimdoors.items.ItemWarpDoor;
+import org.dimdev.dimdoors.ticking.RiftRegenerator;
+import org.dimdev.dimdoors.util.Point4D;
+import org.dimdev.dimdoors.world.LimboProvider;
+import org.dimdev.dimdoors.world.PocketProvider;
+
+import cpw.mods.fml.common.eventhandler.EventPriority;
+import cpw.mods.fml.common.eventhandler.SubscribeEvent;
+
 public class EventHookContainer {
+
     private static final int MAX_FOOD_LEVEL = 20;
 
     private final DDProperties properties;
@@ -76,8 +83,7 @@ public class EventHookContainer {
                     return;
                 }
             }
-            if (BaseItemDoor.tryToPlaceDoor(stack, event.entityPlayer, world,
-                    event.x, event.y, event.z, event.face)) {
+            if (BaseItemDoor.tryToPlaceDoor(stack, event.entityPlayer, world, event.x, event.y, event.z, event.face)) {
                 // Cancel the event so that we don't get two doors from vanilla doors
                 event.setCanceled(true);
             }
@@ -110,18 +116,22 @@ public class EventHookContainer {
 
         Entity entity = event.entity;
 
-        if (properties.LimboEnabled && properties.LimboReturnsInventoryEnabled &&
-                entity instanceof EntityPlayer && isValidSourceForLimbo(entity.worldObj.provider)) {
+        if (properties.LimboEnabled && properties.LimboReturnsInventoryEnabled
+            && entity instanceof EntityPlayer
+            && isValidSourceForLimbo(entity.worldObj.provider)) {
             if (entity.worldObj.provider instanceof PocketProvider) {
                 EntityPlayer player = (EntityPlayer) entity;
-                DimDoors.deathTracker.addUsername(player.getGameProfile().getName());
+                DimDoors.deathTracker.addUsername(
+                    player.getGameProfile()
+                        .getName());
                 revivePlayerInLimbo(player);
                 event.setCanceled(true);
                 return false;
             } else if (entity.worldObj.provider instanceof LimboProvider && event.source == DamageSource.outOfWorld) {
                 EntityPlayer player = (EntityPlayer) entity;
                 revivePlayerInLimbo(player);
-                DimDoors.sendChat(player, "Search for the dark red pools which accumulate in the lower reaches of Limbo");
+                DimDoors
+                    .sendChat(player, "Search for the dark red pools which accumulate in the lower reaches of Limbo");
                 event.setCanceled(true);
                 return false;
             }
@@ -141,7 +151,9 @@ public class EventHookContainer {
 
         if (entity instanceof EntityPlayer && isValidSourceForLimbo(entity.worldObj.provider)) {
             EntityPlayer player = (EntityPlayer) entity;
-            DimDoors.deathTracker.addUsername(player.getGameProfile().getName());
+            DimDoors.deathTracker.addUsername(
+                player.getGameProfile()
+                    .getName());
 
             if (properties.LimboEnabled && !properties.LimboReturnsInventoryEnabled) {
                 player.inventory.clearInventory(null, -1);
@@ -159,15 +171,16 @@ public class EventHookContainer {
         // Universal Limbo is enabled and the source dimension is not Limbo, or
         // if the source dimension is a pocket dimension.
 
-        return (worldProperties.UniversalLimboEnabled && provider.dimensionId != properties.LimboDimensionID) ||
-                (provider instanceof PocketProvider);
+        return (worldProperties.UniversalLimboEnabled && provider.dimensionId != properties.LimboDimensionID)
+            || (provider instanceof PocketProvider);
     }
 
     private void revivePlayerInLimbo(EntityPlayer player) {
         player.extinguish();
         player.clearActivePotions();
         player.setHealth(player.getMaxHealth());
-        player.getFoodStats().addStats(MAX_FOOD_LEVEL, 0);
+        player.getFoodStats()
+            .addStats(MAX_FOOD_LEVEL, 0);
         Point4D destination = LimboProvider.getLimboSkySpawn(player, properties);
         DDTeleporter.teleportEntity(player, destination, false);
     }

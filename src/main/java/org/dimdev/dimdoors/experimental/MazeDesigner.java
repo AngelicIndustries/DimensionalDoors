@@ -1,12 +1,19 @@
 package org.dimdev.dimdoors.experimental;
 
-import org.dimdev.dimdoors.Point3D;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.Queue;
+import java.util.Random;
+import java.util.Stack;
+
 import net.minecraft.util.MathHelper;
 
-import java.util.LinkedList;
-import java.util.*;
+import org.dimdev.dimdoors.Point3D;
 
 public class MazeDesigner {
+
     private static final int MAZE_WIDTH = 34;
     private static final int MAZE_LENGTH = 34;
     private static final int MAZE_HEIGHT = 20;
@@ -14,8 +21,7 @@ public class MazeDesigner {
     private static final int MIN_SIDE = 3;
     private static final int SPLIT_COUNT = 9;
 
-    private MazeDesigner() {
-    }
+    private MazeDesigner() {}
 
     public static MazeDesign generate(Random random) {
         // Construct a random binary space partitioning of our maze volume
@@ -71,8 +77,14 @@ public class MazeDesigner {
 
     private static void splitByRandomX(PartitionNode node, int levels, Random random) {
         if (node.width() >= 2 * MIN_SIDE) {
-            node.splitByX(MathHelper.getRandomIntegerInRange(random,
-                    node.minCorner().getX() + MIN_SIDE, node.maxCorner().getX() - MIN_SIDE + 1));
+            node.splitByX(
+                MathHelper.getRandomIntegerInRange(
+                    random,
+                    node.minCorner()
+                        .getX() + MIN_SIDE,
+                    node.maxCorner()
+                        .getX() - MIN_SIDE
+                        + 1));
 
             if (levels > 1) {
                 splitByRandomZ(node.leftChild(), levels - 1, random);
@@ -85,8 +97,14 @@ public class MazeDesigner {
 
     private static void splitByRandomZ(PartitionNode node, int levels, Random random) {
         if (node.length() >= 2 * MIN_SIDE) {
-            node.splitByZ(MathHelper.getRandomIntegerInRange(random,
-                    node.minCorner().getZ() + MIN_SIDE, node.maxCorner().getZ() - MIN_SIDE + 1));
+            node.splitByZ(
+                MathHelper.getRandomIntegerInRange(
+                    random,
+                    node.minCorner()
+                        .getZ() + MIN_SIDE,
+                    node.maxCorner()
+                        .getZ() - MIN_SIDE
+                        + 1));
 
             if (levels > 1) {
                 splitByRandomY(node.leftChild(), levels - 1, random);
@@ -99,8 +117,14 @@ public class MazeDesigner {
 
     private static void splitByRandomY(PartitionNode node, int levels, Random random) {
         if (node.height() >= 2 * MIN_HEIGHT) {
-            node.splitByY(MathHelper.getRandomIntegerInRange(random,
-                    node.minCorner().getY() + MIN_HEIGHT, node.maxCorner().getY() - MIN_HEIGHT + 1));
+            node.splitByY(
+                MathHelper.getRandomIntegerInRange(
+                    random,
+                    node.minCorner()
+                        .getY() + MIN_HEIGHT,
+                    node.maxCorner()
+                        .getY() - MIN_HEIGHT
+                        + 1));
 
             if (levels > 1) {
                 splitByRandomX(node.leftChild(), levels - 1, random);
@@ -111,9 +135,11 @@ public class MazeDesigner {
         }
     }
 
-    private static DirectedGraph<PartitionNode, DoorwayData> createRoomGraph(PartitionNode root, ArrayList<PartitionNode> partitions, Random random) {
+    private static DirectedGraph<PartitionNode, DoorwayData> createRoomGraph(PartitionNode root,
+        ArrayList<PartitionNode> partitions, Random random) {
         DirectedGraph<PartitionNode, DoorwayData> roomGraph = new DirectedGraph<PartitionNode, DoorwayData>();
-        HashMap<PartitionNode, IGraphNode<PartitionNode, DoorwayData>> roomsToGraph = new HashMap<PartitionNode, IGraphNode<PartitionNode, DoorwayData>>(2 * partitions.size());
+        HashMap<PartitionNode, IGraphNode<PartitionNode, DoorwayData>> roomsToGraph = new HashMap<PartitionNode, IGraphNode<PartitionNode, DoorwayData>>(
+            2 * partitions.size());
 
         // Shuffle the list of rooms so that they're not listed in any ordered way in the room graph
         // This is the only convenient way of randomizing the maze sections generated later
@@ -135,8 +161,8 @@ public class MazeDesigner {
     }
 
     private static void findDoorways(IGraphNode<PartitionNode, DoorwayData> roomNode, PartitionNode root,
-                                     HashMap<PartitionNode, IGraphNode<PartitionNode, DoorwayData>> roomsToGraph,
-                                     DirectedGraph<PartitionNode, DoorwayData> roomGraph) {
+        HashMap<PartitionNode, IGraphNode<PartitionNode, DoorwayData>> roomsToGraph,
+        DirectedGraph<PartitionNode, DoorwayData> roomGraph) {
         // This function finds rooms adjacent to a specified room that could be connected
         // to it through a doorway. Edges are added to the room graph to denote rooms that
         // could be connected. The areas of their common bounds that could be carved
@@ -180,7 +206,8 @@ public class MazeDesigner {
         int height = room.height();
         int length = room.length();
 
-        if (maxZ < root.maxCorner().getZ()) {
+        if (maxZ < root.maxCorner()
+            .getZ()) {
             // Check for adjacent rooms along the XY plane
             detected = new boolean[width][height];
             for (a = 0; a < width; a++) {
@@ -217,8 +244,8 @@ public class MazeDesigner {
             }
         }
 
-
-        if (maxX < root.maxCorner().getX()) {
+        if (maxX < root.maxCorner()
+            .getX()) {
             // Check for adjacent rooms along the YZ plane
             detected = new boolean[height][length];
             for (b = 0; b < height; b++) {
@@ -255,8 +282,8 @@ public class MazeDesigner {
             }
         }
 
-
-        if (maxY < root.maxCorner().getY()) {
+        if (maxY < root.maxCorner()
+            .getY()) {
             // Check for adjacent rooms along the XZ plane
             detected = new boolean[width][length];
             for (a = 0; a < width; a++) {
@@ -293,10 +320,11 @@ public class MazeDesigner {
             }
         }
 
-        //Done!
+        // Done!
     }
 
-    private static ArrayList<IGraphNode<PartitionNode, DoorwayData>> createMazeSections(DirectedGraph<PartitionNode, DoorwayData> roomGraph, Random random) {
+    private static ArrayList<IGraphNode<PartitionNode, DoorwayData>> createMazeSections(
+        DirectedGraph<PartitionNode, DoorwayData> roomGraph, Random random) {
         // The randomness of the sections generated here hinges on
         // the nodes in the graph being in a random order. We assume
         // that was handled in a previous step!
@@ -381,7 +409,7 @@ public class MazeDesigner {
     }
 
     private static void pruneDoorways(IGraphNode<PartitionNode, DoorwayData> core,
-                                      DirectedGraph<PartitionNode, DoorwayData> rooms, Random random) {
+        DirectedGraph<PartitionNode, DoorwayData> rooms, Random random) {
         // We receive a node for one of the rooms in a section of the maze
         // and we need to remove as many floor doorways as possible while
         // still allowing any room to be reachable from any other room.
@@ -402,8 +430,10 @@ public class MazeDesigner {
         IGraphNode<PartitionNode, DoorwayData> neighbor;
 
         Stack<IGraphNode<PartitionNode, DoorwayData>> ordering = new Stack<IGraphNode<PartitionNode, DoorwayData>>();
-        ArrayList<IGraphNode<PartitionNode, DoorwayData>> subgraph = new ArrayList<IGraphNode<PartitionNode, DoorwayData>>(64);
-        DisjointSet<IGraphNode<PartitionNode, DoorwayData>> components = new DisjointSet<IGraphNode<PartitionNode, DoorwayData>>(128);
+        ArrayList<IGraphNode<PartitionNode, DoorwayData>> subgraph = new ArrayList<IGraphNode<PartitionNode, DoorwayData>>(
+            64);
+        DisjointSet<IGraphNode<PartitionNode, DoorwayData>> components = new DisjointSet<IGraphNode<PartitionNode, DoorwayData>>(
+            128);
 
         ordering.add(core);
         components.makeSet(core);
@@ -428,12 +458,12 @@ public class MazeDesigner {
         // Now iterate over the list of nodes and merge their sets
         // We only have to look at outbound edges since inbound edges mirror them
         // Also list any Y_AXIS doorways we come across
-        ArrayList<IEdge<PartitionNode, DoorwayData>> targets =
-                new ArrayList<IEdge<PartitionNode, DoorwayData>>();
+        ArrayList<IEdge<PartitionNode, DoorwayData>> targets = new ArrayList<IEdge<PartitionNode, DoorwayData>>();
 
         for (IGraphNode<PartitionNode, DoorwayData> room : subgraph) {
             for (IEdge<PartitionNode, DoorwayData> passage : room.outbound()) {
-                if (passage.data().axis() != DoorwayData.Y_AXIS) {
+                if (passage.data()
+                    .axis() != DoorwayData.Y_AXIS) {
                     components.mergeSets(passage.head(), passage.tail());
                 } else {
                     targets.add(passage);
@@ -461,7 +491,8 @@ public class MazeDesigner {
         }
         for (IGraphNode<PartitionNode, DoorwayData> room : subgraph) {
             for (IEdge<PartitionNode, DoorwayData> passage : room.outbound()) {
-                if (passage.data().axis() == DoorwayData.Y_AXIS) {
+                if (passage.data()
+                    .axis() == DoorwayData.Y_AXIS) {
                     components.mergeSets(passage.head(), passage.tail());
                 } else {
                     targets.add(passage);

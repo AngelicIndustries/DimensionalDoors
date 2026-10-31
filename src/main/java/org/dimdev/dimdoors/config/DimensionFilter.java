@@ -5,6 +5,7 @@ import com.google.common.collect.RangeSet;
 import com.google.common.collect.TreeRangeSet;
 
 public class DimensionFilter {
+
     private final RangeSet<Integer> blacklist;
 
     private DimensionFilter(RangeSet<Integer> blacklist) {
@@ -59,7 +60,8 @@ public class DimensionFilter {
                 // Add the interval to the set of intervals
                 ranges.add(Range.closed(start, end));
             } catch (Exception e) {
-                throw new IllegalArgumentException("\"" + interval + "\" is not a valid value or range for dimension IDs");
+                throw new IllegalArgumentException(
+                    "\"" + interval + "\" is not a valid value or range for dimension IDs");
             }
         }
         return ranges;

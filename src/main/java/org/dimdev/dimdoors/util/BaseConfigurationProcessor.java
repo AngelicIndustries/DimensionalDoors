@@ -1,10 +1,15 @@
 package org.dimdev.dimdoors.util;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 
 public abstract class BaseConfigurationProcessor<T> {
-    public BaseConfigurationProcessor() {
-    }
+
+    public BaseConfigurationProcessor() {}
 
     public boolean canRead() {
         return true;
@@ -26,7 +31,9 @@ public abstract class BaseConfigurationProcessor<T> {
     }
 
     public T readFromResource(String resourcePath) throws ConfigurationProcessingException {
-        return readFromStream(this.getClass().getResourceAsStream(resourcePath));
+        return readFromStream(
+            this.getClass()
+                .getResourceAsStream(resourcePath));
     }
 
     public abstract T readFromStream(InputStream inputStream) throws ConfigurationProcessingException;

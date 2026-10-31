@@ -1,14 +1,17 @@
 package org.dimdev.dimdoors.client;
 
-import cpw.mods.fml.client.registry.ISimpleBlockRenderingHandler;
 import net.minecraft.block.Block;
 import net.minecraft.client.renderer.RenderBlocks;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.util.IIcon;
 import net.minecraft.world.IBlockAccess;
+
 import org.lwjgl.opengl.GL11;
 
+import cpw.mods.fml.client.registry.ISimpleBlockRenderingHandler;
+
 public class PrivatePocketRender implements ISimpleBlockRenderingHandler {
+
     public static int renderID;
 
     public PrivatePocketRender(int renderID) {
@@ -36,7 +39,7 @@ public class PrivatePocketRender implements ISimpleBlockRenderingHandler {
             f2 = (float) (k >> 16 & 255) / 255.0F;
             f3 = (float) (k >> 8 & 255) / 255.0F;
             float f7 = (float) (k & 255) / 255.0F;
-            //GL11.glColor4f(f2 * par3, f3 * par3, f7 * par3, 1.0F);
+            // GL11.glColor4f(f2 * par3, f3 * par3, f7 * par3, 1.0F);
         }
 
         tessellator.startDrawingQuads();
@@ -45,7 +48,7 @@ public class PrivatePocketRender implements ISimpleBlockRenderingHandler {
         tessellator.draw();
 
         if (renderer.useInventoryTint) {
-            //   GL11.glColor4f(par3, par3, par3, 1.0F);
+            // GL11.glColor4f(par3, par3, par3, 1.0F);
         }
 
         tessellator.startDrawingQuads();
@@ -68,13 +71,13 @@ public class PrivatePocketRender implements ISimpleBlockRenderingHandler {
     }
 
     @Override
-    public boolean renderWorldBlock(IBlockAccess world, int x, int y, int z, Block block, int modelId, RenderBlocks renderer) {
+    public boolean renderWorldBlock(IBlockAccess world, int x, int y, int z, Block block, int modelId,
+        RenderBlocks renderer) {
 
         Tessellator tessellator = Tessellator.instance;
         boolean flag = false;
 
         IIcon icon = renderer.getBlockIcon(block, world, x, y, z, 2);
-
 
         tessellator.setColorOpaque_F(1F, 1F, 1F);
 
@@ -89,12 +92,10 @@ public class PrivatePocketRender implements ISimpleBlockRenderingHandler {
             flag = true;
         }
 
-
         tessellator.setColorOpaque_F(1F, 1F, 1F);
 
         if (renderer.renderAllFaces || block.shouldSideBeRendered(world, x, y, z - 1, 2)) {
             renderer.renderFaceZNeg(block, x, y, z, icon);
-
 
             flag = true;
         }
@@ -103,14 +104,12 @@ public class PrivatePocketRender implements ISimpleBlockRenderingHandler {
         if (renderer.renderAllFaces || block.shouldSideBeRendered(world, x, y, z + 1, 3)) {
             renderer.renderFaceZPos(block, x, y, z, icon);
 
-
             flag = true;
         }
         tessellator.setColorOpaque_F(1F, 1F, 1F);
 
         if (renderer.renderAllFaces || block.shouldSideBeRendered(world, x - 1, y, z, 4)) {
             renderer.renderFaceXNeg(block, x, y, z, icon);
-
 
             flag = true;
         }
@@ -119,13 +118,11 @@ public class PrivatePocketRender implements ISimpleBlockRenderingHandler {
         if (renderer.renderAllFaces || block.shouldSideBeRendered(world, x + 1, y, z, 5)) {
             renderer.renderFaceXPos(block, x, y, z, icon);
 
-
             flag = true;
         }
 
         return flag;
     }
-
 
     @Override
     public boolean shouldRender3DInInventory(int data) {

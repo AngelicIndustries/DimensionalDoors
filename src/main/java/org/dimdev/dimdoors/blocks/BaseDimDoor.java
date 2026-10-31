@@ -1,15 +1,7 @@
 package org.dimdev.dimdoors.blocks;
 
-import org.dimdev.dimdoors.config.DDProperties;
-import org.dimdev.dimdoors.core.DDTeleporter;
-import org.dimdev.dimdoors.core.DimLink;
-import org.dimdev.dimdoors.core.LinkType;
-import org.dimdev.dimdoors.core.PocketManager;
-import org.dimdev.dimdoors.items.ItemDDKey;
-import org.dimdev.dimdoors.DimDoors;
-import org.dimdev.dimdoors.tileentities.TileEntityDimDoor;
-import cpw.mods.fml.relauncher.Side;
-import cpw.mods.fml.relauncher.SideOnly;
+import java.util.Random;
+
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockDoor;
 import net.minecraft.block.ITileEntityProvider;
@@ -28,9 +20,20 @@ import net.minecraft.util.MovingObjectPosition;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
 
-import java.util.Random;
+import org.dimdev.dimdoors.DimDoors;
+import org.dimdev.dimdoors.config.DDProperties;
+import org.dimdev.dimdoors.core.DDTeleporter;
+import org.dimdev.dimdoors.core.DimLink;
+import org.dimdev.dimdoors.core.LinkType;
+import org.dimdev.dimdoors.core.PocketManager;
+import org.dimdev.dimdoors.items.ItemDDKey;
+import org.dimdev.dimdoors.tileentities.TileEntityDimDoor;
+
+import cpw.mods.fml.relauncher.Side;
+import cpw.mods.fml.relauncher.SideOnly;
 
 public abstract class BaseDimDoor extends BlockDoor implements IDimDoor, ITileEntityProvider {
+
     protected final DDProperties properties;
 
     @SideOnly(Side.CLIENT)
@@ -70,7 +73,8 @@ public abstract class BaseDimDoor extends BlockDoor implements IDimDoor, ITileEn
     }
 
     @Override
-    public boolean onBlockActivated(World world, int x, int y, int z, EntityPlayer player, int side, float hitX, float hitY, float hitZ) {
+    public boolean onBlockActivated(World world, int x, int y, int z, EntityPlayer player, int side, float hitX,
+        float hitY, float hitZ) {
 
         ItemStack stack = player.inventory.getCurrentItem();
         if (stack != null && stack.getItem() instanceof ItemDDKey) {
@@ -148,8 +152,8 @@ public abstract class BaseDimDoor extends BlockDoor implements IDimDoor, ITileEn
         return this.lowerTextures[0];
     }
 
-    //Called to update the render information on the tile entity. Could probably implement a data watcher,
-    //but this works fine and is more versatile I think.
+    // Called to update the render information on the tile entity. Could probably implement a data watcher,
+    // but this works fine and is more versatile I think.
     public BaseDimDoor updateAttachedTile(World world, int x, int y, int z) {
         DimDoors.proxy.updateDoorTE(this, world, x, y, z);
         TileEntity tile = world.getTileEntity(x, y, z);
@@ -182,7 +186,7 @@ public abstract class BaseDimDoor extends BlockDoor implements IDimDoor, ITileEn
     }
 
     /**
-     * Is this block (a) opaque and (b) a full 1m cube?  This determines whether or not to render the shared face of two
+     * Is this block (a) opaque and (b) a full 1m cube? This determines whether or not to render the shared face of two
      * adjacent blocks and also whether the player can attach torches, redstone wire, etc to this block.
      */
     @Override
@@ -194,7 +198,6 @@ public abstract class BaseDimDoor extends BlockDoor implements IDimDoor, ITileEn
     public void setBlockBoundsBasedOnState(IBlockAccess par1IBlockAccess, int par2, int par3, int par4) {
         this.setDoorRotation(func_150012_g(par1IBlockAccess, par2, par3, par4));
     }
-
 
     public void setDoorRotation(int par1) {
         float var2 = 0.1875F;
@@ -246,7 +249,6 @@ public abstract class BaseDimDoor extends BlockDoor implements IDimDoor, ITileEn
         }
     }
 
-
     /**
      * Lets the block know when one of its neighbor changes. Doesn't know which neighbor changed (coordinates passed are
      * their own) Args: x, y, z, neighbor blockID
@@ -269,7 +271,8 @@ public abstract class BaseDimDoor extends BlockDoor implements IDimDoor, ITileEn
                     this.dropBlockAsItem(world, x, y, z, metadata, 0);
                 }
             } else if (this.getLockStatus(world, x, y, z) <= 1) {
-                boolean powered = world.isBlockIndirectlyGettingPowered(x, y, z) || world.isBlockIndirectlyGettingPowered(x, y + 1, z);
+                boolean powered = world.isBlockIndirectlyGettingPowered(x, y, z)
+                    || world.isBlockIndirectlyGettingPowered(x, y + 1, z);
                 if ((powered || !neighbor.isAir(world, x, y, z) && neighbor.canProvidePower()) && neighbor != this) {
                     this.func_150014_a(world, x, y, z, powered);
                 }
@@ -372,7 +375,6 @@ public abstract class BaseDimDoor extends BlockDoor implements IDimDoor, ITileEn
         return status;
     }
 
-
     public boolean checkCanOpen(World world, int x, int y, int z) {
         return this.checkCanOpen(world, x, y, z, null);
     }
@@ -398,7 +400,6 @@ public abstract class BaseDimDoor extends BlockDoor implements IDimDoor, ITileEn
         player.playSound(DimDoors.modid + ":doorLocked", 1F, 1F);
         return false;
     }
-
 
     protected static boolean isEntityFacingDoor(int metadata, EntityLivingBase entity) {
         // Although any entity has the proper fields for this check,

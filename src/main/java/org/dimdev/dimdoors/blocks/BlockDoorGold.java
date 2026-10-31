@@ -1,16 +1,19 @@
 package org.dimdev.dimdoors.blocks;
 
-import org.dimdev.dimdoors.DimDoors;
-import cpw.mods.fml.relauncher.Side;
-import cpw.mods.fml.relauncher.SideOnly;
+import java.util.Random;
+
 import net.minecraft.block.BlockDoor;
 import net.minecraft.block.material.Material;
 import net.minecraft.item.Item;
 import net.minecraft.world.World;
 
-import java.util.Random;
+import org.dimdev.dimdoors.DimDoors;
+
+import cpw.mods.fml.relauncher.Side;
+import cpw.mods.fml.relauncher.SideOnly;
 
 public class BlockDoorGold extends BlockDoor {
+
     public BlockDoorGold(Material par2Material) {
         super(par2Material);
     }

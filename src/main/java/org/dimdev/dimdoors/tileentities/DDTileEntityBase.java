@@ -1,10 +1,11 @@
 package org.dimdev.dimdoors.tileentities;
 
-import net.minecraft.tileentity.TileEntity;
-
 import java.util.Random;
 
+import net.minecraft.tileentity.TileEntity;
+
 public abstract class DDTileEntityBase extends TileEntity {
+
     /**
      * @return an array of floats representing RGBA color where 1.0 = 255.
      */

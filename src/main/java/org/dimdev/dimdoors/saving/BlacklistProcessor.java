@@ -1,18 +1,19 @@
 package org.dimdev.dimdoors.saving;
 
-import org.dimdev.dimdoors.util.BaseConfigurationProcessor;
-import org.dimdev.dimdoors.util.ConfigurationProcessingException;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.stream.JsonReader;
-import com.google.gson.stream.JsonToken;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
+
+import org.dimdev.dimdoors.util.BaseConfigurationProcessor;
+import org.dimdev.dimdoors.util.ConfigurationProcessingException;
+
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.stream.JsonReader;
+import com.google.gson.stream.JsonToken;
 
 public class BlacklistProcessor extends BaseConfigurationProcessor<List<Integer>> {
 
@@ -38,10 +39,13 @@ public class BlacklistProcessor extends BaseConfigurationProcessor<List<Integer>
     @Override
     public void writeToStream(OutputStream outputStream, List<Integer> data) throws ConfigurationProcessingException {
         GsonBuilder gsonBuilder = new GsonBuilder();
-        Gson gson = gsonBuilder.setPrettyPrinting().create();
+        Gson gson = gsonBuilder.setPrettyPrinting()
+            .create();
 
         try {
-            outputStream.write(gson.toJson(data).getBytes("UTF-8"));
+            outputStream.write(
+                gson.toJson(data)
+                    .getBytes("UTF-8"));
             outputStream.close();
         } catch (IOException e) {
             // not sure if this is kosher, we need it to explode, but not by throwing the IO exception.

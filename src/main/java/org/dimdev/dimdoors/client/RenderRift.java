@@ -1,13 +1,15 @@
 package org.dimdev.dimdoors.client;
 
-import org.dimdev.dimdoors.tileentities.TileEntityRift;
-import cpw.mods.fml.relauncher.Side;
-import cpw.mods.fml.relauncher.SideOnly;
+import static org.lwjgl.opengl.GL11.*;
+
 import net.minecraft.client.renderer.tileentity.TileEntitySpecialRenderer;
 import net.minecraft.tileentity.TileEntity;
+
+import org.dimdev.dimdoors.tileentities.TileEntityRift;
 import org.lwjgl.opengl.GL11;
 
-import static org.lwjgl.opengl.GL11.*;
+import cpw.mods.fml.relauncher.Side;
+import cpw.mods.fml.relauncher.SideOnly;
 
 @SideOnly(Side.CLIENT)
 public class RenderRift extends TileEntitySpecialRenderer {

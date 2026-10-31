@@ -1,9 +1,11 @@
 package org.dimdev.dimdoors.commands;
 
-import org.dimdev.dimdoors.helpers.DungeonHelper;
 import net.minecraft.entity.player.EntityPlayer;
 
+import org.dimdev.dimdoors.helpers.DungeonHelper;
+
 public class CommandCreatePocket extends DDCommandBase {
+
     private static CommandCreatePocket instance = null;
 
     private CommandCreatePocket() {
@@ -11,8 +13,7 @@ public class CommandCreatePocket extends DDCommandBase {
     }
 
     public static CommandCreatePocket instance() {
-        if (instance == null)
-            instance = new CommandCreatePocket();
+        if (instance == null) instance = new CommandCreatePocket();
 
         return instance;
     }
@@ -23,14 +24,15 @@ public class CommandCreatePocket extends DDCommandBase {
             return DDCommandResult.TOO_MANY_ARGUMENTS;
         }
 
-        //Place a door leading to a pocket dimension where the player is standing.
-        //The pocket dimension will serve as a room for the player to build a dungeon.
+        // Place a door leading to a pocket dimension where the player is standing.
+        // The pocket dimension will serve as a room for the player to build a dungeon.
         int x = (int) sender.posX;
         int y = (int) sender.posY;
         int z = (int) sender.posZ;
-        DungeonHelper.instance().createCustomDungeonDoor(sender.worldObj, x, y, z);
+        DungeonHelper.instance()
+            .createCustomDungeonDoor(sender.worldObj, x, y, z);
 
-        //Notify the player
+        // Notify the player
         sendChat(sender, "Created a door to a pocket dimension. Please build your dungeon there.");
 
         return DDCommandResult.SUCCESS;

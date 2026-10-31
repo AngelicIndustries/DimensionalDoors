@@ -1,10 +1,11 @@
 package org.dimdev.dimdoors.experimental;
 
-import org.dimdev.dimdoors.schematic.WorldOperation;
+import java.util.Random;
+
 import net.minecraft.block.Block;
 import net.minecraft.world.World;
 
-import java.util.Random;
+import org.dimdev.dimdoors.schematic.WorldOperation;
 
 /**
  * Provides an operation for damaging structures based on a spherical area. The chance of damage decreases
@@ -13,6 +14,7 @@ import java.util.Random;
  * @author SenseiKiwi
  */
 public class SphereDecayOperation extends WorldOperation {
+
     private final Random random;
     private double scaling;
     private double centerX;
@@ -23,7 +25,8 @@ public class SphereDecayOperation extends WorldOperation {
     private final Block secondaryBlock;
     private final int secondaryMetadata;
 
-    public SphereDecayOperation(Random random, Block primaryBlock, int primaryMetadata, Block secondaryBlock, int secondaryMetadata) {
+    public SphereDecayOperation(Random random, Block primaryBlock, int primaryMetadata, Block secondaryBlock,
+        int secondaryMetadata) {
         super("SphereDecayOperation");
         this.random = random;
         this.primaryBlock = primaryBlock;

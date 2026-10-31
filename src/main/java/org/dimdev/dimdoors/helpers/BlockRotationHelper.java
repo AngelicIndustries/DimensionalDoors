@@ -1,11 +1,12 @@
 package org.dimdev.dimdoors.helpers;
 
+import java.util.HashMap;
+
 import net.minecraft.block.Block;
 import net.minecraft.init.Blocks;
 
-import java.util.HashMap;
-
 public class BlockRotationHelper {
+
     public HashMap<Integer, HashMap<Block, HashMap<Integer, Integer>>> rotationMappings = new HashMap<Integer, HashMap<Block, HashMap<Integer, Integer>>>();
 
     public BlockRotationHelper() {
@@ -89,13 +90,11 @@ public class BlockRotationHelper {
         rails0.put(6, 7);
         rails0.put(7, 8);
 
-
         HashMap<Integer, Integer> railsSpecial0 = new HashMap<Integer, Integer>();
         railsSpecial0.put(0, 1);
         railsSpecial0.put(1, 0);
         railsSpecial0.put(8, 9);
         railsSpecial0.put(9, 8);
-
 
         HashMap<Block, HashMap<Integer, Integer>> orientation1 = new HashMap<Block, HashMap<Integer, Integer>>();
 
@@ -146,7 +145,6 @@ public class BlockRotationHelper {
         pistonDropperDispenser1.put(1, 2);
         pistonDropperDispenser1.put(4, 3);
 
-
         HashMap<Integer, Integer> repeaterComparatorDoorTripwire1 = new HashMap<Integer, Integer>();
 
         repeaterComparatorDoorTripwire1.put(0, 2);
@@ -173,7 +171,6 @@ public class BlockRotationHelper {
         rails1.put(9, 7);
         rails1.put(6, 8);
         rails1.put(7, 9);
-
 
         HashMap<Integer, Integer> railsSpecial1 = new HashMap<Integer, Integer>();
         railsSpecial1.put(1, 1);
@@ -230,7 +227,6 @@ public class BlockRotationHelper {
         pistonDropperDispenser2.put(12, 11);
         pistonDropperDispenser2.put(13, 10);
 
-
         HashMap<Integer, Integer> repeaterComparatorDoorTripwire2 = new HashMap<Integer, Integer>();
 
         repeaterComparatorDoorTripwire2.put(1, 0);
@@ -258,13 +254,11 @@ public class BlockRotationHelper {
         rails2.put(6, 9);
         rails2.put(7, 6);
 
-
         HashMap<Integer, Integer> railsSpecial2 = new HashMap<Integer, Integer>();
         railsSpecial2.put(0, 1);
         railsSpecial2.put(1, 0);
         railsSpecial2.put(8, 9);
         railsSpecial2.put(9, 8);
-
 
         orientation0.put(Blocks.brick_stairs, stairs0);
         orientation0.put(Blocks.stone_stairs, stairs0);
@@ -387,14 +381,18 @@ public class BlockRotationHelper {
 
     public int getRotatedBlock(int metaData, int desiredOrientation, int blockID) {
         if (this.rotationMappings.containsKey(desiredOrientation)) {
-            if (this.rotationMappings.get(desiredOrientation).containsKey(blockID)) {
-                if (this.rotationMappings.get(desiredOrientation).get(blockID).containsKey(metaData)) {
-                    return this.rotationMappings.get(desiredOrientation).get(blockID).get(metaData);
+            if (this.rotationMappings.get(desiredOrientation)
+                .containsKey(blockID)) {
+                if (this.rotationMappings.get(desiredOrientation)
+                    .get(blockID)
+                    .containsKey(metaData)) {
+                    return this.rotationMappings.get(desiredOrientation)
+                        .get(blockID)
+                        .get(metaData);
                 }
             }
         }
         return metaData;
     }
-
 
 }

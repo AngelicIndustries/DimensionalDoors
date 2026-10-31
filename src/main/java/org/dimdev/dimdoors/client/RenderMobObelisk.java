@@ -1,9 +1,5 @@
 package org.dimdev.dimdoors.client;
 
-import org.dimdev.dimdoors.DimDoors;
-import org.dimdev.dimdoors.ticking.MobMonolith;
-import cpw.mods.fml.relauncher.Side;
-import cpw.mods.fml.relauncher.SideOnly;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.OpenGlHelper;
 import net.minecraft.client.renderer.entity.RenderLiving;
@@ -12,11 +8,18 @@ import net.minecraft.entity.EntityLiving;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.client.event.RenderLivingEvent;
 import net.minecraftforge.common.MinecraftForge;
+
+import org.dimdev.dimdoors.DimDoors;
+import org.dimdev.dimdoors.ticking.MobMonolith;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL12;
 
+import cpw.mods.fml.relauncher.Side;
+import cpw.mods.fml.relauncher.SideOnly;
+
 @SideOnly(Side.CLIENT)
 public class RenderMobObelisk extends RenderLiving {
+
     protected ModelMobObelisk obeliskModel;
 
     public RenderMobObelisk(float f) {
@@ -58,10 +61,17 @@ public class RenderMobObelisk extends RenderLiving {
         this.mainModel.onGround = this.renderSwingProgress(par1EntityLivingBase, par9);
 
         try {
-            float interpolatedYaw = interpolateRotation(par1EntityLivingBase.prevRenderYawOffset, par1EntityLivingBase.renderYawOffset, par9);
-            float interpolatedYawHead = interpolateRotation(par1EntityLivingBase.prevRotationYawHead, par1EntityLivingBase.rotationYawHead, par9);
+            float interpolatedYaw = interpolateRotation(
+                par1EntityLivingBase.prevRenderYawOffset,
+                par1EntityLivingBase.renderYawOffset,
+                par9);
+            float interpolatedYawHead = interpolateRotation(
+                par1EntityLivingBase.prevRotationYawHead,
+                par1EntityLivingBase.rotationYawHead,
+                par9);
             float rotation;
-            float pitch = par1EntityLivingBase.prevRotationPitch + (par1EntityLivingBase.rotationPitch - par1EntityLivingBase.prevRotationPitch) * par9;
+            float pitch = par1EntityLivingBase.prevRotationPitch
+                + (par1EntityLivingBase.rotationPitch - par1EntityLivingBase.prevRotationPitch) * par9;
             this.renderLivingAt(par1EntityLivingBase, x, y, z);
 
             rotation = this.handleRotationFloat(par1EntityLivingBase, par9);
@@ -74,7 +84,6 @@ public class RenderMobObelisk extends RenderLiving {
             this.preRenderCallback(par1EntityLivingBase, par9);
             GL11.glRotatef(((MobMonolith) par1EntityLivingBase).pitchLevel, 1.0F, 0.0F, 0.0F);
             GL11.glTranslatef(0.0F, 24.0F * f6 - 0.0078125F, 0.0F);
-
 
             this.renderModel(par1EntityLivingBase, 0, 0, rotation, interpolatedYaw, pitch, f6);
 
@@ -111,6 +120,7 @@ public class RenderMobObelisk extends RenderLiving {
     @Override
     protected ResourceLocation getEntityTexture(Entity entity) {
         MobMonolith monolith = (MobMonolith) entity;
-        return new ResourceLocation(DimDoors.modid + ":textures/mobs/oldMonolith/Monolith" + monolith.getTextureState() + ".png");
+        return new ResourceLocation(
+            DimDoors.modid + ":textures/mobs/oldMonolith/Monolith" + monolith.getTextureState() + ".png");
     }
 }

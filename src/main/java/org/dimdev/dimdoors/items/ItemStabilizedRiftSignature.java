@@ -1,12 +1,7 @@
 package org.dimdev.dimdoors.items;
 
-import org.dimdev.dimdoors.core.DimLink;
-import org.dimdev.dimdoors.core.LinkType;
-import org.dimdev.dimdoors.core.NewDimData;
-import org.dimdev.dimdoors.core.PocketManager;
-import org.dimdev.dimdoors.DimDoors;
-import cpw.mods.fml.relauncher.Side;
-import cpw.mods.fml.relauncher.SideOnly;
+import java.util.List;
+
 import net.minecraft.client.renderer.texture.IIconRegister;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Items;
@@ -16,20 +11,32 @@ import net.minecraft.util.StatCollector;
 import net.minecraft.world.World;
 import net.minecraftforge.common.DimensionManager;
 
-import java.util.List;
+import org.dimdev.dimdoors.DimDoors;
+import org.dimdev.dimdoors.core.DimLink;
+import org.dimdev.dimdoors.core.LinkType;
+import org.dimdev.dimdoors.core.NewDimData;
+import org.dimdev.dimdoors.core.PocketManager;
+
+import cpw.mods.fml.relauncher.Side;
+import cpw.mods.fml.relauncher.SideOnly;
 
 public class ItemStabilizedRiftSignature extends ItemRiftSignature {
+
     public ItemStabilizedRiftSignature() {
         super();
     }
 
     @Override
     public void registerIcons(IIconRegister par1IconRegister) {
-        this.itemIcon = par1IconRegister.registerIcon(DimDoors.modid + ":" + this.getUnlocalizedName().replace("item.", ""));
+        this.itemIcon = par1IconRegister.registerIcon(
+            DimDoors.modid + ":"
+                + this.getUnlocalizedName()
+                    .replace("item.", ""));
     }
 
     @Override
-    public boolean onItemUseFirst(ItemStack stack, EntityPlayer player, World world, int x, int y, int z, int side, float hitX, float hitY, float hitZ) {
+    public boolean onItemUseFirst(ItemStack stack, EntityPlayer player, World world, int x, int y, int z, int side,
+        float hitX, float hitY, float hitZ) {
         // Return false on the client side to pass this request to the server
         if (world.isRemote) {
             return false;
@@ -58,15 +65,16 @@ public class ItemStabilizedRiftSignature extends ItemRiftSignature {
             // intention of overwriting the source-side link to point there.
             // Those benign redirection operations will be handled for free.
 
-            if (reverse != null && source.getPoint().equals(reverse.destination())) {
+            if (reverse != null && source.getPoint()
+                .equals(reverse.destination())) {
                 // Only the source-to-destination link is needed.
-                link = sourceDimension.createLink(source.getX(), source.getY(), source.getZ(), LinkType.NORMAL, source.getOrientation());
+                link = sourceDimension
+                    .createLink(source.getX(), source.getY(), source.getZ(), LinkType.NORMAL, source.getOrientation());
                 destinationDimension.setLinkDestination(link, x, adjustedY, z);
             } else {
                 // Check if the player is in creative mode,
                 // or if the player can pay with an Ender Pearl to create a rift.
-                if (!player.capabilities.isCreativeMode &&
-                        !player.inventory.consumeInventoryItem(Items.ender_pearl)) {
+                if (!player.capabilities.isCreativeMode && !player.inventory.consumeInventoryItem(Items.ender_pearl)) {
                     DimDoors.sendChat(player, "You don't have any Ender Pearls!");
                     // I won't do this, but this is the chance to localize chat
                     // messages sent to the player; look at ChatMessageComponent
@@ -75,7 +83,8 @@ public class ItemStabilizedRiftSignature extends ItemRiftSignature {
                 }
 
                 // Create links connecting the two endpoints.
-                link = sourceDimension.createLink(source.getX(), source.getY(), source.getZ(), LinkType.NORMAL, source.getOrientation());
+                link = sourceDimension
+                    .createLink(source.getX(), source.getY(), source.getZ(), LinkType.NORMAL, source.getOrientation());
                 reverse = destinationDimension.createLink(x, adjustedY, z, LinkType.NORMAL, orientation);
                 destinationDimension.setLinkDestination(link, x, adjustedY, z);
                 sourceDimension.setLinkDestination(reverse, source.getX(), source.getY(), source.getZ());
@@ -123,9 +132,11 @@ public class ItemStabilizedRiftSignature extends ItemRiftSignature {
             // link pairs. In other words, the SRS is being used on a location
             // that already has a link pointing to the SRS's source, with the
             // intention of overwriting the source-side link to point there.
-            if (reverse != null && source.getPoint().equals(reverse.destination())) {
+            if (reverse != null && source.getPoint()
+                .equals(reverse.destination())) {
                 // Only the source-to-destination link is needed.
-                link = sourceDimension.createLink(source.getX(), source.getY(), source.getZ(), LinkType.NORMAL, source.getOrientation());
+                link = sourceDimension
+                    .createLink(source.getX(), source.getY(), source.getZ(), LinkType.NORMAL, source.getOrientation());
                 destinationDimension.setLinkDestination(link, x, adjustedY, z);
 
                 // Try placing a rift at the source point
@@ -144,13 +155,18 @@ public class ItemStabilizedRiftSignature extends ItemRiftSignature {
     /**
      * allows items to add custom lines of information to the mouseover description
      */
-    @SuppressWarnings({"rawtypes", "unchecked"})
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     @SideOnly(Side.CLIENT)
     @Override
     public void addInformation(ItemStack par1ItemStack, EntityPlayer par2EntityPlayer, List par3List, boolean par4) {
         Point4DOrientation source = getSource(par1ItemStack);
         if (source != null) {
-            String text = StatCollector.translateToLocalFormatted("info.riftSignature.bound", source.getX(), source.getY(), source.getZ(), source.getDimension());
+            String text = StatCollector.translateToLocalFormatted(
+                "info.riftSignature.bound",
+                source.getX(),
+                source.getY(),
+                source.getZ(),
+                source.getDimension());
             par3List.add(text);
         } else {
             DimDoors.translateAndAdd("info.riftSignature.stable", par3List);

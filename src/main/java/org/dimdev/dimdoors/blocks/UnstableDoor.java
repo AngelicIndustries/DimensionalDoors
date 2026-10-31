@@ -1,18 +1,20 @@
 package org.dimdev.dimdoors.blocks;
 
-import org.dimdev.dimdoors.config.DDProperties;
-import org.dimdev.dimdoors.core.LinkType;
-import org.dimdev.dimdoors.core.NewDimData;
-import org.dimdev.dimdoors.core.PocketManager;
-import org.dimdev.dimdoors.DimDoors;
+import java.util.Random;
+
 import net.minecraft.block.material.Material;
 import net.minecraft.init.Items;
 import net.minecraft.item.Item;
 import net.minecraft.world.World;
 
-import java.util.Random;
+import org.dimdev.dimdoors.DimDoors;
+import org.dimdev.dimdoors.config.DDProperties;
+import org.dimdev.dimdoors.core.LinkType;
+import org.dimdev.dimdoors.core.NewDimData;
+import org.dimdev.dimdoors.core.PocketManager;
 
 public class UnstableDoor extends BaseDimDoor {
+
     public UnstableDoor(Material material, DDProperties properties) {
         super(material, properties);
     }

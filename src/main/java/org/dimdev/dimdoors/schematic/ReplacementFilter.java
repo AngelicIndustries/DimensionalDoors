@@ -1,6 +1,5 @@
 package org.dimdev.dimdoors.schematic;
 
-
 import net.minecraft.block.Block;
 
 public class ReplacementFilter extends SchematicFilter {

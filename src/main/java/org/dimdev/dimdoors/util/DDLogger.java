@@ -3,6 +3,7 @@ package org.dimdev.dimdoors.util;
 import java.util.HashMap;
 
 public class DDLogger {
+
     private static DDLogger instance;
     private StringBuilder log;
     private final HashMap<String, DDTimer> timers = new HashMap<String, DDTimer>();
@@ -21,6 +22,7 @@ public class DDLogger {
     }
 
     private class DDTimer {
+
         final String description;
         Long startTime;
         Long endTime;

@@ -1,10 +1,10 @@
 package org.dimdev.dimdoors.client;
 
-import org.dimdev.dimdoors.config.DDProperties;
-import org.dimdev.dimdoors.DimDoors;
-import org.dimdev.dimdoors.tileentities.TileEntityDimDoor;
-import cpw.mods.fml.relauncher.Side;
-import cpw.mods.fml.relauncher.SideOnly;
+import static org.lwjgl.opengl.GL11.*;
+
+import java.nio.FloatBuffer;
+import java.util.Random;
+
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.ActiveRenderInfo;
 import net.minecraft.client.renderer.GLAllocation;
@@ -12,43 +12,44 @@ import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.tileentity.TileEntitySpecialRenderer;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.ResourceLocation;
+
+import org.dimdev.dimdoors.DimDoors;
+import org.dimdev.dimdoors.config.DDProperties;
+import org.dimdev.dimdoors.tileentities.TileEntityDimDoor;
 import org.lwjgl.opengl.GL11;
 
-import java.nio.FloatBuffer;
-import java.util.Random;
-
-import static org.lwjgl.opengl.GL11.*;
+import cpw.mods.fml.relauncher.Side;
+import cpw.mods.fml.relauncher.SideOnly;
 
 @SideOnly(Side.CLIENT)
 public class RenderDimDoor extends TileEntitySpecialRenderer {
+
     private final FloatBuffer buffer = GLAllocation.createDirectFloatBuffer(16);
     private final ResourceLocation warpPath = new ResourceLocation(DimDoors.modid + ":textures/other/WARP.png");
     private final ResourceLocation keyPath = new ResourceLocation(DimDoors.modid + ":textures/other/keyhole.png");
-    private final ResourceLocation KeyholeLight = new ResourceLocation(DimDoors.modid + ":textures/other/keyholeLight.png");
+    private final ResourceLocation KeyholeLight = new ResourceLocation(
+        DimDoors.modid + ":textures/other/keyholeLight.png");
     private final ResourceLocation keyOutline = new ResourceLocation(DimDoors.modid + ":textures/other/keyOutline.png");
-    private final ResourceLocation keyOutlineLight = new ResourceLocation(DimDoors.modid + ":textures/other/keyOutlineLight.png");
-
+    private final ResourceLocation keyOutlineLight = new ResourceLocation(
+        DimDoors.modid + ":textures/other/keyOutlineLight.png");
 
     private static final int NETHER_DIMENSION_ID = -1;
     private static DDProperties properties = null;
 
     public RenderDimDoor() {
-        if (properties == null)
-            properties = DDProperties.instance();
+        if (properties == null) properties = DDProperties.instance();
     }
 
     /**
      * Renders the dimdoor.
      */
-    public void renderDimDoorTileEntity(TileEntityDimDoor tile, double x,
-                                        double y, double z) {
+    public void renderDimDoorTileEntity(TileEntityDimDoor tile, double x, double y, double z) {
 
         GL11.glDisable(GL11.GL_LIGHTING);
         Random rand = new Random(31100L);
         float var13 = 0.75F;
 
         for (int count = 0; count < 16; ++count) {
-
 
             GL11.glPushMatrix();
             float var15 = 16 - count;
@@ -73,67 +74,41 @@ public class RenderDimDoor extends TileEntitySpecialRenderer {
                 var16 = .5F;
             }
 
+            GL11.glTranslatef(Minecraft.getSystemTime() % 200000L / 200000.0F, 0, 0.0F);
+            GL11.glTranslatef(0, Minecraft.getSystemTime() % 200000L / 200000.0F, 0.0F);
+            GL11.glTranslatef(0, 0, Minecraft.getSystemTime() % 200000L / 200000.0F);
 
-            GL11.glTranslatef(
-                    Minecraft.getSystemTime() % 200000L / 200000.0F,
-                    0, 0.0F);
-            GL11.glTranslatef(0,
-                    Minecraft.getSystemTime() % 200000L / 200000.0F,
-                    0.0F);
-            GL11.glTranslatef(0, 0,
-                    Minecraft.getSystemTime() % 200000L / 200000.0F);
-
-            GL11.glTexGeni(GL11.GL_S, GL11.GL_TEXTURE_GEN_MODE,
-                    GL11.GL_OBJECT_LINEAR);
-            GL11.glTexGeni(GL11.GL_T, GL11.GL_TEXTURE_GEN_MODE,
-                    GL11.GL_OBJECT_LINEAR);
-            GL11.glTexGeni(GL11.GL_R, GL11.GL_TEXTURE_GEN_MODE,
-                    GL11.GL_OBJECT_LINEAR);
-            GL11.glTexGeni(GL11.GL_Q, GL11.GL_TEXTURE_GEN_MODE,
-                    GL11.GL_OBJECT_LINEAR);
+            GL11.glTexGeni(GL11.GL_S, GL11.GL_TEXTURE_GEN_MODE, GL11.GL_OBJECT_LINEAR);
+            GL11.glTexGeni(GL11.GL_T, GL11.GL_TEXTURE_GEN_MODE, GL11.GL_OBJECT_LINEAR);
+            GL11.glTexGeni(GL11.GL_R, GL11.GL_TEXTURE_GEN_MODE, GL11.GL_OBJECT_LINEAR);
+            GL11.glTexGeni(GL11.GL_Q, GL11.GL_TEXTURE_GEN_MODE, GL11.GL_OBJECT_LINEAR);
             switch ((tile.orientation % 4) + 4) {
                 case 4:
-                    GL11.glTexGen(GL11.GL_S, GL11.GL_OBJECT_PLANE,
-                            this.getFloatBuffer(0.0F, 1.0F, 0.0F, 0.0F));
-                    GL11.glTexGen(GL11.GL_T, GL11.GL_OBJECT_PLANE,
-                            this.getFloatBuffer(0.0F, 0.0F, 1.0F, 0.0F));
-                    GL11.glTexGen(GL11.GL_R, GL11.GL_OBJECT_PLANE,
-                            this.getFloatBuffer(0.0F, 0.0F, 0.0F, 1.0F));
-                    GL11.glTexGen(GL11.GL_Q, GL11.GL_OBJECT_PLANE,
-                            this.getFloatBuffer(1.0F, 0.0F, 0.0F, 0.15F));
+                    GL11.glTexGen(GL11.GL_S, GL11.GL_OBJECT_PLANE, this.getFloatBuffer(0.0F, 1.0F, 0.0F, 0.0F));
+                    GL11.glTexGen(GL11.GL_T, GL11.GL_OBJECT_PLANE, this.getFloatBuffer(0.0F, 0.0F, 1.0F, 0.0F));
+                    GL11.glTexGen(GL11.GL_R, GL11.GL_OBJECT_PLANE, this.getFloatBuffer(0.0F, 0.0F, 0.0F, 1.0F));
+                    GL11.glTexGen(GL11.GL_Q, GL11.GL_OBJECT_PLANE, this.getFloatBuffer(1.0F, 0.0F, 0.0F, 0.15F));
 
                     break;
                 case 5:
 
-                    GL11.glTexGen(GL11.GL_S, GL11.GL_OBJECT_PLANE,
-                            this.getFloatBuffer(0.0F, 1.0F, 0.0F, 0.0F));
-                    GL11.glTexGen(GL11.GL_T, GL11.GL_OBJECT_PLANE,
-                            this.getFloatBuffer(1.0F, 0.0F, 0.0F, 0.0F));
-                    GL11.glTexGen(GL11.GL_R, GL11.GL_OBJECT_PLANE,
-                            this.getFloatBuffer(0.0F, 0.0F, 0.0F, 1.0F));
-                    GL11.glTexGen(GL11.GL_Q, GL11.GL_OBJECT_PLANE,
-                            this.getFloatBuffer(0.0F, 0.0F, 1.0F, 0.15F));
+                    GL11.glTexGen(GL11.GL_S, GL11.GL_OBJECT_PLANE, this.getFloatBuffer(0.0F, 1.0F, 0.0F, 0.0F));
+                    GL11.glTexGen(GL11.GL_T, GL11.GL_OBJECT_PLANE, this.getFloatBuffer(1.0F, 0.0F, 0.0F, 0.0F));
+                    GL11.glTexGen(GL11.GL_R, GL11.GL_OBJECT_PLANE, this.getFloatBuffer(0.0F, 0.0F, 0.0F, 1.0F));
+                    GL11.glTexGen(GL11.GL_Q, GL11.GL_OBJECT_PLANE, this.getFloatBuffer(0.0F, 0.0F, 1.0F, 0.15F));
                     break;
                 case 6:
-                    GL11.glTexGen(GL11.GL_S, GL11.GL_OBJECT_PLANE,
-                            this.getFloatBuffer(0.0F, 1.0F, 0.0F, 0.0F));
-                    GL11.glTexGen(GL11.GL_T, GL11.GL_OBJECT_PLANE,
-                            this.getFloatBuffer(0.0F, 0.0F, 1.0F, 0.0F));
-                    GL11.glTexGen(GL11.GL_R, GL11.GL_OBJECT_PLANE,
-                            this.getFloatBuffer(0.0F, 0.0F, 0.0F, 1.0F));
-                    GL11.glTexGen(GL11.GL_Q, GL11.GL_OBJECT_PLANE,
-                            this.getFloatBuffer(1.0F, 0.0F, 0.0F, -0.15F));
+                    GL11.glTexGen(GL11.GL_S, GL11.GL_OBJECT_PLANE, this.getFloatBuffer(0.0F, 1.0F, 0.0F, 0.0F));
+                    GL11.glTexGen(GL11.GL_T, GL11.GL_OBJECT_PLANE, this.getFloatBuffer(0.0F, 0.0F, 1.0F, 0.0F));
+                    GL11.glTexGen(GL11.GL_R, GL11.GL_OBJECT_PLANE, this.getFloatBuffer(0.0F, 0.0F, 0.0F, 1.0F));
+                    GL11.glTexGen(GL11.GL_Q, GL11.GL_OBJECT_PLANE, this.getFloatBuffer(1.0F, 0.0F, 0.0F, -0.15F));
 
                     break;
                 case 7:
-                    GL11.glTexGen(GL11.GL_S, GL11.GL_OBJECT_PLANE,
-                            this.getFloatBuffer(0.0F, 1.0F, 0.0F, 0.0F));
-                    GL11.glTexGen(GL11.GL_T, GL11.GL_OBJECT_PLANE,
-                            this.getFloatBuffer(1.0F, 0.0F, 0.0F, 0.0F));
-                    GL11.glTexGen(GL11.GL_R, GL11.GL_OBJECT_PLANE,
-                            this.getFloatBuffer(0.0F, 0.0F, 0.0F, 1.0F));
-                    GL11.glTexGen(GL11.GL_Q, GL11.GL_OBJECT_PLANE,
-                            this.getFloatBuffer(0.0F, 0.0F, 1.0F, -0.15F));
+                    GL11.glTexGen(GL11.GL_S, GL11.GL_OBJECT_PLANE, this.getFloatBuffer(0.0F, 1.0F, 0.0F, 0.0F));
+                    GL11.glTexGen(GL11.GL_T, GL11.GL_OBJECT_PLANE, this.getFloatBuffer(1.0F, 0.0F, 0.0F, 0.0F));
+                    GL11.glTexGen(GL11.GL_R, GL11.GL_OBJECT_PLANE, this.getFloatBuffer(0.0F, 0.0F, 0.0F, 1.0F));
+                    GL11.glTexGen(GL11.GL_Q, GL11.GL_OBJECT_PLANE, this.getFloatBuffer(0.0F, 0.0F, 1.0F, -0.15F));
                     break;
 
             }
@@ -143,18 +118,14 @@ public class RenderDimDoor extends TileEntitySpecialRenderer {
             GL11.glEnable(GL11.GL_TEXTURE_GEN_R);
             GL11.glEnable(GL11.GL_TEXTURE_GEN_Q);
 
-
             GL11.glPopMatrix();
             GL11.glMatrixMode(GL11.GL_TEXTURE);
             GL11.glPushMatrix();
             GL11.glLoadIdentity();
-            GL11.glTranslatef(0.0F,
-                    Minecraft.getSystemTime() % 200000L / 200000.0F
-                            * var15, 0.0F);
+            GL11.glTranslatef(0.0F, Minecraft.getSystemTime() % 200000L / 200000.0F * var15, 0.0F);
             GL11.glScalef(var16, var16, var16);
             GL11.glTranslatef(0.5F, 0.5F, 0.5F);
-            GL11.glRotatef((count * count * 4321 + count * 9) * 2.0F,
-                    0.0F, 0.0F, 1.0F);
+            GL11.glRotatef((count * count * 4321 + count * 9) * 2.0F, 0.0F, 0.0F, 1.0F);
             GL11.glTranslatef(0.5F, 0.5F, 0.5F);
 
             GL11.glBegin(GL11.GL_QUADS);
@@ -214,7 +185,6 @@ public class RenderDimDoor extends TileEntitySpecialRenderer {
                     break;
             }
 
-
             GL11.glEnd();
 
             GL11.glPopMatrix();
@@ -231,13 +201,15 @@ public class RenderDimDoor extends TileEntitySpecialRenderer {
 
     private FloatBuffer getFloatBuffer(float par1, float par2, float par3, float par4) {
         buffer.clear();
-        buffer.put(par1).put(par2).put(par3).put(par4);
+        buffer.put(par1)
+            .put(par2)
+            .put(par3)
+            .put(par4);
         buffer.flip();
         return buffer;
     }
 
-    private void renderKeyHole(TileEntityDimDoor tile, double x,
-                               double y, double z, int i) {
+    private void renderKeyHole(TileEntityDimDoor tile, double x, double y, double z, int i) {
         if (tile.orientation > 3) {
             return;
         }
@@ -251,7 +223,7 @@ public class RenderDimDoor extends TileEntitySpecialRenderer {
         z = ActiveRenderInfo.objectZ;
 
         GL11.glRotatef(180.0F - 90 * rotation, 0.0F, 1.0F, 0.0F);
-        //GL11.glRotatef((float)(-90 * rotation), 0.0F, 0.0F, 1.0F);
+        // GL11.glRotatef((float)(-90 * rotation), 0.0F, 0.0F, 1.0F);
 
         GL11.glTranslatef(0.007F, .25F, 0F);
 
@@ -297,18 +269,15 @@ public class RenderDimDoor extends TileEntitySpecialRenderer {
         GL11.glTranslatef(0.0F, 0.0F, -1.0F);
         GL11.glDisable(GL11.GL_BLEND);
 
-
         GL11.glPopMatrix();
     }
-
 
     @Override
     public void renderTileEntityAt(TileEntity par1TileEntity, double par2, double par4, double par6, float par8) {
         if (properties.DoorRenderingEnabled) {
             TileEntityDimDoor tile = (TileEntityDimDoor) par1TileEntity;
             try {
-                DimDoors.dimensionalDoor.updateAttachedTile(tile.getWorldObj(),
-                        tile.xCoord, tile.yCoord, tile.zCoord);
+                DimDoors.dimensionalDoor.updateAttachedTile(tile.getWorldObj(), tile.xCoord, tile.yCoord, tile.zCoord);
             } catch (Exception e) {
                 e.printStackTrace();
             }

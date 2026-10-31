@@ -1,10 +1,12 @@
 package org.dimdev.dimdoors.items;
 
-import org.dimdev.dimdoors.DimDoors;
 import net.minecraft.client.renderer.texture.IIconRegister;
 import net.minecraft.item.Item;
 
+import org.dimdev.dimdoors.DimDoors;
+
 public class ItemStableFabric extends Item {
+
     public ItemStableFabric(int par2) {
         super();
         this.setCreativeTab(DimDoors.dimDoorsCreativeTab);
@@ -12,6 +14,9 @@ public class ItemStableFabric extends Item {
 
     @Override
     public void registerIcons(IIconRegister par1IconRegister) {
-        this.itemIcon = par1IconRegister.registerIcon(DimDoors.modid + ":" + this.getUnlocalizedName().replace("item.", ""));
+        this.itemIcon = par1IconRegister.registerIcon(
+            DimDoors.modid + ":"
+                + this.getUnlocalizedName()
+                    .replace("item.", ""));
     }
 }

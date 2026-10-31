@@ -1,11 +1,12 @@
 package org.dimdev.dimdoors.util;
 
-import org.dimdev.dimdoors.Point3D;
-import io.netty.buffer.ByteBuf;
-import net.minecraft.nbt.NBTTagCompound;
-
 import java.io.IOException;
 
+import net.minecraft.nbt.NBTTagCompound;
+
+import org.dimdev.dimdoors.Point3D;
+
+import io.netty.buffer.ByteBuf;
 
 public final class Point4D implements Comparable<Point4D> {
 
@@ -45,13 +46,14 @@ public final class Point4D implements Comparable<Point4D> {
 
     @Override
     public int hashCode() {
-        //Time for some witchcraft.
-        //The code here is inspired by a discussion on Stack Overflow regarding hash codes for 3D.
-        //Source: http://stackoverflow.com/questions/9858376/hashcode-for-3d-integer-coordinates-with-high-spatial-coherence
+        // Time for some witchcraft.
+        // The code here is inspired by a discussion on Stack Overflow regarding hash codes for 3D.
+        // Source:
+        // http://stackoverflow.com/questions/9858376/hashcode-for-3d-integer-coordinates-with-high-spatial-coherence
 
-        //I believe that most of the time, any points we might be hashing will be in close proximity to each other.
-        //For instance, points that are within the same chunk or within a few neighboring chunks. Only the low-order
-        //bits of each component would differ. I'll use 8 bits from Y and the 12 bits from X and Z. ~SenseiKiwi
+        // I believe that most of the time, any points we might be hashing will be in close proximity to each other.
+        // For instance, points that are within the same chunk or within a few neighboring chunks. Only the low-order
+        // bits of each component would differ. I'll use 8 bits from Y and the 12 bits from X and Z. ~SenseiKiwi
 
         int bit;
         int hash;
@@ -77,18 +79,20 @@ public final class Point4D implements Comparable<Point4D> {
     }
 
     public long toSeed() {
-        //Time for some witchcraft.
-        //The code here is inspired by a discussion on Stack Overflow regarding hash codes for 3D.
-        //Source: http://stackoverflow.com/questions/9858376/hashcode-for-3d-integer-coordinates-with-high-spatial-coherence
+        // Time for some witchcraft.
+        // The code here is inspired by a discussion on Stack Overflow regarding hash codes for 3D.
+        // Source:
+        // http://stackoverflow.com/questions/9858376/hashcode-for-3d-integer-coordinates-with-high-spatial-coherence
 
-        //Use 8 bits from Y and 16 bits from X and Z. Mix in 8 bits from the destination dim ID too - that means
-        //even if you aligned two doors perfectly between two pockets, it's unlikely they would lead to the same dungeon.
-        //We map bits in reverse order to produce more varied RNG output for nearly-identical points. The reason is
-        //that Java's Random outputs the 32 MSBs of its internal state to produce its output. If the differences
-        //between two seeds are small (i.e. in the LSBs), then they will tend to produce similar random outputs anyway!
+        // Use 8 bits from Y and 16 bits from X and Z. Mix in 8 bits from the destination dim ID too - that means
+        // even if you aligned two doors perfectly between two pockets, it's unlikely they would lead to the same
+        // dungeon.
+        // We map bits in reverse order to produce more varied RNG output for nearly-identical points. The reason is
+        // that Java's Random outputs the 32 MSBs of its internal state to produce its output. If the differences
+        // between two seeds are small (i.e. in the LSBs), then they will tend to produce similar random outputs anyway!
 
-        //Only bother to assign the 48 least-significant bits since Random only takes those bits from its seed.
-        //NOTE: The casts to long are necessary to get the right results from the bit shifts!!!
+        // Only bother to assign the 48 least-significant bits since Random only takes those bits from its seed.
+        // NOTE: The casts to long are necessary to get the right results from the bit shifts!!!
 
         int bit;
         int index;
@@ -130,14 +134,12 @@ public final class Point4D implements Comparable<Point4D> {
     }
 
     public int[] toIntArray() {
-        return new int[]{x, y, z, dimension};
+        return new int[] { x, y, z, dimension };
     }
 
     public boolean equals(Point4D other) {
-        if (this == other)
-            return true;
-        if (other == null)
-            return false;
+        if (this == other) return true;
+        if (other == null) return false;
 
         return (x == other.x && y == other.y && z == other.z && dimension == other.dimension);
     }
@@ -145,14 +147,11 @@ public final class Point4D implements Comparable<Point4D> {
     @Override
     public int compareTo(Point4D other) {
         int diff = x - other.x;
-        if (diff != 0)
-            return diff;
+        if (diff != 0) return diff;
         diff = y - other.y;
-        if (diff != 0)
-            return diff;
+        if (diff != 0) return diff;
         diff = z - other.z;
-        if (diff != 0)
-            return diff;
+        if (diff != 0) return diff;
         return dimension - other.dimension;
     }
 

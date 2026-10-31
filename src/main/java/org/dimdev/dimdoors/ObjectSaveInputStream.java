@@ -1,11 +1,15 @@
 package org.dimdev.dimdoors;
 
-import java.io.*;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InvalidClassException;
+import java.io.ObjectInputStream;
+import java.io.ObjectStreamClass;
 
 @SuppressWarnings("unused")
 public class ObjectSaveInputStream extends ObjectInputStream {
 
-    //  private static Logger logger = LoggerFactory.getLogger(ObjectSaveInputStream.class);
+    // private static Logger logger = LoggerFactory.getLogger(ObjectSaveInputStream.class);
 
     public ObjectSaveInputStream(InputStream in) throws IOException {
         super(in);
@@ -18,7 +22,7 @@ public class ObjectSaveInputStream extends ObjectInputStream {
         try {
             localClass = Class.forName(resultClassDescriptor.getName());
         } catch (ClassNotFoundException e) {
-            //   logger.error("No local class for " + resultClassDescriptor.getName(), e);
+            // logger.error("No local class for " + resultClassDescriptor.getName(), e);
             return resultClassDescriptor;
         }
         ObjectStreamClass localClassDescriptor = ObjectStreamClass.lookup(localClass);
@@ -26,10 +30,12 @@ public class ObjectSaveInputStream extends ObjectInputStream {
             final long localSUID = localClassDescriptor.getSerialVersionUID();
             final long streamSUID = resultClassDescriptor.getSerialVersionUID();
             if (streamSUID != localSUID) { // check for serialVersionUID mismatch.
-                String s = "Overriding serialized class version mismatch: " + "local serialVersionUID = " + localSUID +
-                        " stream serialVersionUID = " + streamSUID;
+                String s = "Overriding serialized class version mismatch: " + "local serialVersionUID = "
+                    + localSUID
+                    + " stream serialVersionUID = "
+                    + streamSUID;
                 Exception e = new InvalidClassException(s);
-                //     logger.error("Potentially Fatal Deserialization Operation.", e);
+                // logger.error("Potentially Fatal Deserialization Operation.", e);
                 resultClassDescriptor = localClassDescriptor; // Use local class descriptor for deserialization
             }
         }

@@ -1,13 +1,15 @@
 package org.dimdev.dimdoors.items;
 
-import org.dimdev.dimdoors.DimDoors;
 import net.minecraft.block.Block;
 import net.minecraft.client.renderer.texture.IIconRegister;
 import net.minecraft.item.ItemBlock;
 import net.minecraft.item.ItemStack;
 
+import org.dimdev.dimdoors.DimDoors;
+
 public class ItemBlockDimWall extends ItemBlock {
-    private final static String[] subNames = {"tile.blockDimWall", "tile.blockAncientWall", "tile.blockAlteredWall"};
+
+    private final static String[] subNames = { "tile.blockDimWall", "tile.blockAncientWall", "tile.blockAlteredWall" };
 
     public ItemBlockDimWall(Block block) {
         super(block);
@@ -17,7 +19,10 @@ public class ItemBlockDimWall extends ItemBlock {
 
     @Override
     public void registerIcons(IIconRegister par1IconRegister) {
-        this.itemIcon = par1IconRegister.registerIcon(DimDoors.modid + ":" + this.getUnlocalizedName().replace("tile.", ""));
+        this.itemIcon = par1IconRegister.registerIcon(
+            DimDoors.modid + ":"
+                + this.getUnlocalizedName()
+                    .replace("tile.", ""));
     }
 
     @Override

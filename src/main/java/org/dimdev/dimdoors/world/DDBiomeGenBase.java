@@ -3,6 +3,7 @@ package org.dimdev.dimdoors.world;
 import net.minecraft.world.biome.BiomeGenBase;
 
 public class DDBiomeGenBase extends BiomeGenBase {
+
     public DDBiomeGenBase(int biomeID, String name) {
         super(biomeID);
         this.setBiomeName(name);
@@ -22,7 +23,8 @@ public class DDBiomeGenBase extends BiomeGenBase {
             if (getBiomeGenArray()[biomes[k]] != null && !(getBiomeGenArray()[biomes[k]] instanceof DDBiomeGenBase)) {
                 // Crash Minecraft to avoid having people complain to us about strange things
                 // that are really the result of silent biome ID conflicts.
-                throw new IllegalStateException("There is a biome ID conflict between a biome from Dimensional Doors and another biome type. Fix your configuration!");
+                throw new IllegalStateException(
+                    "There is a biome ID conflict between a biome from Dimensional Doors and another biome type. Fix your configuration!");
             }
         }
     }

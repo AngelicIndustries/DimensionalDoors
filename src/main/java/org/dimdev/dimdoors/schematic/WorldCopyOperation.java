@@ -7,6 +7,7 @@ import net.minecraft.tileentity.TileEntity;
 import net.minecraft.world.World;
 
 public class WorldCopyOperation extends WorldOperation {
+
     private int originX;
     private int originY;
     private int originZ;
@@ -41,17 +42,17 @@ public class WorldCopyOperation extends WorldOperation {
 
         TileEntity tileEntity = world.getTileEntity(x, y, z);
         if (tileEntity != null) {
-            //Extract tile entity data
+            // Extract tile entity data
             NBTTagCompound tileTag = new NBTTagCompound();
             tileEntity.writeToNBT(tileTag);
-            //Translate the tile entity's position from the world's coordinate system
-            //to the schematic's coordinate system.
+            // Translate the tile entity's position from the world's coordinate system
+            // to the schematic's coordinate system.
             tileTag.setInteger("x", x - originX);
             tileTag.setInteger("y", y - originY);
             tileTag.setInteger("z", z - originZ);
             tileEntities.appendTag(tileTag);
         }
-        index++; //This works assuming the loops in WorldOperation are done in YZX order
+        index++; // This works assuming the loops in WorldOperation are done in YZX order
         return true;
     }
 

@@ -1,9 +1,8 @@
 package org.dimdev.dimdoors.world;
 
-import org.dimdev.dimdoors.config.DDProperties;
-import org.dimdev.dimdoors.DimDoors;
-import org.dimdev.dimdoors.ticking.CustomLimboPopulator;
-import cpw.mods.fml.common.eventhandler.Event;
+import java.util.List;
+import java.util.Random;
+
 import net.minecraft.block.Block;
 import net.minecraft.entity.EnumCreatureType;
 import net.minecraft.init.Blocks;
@@ -20,10 +19,14 @@ import net.minecraft.world.gen.structure.MapGenScatteredFeature;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.terraingen.ChunkProviderEvent;
 
-import java.util.List;
-import java.util.Random;
+import org.dimdev.dimdoors.DimDoors;
+import org.dimdev.dimdoors.config.DDProperties;
+import org.dimdev.dimdoors.ticking.CustomLimboPopulator;
+
+import cpw.mods.fml.common.eventhandler.Event;
 
 public class LimboGenerator extends ChunkProviderGenerate {
+
     private static Random rand;
 
     /**
@@ -108,7 +111,7 @@ public class LimboGenerator extends ChunkProviderGenerate {
     int[][] field_73219_j = new int[32][32];
 
     {
-        //     caveGenerator = TerrainGen.getModdedMapGen(caveGenerator, CAVE);
+        // caveGenerator = TerrainGen.getModdedMapGen(caveGenerator, CAVE);
     }
 
     private final DDProperties properties;
@@ -118,16 +121,18 @@ public class LimboGenerator extends ChunkProviderGenerate {
         super(world, seed, false);
 
         LimboGenerator.rand = new Random(seed);
-        this.noiseGen1 = new NoiseGeneratorOctaves(LimboGenerator.rand, 16); //base terrain
-        this.noiseGen2 = new NoiseGeneratorOctaves(LimboGenerator.rand, 16); //hillyness
-        this.noiseGen3 = new NoiseGeneratorOctaves(LimboGenerator.rand, 80);  //seems to adjust the size of features, how stretched things are -default 8
+        this.noiseGen1 = new NoiseGeneratorOctaves(LimboGenerator.rand, 16); // base terrain
+        this.noiseGen2 = new NoiseGeneratorOctaves(LimboGenerator.rand, 16); // hillyness
+        this.noiseGen3 = new NoiseGeneratorOctaves(LimboGenerator.rand, 80); // seems to adjust the size of features,
+                                                                             // how stretched things are -default 8
         this.noiseGen4 = new NoiseGeneratorOctaves(LimboGenerator.rand, 4);
         this.noiseGen5 = new NoiseGeneratorOctaves(LimboGenerator.rand, 10);
         this.noiseGen6 = new NoiseGeneratorOctaves(LimboGenerator.rand, 16);
         this.mobSpawnerNoise = new NoiseGeneratorOctaves(LimboGenerator.rand, 8);
 
-        NoiseGeneratorOctaves[] noiseGens = {noiseGen1, noiseGen2, noiseGen3, noiseGen4, noiseGen5, noiseGen6, mobSpawnerNoise};
-        //     noiseGens = TerrainGen.getModdedNoiseGenerators(par1World, this.rand, noiseGens);
+        NoiseGeneratorOctaves[] noiseGens = { noiseGen1, noiseGen2, noiseGen3, noiseGen4, noiseGen5, noiseGen6,
+            mobSpawnerNoise };
+        // noiseGens = TerrainGen.getModdedNoiseGenerators(par1World, this.rand, noiseGens);
         this.noiseGen1 = noiseGens[0];
         this.noiseGen2 = noiseGens[1];
         this.noiseGen3 = noiseGens[2];
@@ -148,13 +153,14 @@ public class LimboGenerator extends ChunkProviderGenerate {
     }
 
     @Override
-    public void replaceBlocksForBiome(int par1, int par2, Block[] blocks, byte[] par3ArrayOfByte, BiomeGenBase[] par4ArrayOfBiomeGenBase) {
+    public void replaceBlocksForBiome(int par1, int par2, Block[] blocks, byte[] par3ArrayOfByte,
+        BiomeGenBase[] par4ArrayOfBiomeGenBase) {
 
     }
 
     @Override
     public Chunk provideChunk(int chunkX, int chunkZ) {
-        //TODO: Wtf? Why do you reinitialize the seed when we already initialized it in the constructor?! ~SenseiKiwi
+        // TODO: Wtf? Why do you reinitialize the seed when we already initialized it in the constructor?! ~SenseiKiwi
         LimboGenerator.rand.setSeed(chunkX * 341873128712L + chunkZ * 132897987541L);
         Block[] var3 = new Block[32768];
         this.func_147424_a(chunkX, chunkZ, var3);
@@ -185,8 +191,17 @@ public class LimboGenerator extends ChunkProviderGenerate {
         return super.saveChunks(var1, var2);
     }
 
-    private double[] initializeNoiseField(double[] par1ArrayOfDouble, int par2, int par3, int par4, int par5, int par6, int par7) {
-        ChunkProviderEvent.InitNoiseField event = new ChunkProviderEvent.InitNoiseField(this, par1ArrayOfDouble, par2, par3, par4, par5, par6, par7);
+    private double[] initializeNoiseField(double[] par1ArrayOfDouble, int par2, int par3, int par4, int par5, int par6,
+        int par7) {
+        ChunkProviderEvent.InitNoiseField event = new ChunkProviderEvent.InitNoiseField(
+            this,
+            par1ArrayOfDouble,
+            par2,
+            par3,
+            par4,
+            par5,
+            par6,
+            par7);
         MinecraftForge.EVENT_BUS.post(event);
         if (event.getResult() == Event.Result.DENY) return event.noisefield;
 
@@ -205,13 +220,25 @@ public class LimboGenerator extends ChunkProviderGenerate {
             }
         }
 
-        double var44 = 884.412D; //large values here create spiky land. add a 0, good -default 884
-        double var45 = 9840.412D; //large values here make sheets- default - 684
+        double var44 = 884.412D; // large values here create spiky land. add a 0, good -default 884
+        double var45 = 9840.412D; // large values here make sheets- default - 684
         this.noise5 = this.noiseGen5.generateNoiseOctaves(this.noise5, par2, par4, par5, par7, 1.121D, 1.121D, 0.5D);
         this.noise6 = this.noiseGen6.generateNoiseOctaves(this.noise6, par2, par4, par5, par7, 200.0D, 200.0D, 0.5D);
-        this.noise3 = this.noiseGen3.generateNoiseOctaves(this.noise3, par2, par3, par4, par5, par6, par7, var44 / 80.0D, var45 / 160.0D, var44 / 80.0D);
-        this.noise1 = this.noiseGen1.generateNoiseOctaves(this.noise1, par2, par3, par4, par5, par6, par7, var44, var45, var44);
-        this.noise2 = this.noiseGen2.generateNoiseOctaves(this.noise2, par2, par3, par4, par5, par6, par7, var44, var45, var44);
+        this.noise3 = this.noiseGen3.generateNoiseOctaves(
+            this.noise3,
+            par2,
+            par3,
+            par4,
+            par5,
+            par6,
+            par7,
+            var44 / 80.0D,
+            var45 / 160.0D,
+            var44 / 80.0D);
+        this.noise1 = this.noiseGen1
+            .generateNoiseOctaves(this.noise1, par2, par3, par4, par5, par6, par7, var44, var45, var44);
+        this.noise2 = this.noiseGen2
+            .generateNoiseOctaves(this.noise2, par2, par3, par4, par5, par6, par7, var44, var45, var44);
 
         int var12 = 0;
         int var13 = 0;
@@ -225,10 +252,10 @@ public class LimboGenerator extends ChunkProviderGenerate {
 
                 for (int var21 = -var19; var21 <= var19; ++var21) {
                     for (int var22 = -var19; var22 <= var19; ++var22) {
-                        float var24 = this.parabolicField[var21 + 2 + (var22 + 2) * 5] / (BiomeGenBase.plains.rootHeight + 9.0F);
+                        float var24 = this.parabolicField[var21 + 2 + (var22 + 2) * 5]
+                            / (BiomeGenBase.plains.rootHeight + 9.0F);
 
-
-                        //this adjusts the height of the terrain
+                        // this adjusts the height of the terrain
 
                         var16 += BiomeGenBase.plains.heightVariation * var24 + 4;
                         var17 += BiomeGenBase.plains.rootHeight * var24 - 1;
@@ -316,7 +343,8 @@ public class LimboGenerator extends ChunkProviderGenerate {
         int var7 = var4 + 1;
         byte var8 = 17;
         int var9 = var4 + 1;
-        this.biomesForGeneration = this.worldObj.getWorldChunkManager().getBiomesForGeneration(this.biomesForGeneration, par1 * 4 - 2, par2 * 4 - 2, var7 + 5, var9 + 5);
+        this.biomesForGeneration = this.worldObj.getWorldChunkManager()
+            .getBiomesForGeneration(this.biomesForGeneration, par1 * 4 - 2, par2 * 4 - 2, var7 + 5, var9 + 5);
         this.noiseArray = this.initializeNoiseField(this.noiseArray, par1 * var4, 0, par2 * var4, var7, var8, var9);
 
         for (int var10 = 0; var10 < var4; ++var10) {
@@ -330,7 +358,8 @@ public class LimboGenerator extends ChunkProviderGenerate {
                     double var23 = (this.noiseArray[((var10) * var9 + var11) * var8 + var12 + 1] - var15) * var13;
                     double var25 = (this.noiseArray[((var10) * var9 + var11 + 1) * var8 + var12 + 1] - var17) * var13;
                     double var27 = (this.noiseArray[((var10 + 1) * var9 + var11) * var8 + var12 + 1] - var19) * var13;
-                    double var29 = (this.noiseArray[((var10 + 1) * var9 + var11 + 1) * var8 + var12 + 1] - var21) * var13;
+                    double var29 = (this.noiseArray[((var10 + 1) * var9 + var11 + 1) * var8 + var12 + 1] - var21)
+                        * var13;
 
                     for (int var31 = 0; var31 < 8; ++var31) {
                         double var32 = 0.25D;
@@ -371,7 +400,6 @@ public class LimboGenerator extends ChunkProviderGenerate {
         }
     }
 
-
     @Override
     public boolean canSave() {
         // TODO Auto-generated method stub
@@ -388,12 +416,15 @@ public class LimboGenerator extends ChunkProviderGenerate {
     public List getPossibleCreatures(EnumCreatureType par1EnumCreatureType, int par2, int par3, int par4) {
 
         BiomeGenBase biomegenbase = this.worldObj.getBiomeGenForCoords(par2, par4);
-        return biomegenbase == null ? null : (biomegenbase == BiomeGenBase.swampland && par1EnumCreatureType == EnumCreatureType.monster && this.scatteredFeatureGenerator.hasStructureAt(par2, par3, par4) ? this.scatteredFeatureGenerator.getScatteredFeatureSpawnList() : biomegenbase.getSpawnableList(par1EnumCreatureType));
+        return biomegenbase == null ? null
+            : (biomegenbase == BiomeGenBase.swampland && par1EnumCreatureType == EnumCreatureType.monster
+                && this.scatteredFeatureGenerator.hasStructureAt(par2, par3, par4)
+                    ? this.scatteredFeatureGenerator.getScatteredFeatureSpawnList()
+                    : biomegenbase.getSpawnableList(par1EnumCreatureType));
     }
 
     @Override
-    public ChunkPosition func_147416_a(World var1, String var2,
-                                       int var3, int var4, int var5) {
+    public ChunkPosition func_147416_a(World var1, String var2, int var3, int var4, int var5) {
         // TODO Auto-generated method stub
         return null;
     }

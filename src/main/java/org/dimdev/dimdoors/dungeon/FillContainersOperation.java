@@ -1,8 +1,7 @@
 package org.dimdev.dimdoors.dungeon;
 
-import org.dimdev.dimdoors.DDLoot;
-import org.dimdev.dimdoors.config.DDProperties;
-import org.dimdev.dimdoors.schematic.WorldOperation;
+import java.util.Random;
+
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockContainer;
 import net.minecraft.inventory.IInventory;
@@ -10,9 +9,12 @@ import net.minecraft.tileentity.TileEntity;
 import net.minecraft.tileentity.TileEntityChest;
 import net.minecraft.world.World;
 
-import java.util.Random;
+import org.dimdev.dimdoors.DDLoot;
+import org.dimdev.dimdoors.config.DDProperties;
+import org.dimdev.dimdoors.schematic.WorldOperation;
 
 public class FillContainersOperation extends WorldOperation {
+
     private final Random random;
     private final DDProperties properties;
 

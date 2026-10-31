@@ -2,13 +2,27 @@ package org.dimdev.dimdoors.commands;
 
 public class DDCommandResult {
 
-
     public static final DDCommandResult SUCCESS = new DDCommandResult(0, "", false);
-    public static final DDCommandResult TOO_FEW_ARGUMENTS = new DDCommandResult(1, "Error: Too few arguments passed to the command", true);
-    public static final DDCommandResult TOO_MANY_ARGUMENTS = new DDCommandResult(2, "Error: Too many arguments passed to the command", true);
-    public static final DDCommandResult INVALID_DIMENSION_ID = new DDCommandResult(3, "Error: Invalid dimension ID", true);
-    public static final DDCommandResult UNREGISTERED_DIMENSION = new DDCommandResult(4, "Error: Dimension is not registered", false);
-    public static final DDCommandResult INVALID_ARGUMENTS = new DDCommandResult(5, "Error: Invalid arguments passed to the command", true);
+    public static final DDCommandResult TOO_FEW_ARGUMENTS = new DDCommandResult(
+        1,
+        "Error: Too few arguments passed to the command",
+        true);
+    public static final DDCommandResult TOO_MANY_ARGUMENTS = new DDCommandResult(
+        2,
+        "Error: Too many arguments passed to the command",
+        true);
+    public static final DDCommandResult INVALID_DIMENSION_ID = new DDCommandResult(
+        3,
+        "Error: Invalid dimension ID",
+        true);
+    public static final DDCommandResult UNREGISTERED_DIMENSION = new DDCommandResult(
+        4,
+        "Error: Dimension is not registered",
+        false);
+    public static final DDCommandResult INVALID_ARGUMENTS = new DDCommandResult(
+        5,
+        "Error: Invalid arguments passed to the command",
+        true);
     public static final DDCommandResult PLAYER_OFFLINE = new DDCommandResult(6, "Error: Player is not online", false);
 
     public static final int CUSTOM_ERROR_CODE = -1;

@@ -1,11 +1,7 @@
 package org.dimdev.dimdoors.ticking;
 
-import org.dimdev.dimdoors.config.DDProperties;
-import org.dimdev.dimdoors.core.DDTeleporter;
-import org.dimdev.dimdoors.DimDoors;
-import org.dimdev.dimdoors.util.Point4D;
-import org.dimdev.dimdoors.world.LimboProvider;
-import org.dimdev.dimdoors.world.PocketProvider;
+import java.util.List;
+
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityFlying;
 import net.minecraft.entity.SharedMonsterAttributes;
@@ -17,9 +13,15 @@ import net.minecraft.util.DamageSource;
 import net.minecraft.util.MathHelper;
 import net.minecraft.world.World;
 
-import java.util.List;
+import org.dimdev.dimdoors.DimDoors;
+import org.dimdev.dimdoors.config.DDProperties;
+import org.dimdev.dimdoors.core.DDTeleporter;
+import org.dimdev.dimdoors.util.Point4D;
+import org.dimdev.dimdoors.world.LimboProvider;
+import org.dimdev.dimdoors.world.PocketProvider;
 
 public class MobMonolith extends EntityFlying implements IMob {
+
     private static final short MAX_AGGRO = 250;
     private static final short MAX_AGGRO_CAP = 100;
     private static final short MIN_AGGRO_CAP = 25;
@@ -44,17 +46,16 @@ public class MobMonolith extends EntityFlying implements IMob {
         this.setSize(WIDTH, HEIGHT);
         this.noClip = true;
         this.aggroCap = (short) MathHelper.getRandomIntegerInRange(this.rand, MIN_AGGRO_CAP, MAX_AGGRO_CAP);
-        if (properties == null)
-            properties = DDProperties.instance();
+        if (properties == null) properties = DDProperties.instance();
     }
 
     public boolean isDangerous() {
-        return properties.MonolithTeleportationEnabled && (properties.LimboDimensionID != worldObj.provider.dimensionId || !properties.DangerousLimboMonolithsDisabled);
+        return properties.MonolithTeleportationEnabled && (properties.LimboDimensionID != worldObj.provider.dimensionId
+            || !properties.DangerousLimboMonolithsDisabled);
     }
 
     @Override
-    protected void damageEntity(DamageSource par1DamageSource, float par2) {
-    }
+    protected void damageEntity(DamageSource par1DamageSource, float par2) {}
 
     @Override
     public boolean attackEntityFrom(DamageSource par1DamageSource, float par2) {
@@ -87,7 +88,9 @@ public class MobMonolith extends EntityFlying implements IMob {
     @Override
     protected void applyEntityAttributes() {
         super.applyEntityAttributes();
-        this.getAttributeMap().getAttributeInstance(SharedMonsterAttributes.maxHealth).setBaseValue(57005);
+        this.getAttributeMap()
+            .getAttributeInstance(SharedMonsterAttributes.maxHealth)
+            .setBaseValue(57005);
     }
 
     @Override
@@ -115,7 +118,8 @@ public class MobMonolith extends EntityFlying implements IMob {
     @Override
     public void onEntityUpdate() {
         // Remove this Monolith if it's not in Limbo or in a pocket dimension
-        if (!(this.worldObj.provider.dimensionId == properties.LimboDimensionID || this.worldObj.provider instanceof PocketProvider)) {
+        if (!(this.worldObj.provider.dimensionId == properties.LimboDimensionID
+            || this.worldObj.provider instanceof PocketProvider)) {
             this.setDead();
             super.onEntityUpdate();
             return;
@@ -147,9 +151,10 @@ public class MobMonolith extends EntityFlying implements IMob {
                 }
 
                 // Teleport the target player if various conditions are met
-                if (aggro >= MAX_AGGRO && !this.worldObj.isRemote &&
-                        properties.MonolithTeleportationEnabled && !player.capabilities.isCreativeMode &&
-                        isDangerous()) {
+                if (aggro >= MAX_AGGRO && !this.worldObj.isRemote
+                    && properties.MonolithTeleportationEnabled
+                    && !player.capabilities.isCreativeMode
+                    && isDangerous()) {
                     this.aggro = 0;
                     Point4D destination = LimboProvider.getLimboSkySpawn(player, properties);
                     DDTeleporter.teleportEntity(player, destination, false);
@@ -167,10 +172,8 @@ public class MobMonolith extends EntityFlying implements IMob {
             // Rapidly increase the aggro level if this Monolith can see the player
             if (visibility) {
                 if (this.worldObj.provider.dimensionId == properties.LimboDimensionID) {
-                    if (isDangerous())
-                        aggro++;
-                    else
-                        aggro += 36;
+                    if (isDangerous()) aggro++;
+                    else aggro += 36;
                 } else {
                     // Aggro increases faster outside of Limbo
                     aggro += 3;
@@ -184,8 +187,7 @@ public class MobMonolith extends EntityFlying implements IMob {
                         // Increase aggro if a player is within range and aggro < aggroCap
                         aggro++;
                     }
-                } else
-                    aggro -= 3;
+                } else aggro -= 3;
             }
             // Clamp the aggro level
             int maxAggro = isDangerous() ? MAX_AGGRO : 180;
@@ -214,11 +216,23 @@ public class MobMonolith extends EntityFlying implements IMob {
             this.soundTime = 100;
         }
         if ((aggroPercent > 0.70) && this.soundTime < 100) {
-            this.worldObj.playSoundEffect(entityPlayer.posX, entityPlayer.posY, entityPlayer.posZ, DimDoors.modid + ":tearing", 1F, (float) (1 + this.rand.nextGaussian()));
+            this.worldObj.playSoundEffect(
+                entityPlayer.posX,
+                entityPlayer.posY,
+                entityPlayer.posZ,
+                DimDoors.modid + ":tearing",
+                1F,
+                (float) (1 + this.rand.nextGaussian()));
             this.soundTime = 100 + this.rand.nextInt(75);
         }
         if ((aggroPercent > 0.80) && this.soundTime < 200) {
-            this.worldObj.playSoundEffect(entityPlayer.posX, entityPlayer.posY, entityPlayer.posZ, DimDoors.modid + ":tearing", 7, 1F);
+            this.worldObj.playSoundEffect(
+                entityPlayer.posX,
+                entityPlayer.posY,
+                entityPlayer.posZ,
+                DimDoors.modid + ":tearing",
+                7,
+                1F);
             this.soundTime = 250;
         }
         this.soundTime--;
@@ -227,11 +241,14 @@ public class MobMonolith extends EntityFlying implements IMob {
     private void spawnParticles(EntityPlayer player) {
         int count = 10 * aggro / MAX_AGGRO;
         for (int i = 1; i < count; ++i) {
-            player.worldObj.spawnParticle("portal", player.posX + (this.rand.nextDouble() - 0.5D) * this.width,
-                    player.posY + this.rand.nextDouble() * player.height - 0.75D,
-                    player.posZ + (this.rand.nextDouble() - 0.5D) * player.width,
-                    (this.rand.nextDouble() - 0.5D) * 2.0D, -this.rand.nextDouble(),
-                    (this.rand.nextDouble() - 0.5D) * 2.0D);
+            player.worldObj.spawnParticle(
+                "portal",
+                player.posX + (this.rand.nextDouble() - 0.5D) * this.width,
+                player.posY + this.rand.nextDouble() * player.height - 0.75D,
+                player.posZ + (this.rand.nextDouble() - 0.5D) * player.width,
+                (this.rand.nextDouble() - 0.5D) * 2.0D,
+                -this.rand.nextDouble(),
+                (this.rand.nextDouble() - 0.5D) * 2.0D);
         }
     }
 
@@ -268,7 +285,15 @@ public class MobMonolith extends EntityFlying implements IMob {
     @Override
     public boolean getCanSpawnHere() {
         @SuppressWarnings("rawtypes")
-        List list = this.worldObj.getEntitiesWithinAABBExcludingEntity(this, AxisAlignedBB.getBoundingBox(this.posX - 15, posY - 4, this.posZ - 15, this.posX + 15, this.posY + 15, this.posZ + 15));
+        List list = this.worldObj.getEntitiesWithinAABBExcludingEntity(
+            this,
+            AxisAlignedBB.getBoundingBox(
+                this.posX - 15,
+                posY - 4,
+                this.posZ - 15,
+                this.posX + 15,
+                this.posY + 15,
+                this.posZ + 15));
 
         if (this.worldObj.provider.dimensionId == DDProperties.instance().LimboDimensionID) {
             if (list.size() > 0) {
@@ -276,13 +301,13 @@ public class MobMonolith extends EntityFlying implements IMob {
             }
 
         } else if (this.worldObj.provider instanceof PocketProvider) {
-            if (list.size() > 5 ||
-                    this.worldObj.canBlockSeeTheSky((int) this.posX, (int) this.posY, (int) this.posZ)) {
+            if (list.size() > 5 || this.worldObj.canBlockSeeTheSky((int) this.posX, (int) this.posY, (int) this.posZ)) {
                 return false;
             }
         }
-        return this.worldObj.checkNoEntityCollision(this.boundingBox) &&
-                this.worldObj.getCollidingBoundingBoxes(this, this.boundingBox).isEmpty() &&
-                !this.worldObj.isAnyLiquid(this.boundingBox);
+        return this.worldObj.checkNoEntityCollision(this.boundingBox)
+            && this.worldObj.getCollidingBoundingBoxes(this, this.boundingBox)
+                .isEmpty()
+            && !this.worldObj.isAnyLiquid(this.boundingBox);
     }
 }

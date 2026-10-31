@@ -1,14 +1,7 @@
 package org.dimdev.dimdoors.items;
 
-import org.dimdev.dimdoors.blocks.BaseDimDoor;
-import org.dimdev.dimdoors.core.DimLink;
-import org.dimdev.dimdoors.core.LinkType;
-import org.dimdev.dimdoors.core.NewDimData;
-import org.dimdev.dimdoors.core.PocketManager;
-import org.dimdev.dimdoors.DimDoors;
-import org.dimdev.dimdoors.util.Point4D;
-import cpw.mods.fml.relauncher.Side;
-import cpw.mods.fml.relauncher.SideOnly;
+import java.util.List;
+
 import net.minecraft.block.Block;
 import net.minecraft.client.renderer.texture.IIconRegister;
 import net.minecraft.entity.player.EntityPlayer;
@@ -20,9 +13,19 @@ import net.minecraft.util.StatCollector;
 import net.minecraft.world.World;
 import net.minecraftforge.common.DimensionManager;
 
-import java.util.List;
+import org.dimdev.dimdoors.DimDoors;
+import org.dimdev.dimdoors.blocks.BaseDimDoor;
+import org.dimdev.dimdoors.core.DimLink;
+import org.dimdev.dimdoors.core.LinkType;
+import org.dimdev.dimdoors.core.NewDimData;
+import org.dimdev.dimdoors.core.PocketManager;
+import org.dimdev.dimdoors.util.Point4D;
+
+import cpw.mods.fml.relauncher.Side;
+import cpw.mods.fml.relauncher.SideOnly;
 
 public class ItemRiftSignature extends Item {
+
     public ItemRiftSignature() {
         super();
         this.setMaxStackSize(1);
@@ -34,17 +37,21 @@ public class ItemRiftSignature extends Item {
     @SideOnly(Side.CLIENT)
     @Override
     public boolean hasEffect(ItemStack stack, int pass) {
-        //Make the item glow if it has one endpoint stored
+        // Make the item glow if it has one endpoint stored
         return (stack.getItemDamage() != 0);
     }
 
     @Override
     public void registerIcons(IIconRegister par1IconRegister) {
-        this.itemIcon = par1IconRegister.registerIcon(DimDoors.modid + ":" + this.getUnlocalizedName().replace("item.", ""));
+        this.itemIcon = par1IconRegister.registerIcon(
+            DimDoors.modid + ":"
+                + this.getUnlocalizedName()
+                    .replace("item.", ""));
     }
 
     @Override
-    public boolean onItemUseFirst(ItemStack stack, EntityPlayer player, World world, int x, int y, int z, int side, float hitX, float hitY, float hitZ) {
+    public boolean onItemUseFirst(ItemStack stack, EntityPlayer player, World world, int x, int y, int z, int side,
+        float hitX, float hitY, float hitZ) {
         // We must use onItemUseFirst() instead of onItemUse() because Minecraft checks
         // whether the user is in creative mode after calling onItemUse() and undoes any
         // damage we might set to indicate the rift sig has been activated. Otherwise,
@@ -56,7 +63,7 @@ public class ItemRiftSignature extends Item {
             return false;
         }
 
-        //Increase y by 2 to place the rift at head level
+        // Increase y by 2 to place the rift at head level
         int adjustedY = adjustYForSpecialBlocks(world, x, y + 2, z);
         if (!player.canPlayerEdit(x, adjustedY, z, side, stack)) {
             return true;
@@ -69,7 +76,8 @@ public class ItemRiftSignature extends Item {
             NewDimData sourceDimension = PocketManager.getDimensionData(source.getDimension());
             NewDimData destinationDimension = PocketManager.getDimensionData(world);
 
-            DimLink link = sourceDimension.createLink(source.getX(), source.getY(), source.getZ(), LinkType.NORMAL, source.getOrientation());
+            DimLink link = sourceDimension
+                .createLink(source.getX(), source.getY(), source.getZ(), LinkType.NORMAL, source.getOrientation());
             DimLink reverse = destinationDimension.createLink(x, adjustedY, z, LinkType.NORMAL, orientation);
 
             destinationDimension.setLinkDestination(link, x, adjustedY, z);
@@ -90,7 +98,7 @@ public class ItemRiftSignature extends Item {
             DimDoors.sendChat(player, "Rift Created");
             world.playSoundAtEntity(player, DimDoors.modid + ":riftEnd", 0.6f, 1);
         } else {
-            //The link signature has not been used. Store its current target as the first location.
+            // The link signature has not been used. Store its current target as the first location.
             setSource(stack, x, adjustedY, z, orientation, PocketManager.createDimensionData(world));
             DimDoors.sendChat(player, ("Location Stored in Rift Signature"));
             world.playSoundAtEntity(player, DimDoors.modid + ":riftStart", 0.6f, 1);
@@ -102,12 +110,18 @@ public class ItemRiftSignature extends Item {
      * allows items to add custom lines of information to the mouseover description
      */
     @Override
-    @SuppressWarnings({"unchecked", "rawtypes"})
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     @SideOnly(Side.CLIENT)
     public void addInformation(ItemStack par1ItemStack, EntityPlayer par2EntityPlayer, List par3List, boolean par4) {
         Point4DOrientation source = getSource(par1ItemStack);
         if (source != null) {
-            par3List.add(StatCollector.translateToLocalFormatted("info.riftSignature.bound", source.getX(), source.getY(), source.getZ(), source.getDimension()));
+            par3List.add(
+                StatCollector.translateToLocalFormatted(
+                    "info.riftSignature.bound",
+                    source.getX(),
+                    source.getY(),
+                    source.getZ(),
+                    source.getDimension()));
         } else {
             DimDoors.translateAndAdd("info.riftSignature.unbound", par3List);
         }
@@ -155,7 +169,7 @@ public class ItemRiftSignature extends Item {
     }
 
     public static void clearSource(ItemStack itemStack) {
-        //Don't just set the tag to null since there may be other data there (e.g. for renamed items)
+        // Don't just set the tag to null since there may be other data there (e.g. for renamed items)
         NBTTagCompound tag = itemStack.getTagCompound();
         tag.removeTag("linkX");
         tag.removeTag("linkY");
@@ -187,6 +201,7 @@ public class ItemRiftSignature extends Item {
     }
 
     static class Point4DOrientation {
+
         private final Point4D point;
         private final int orientation;
 
@@ -220,4 +235,3 @@ public class ItemRiftSignature extends Item {
         }
     }
 }
-

@@ -1,11 +1,12 @@
 package org.dimdev.dimdoors.saving;
 
+import java.util.List;
+
 import org.dimdev.dimdoors.Point3D;
 import org.dimdev.dimdoors.core.DimensionType;
 
-import java.util.List;
-
 public class PackedDimData {
+
     // These fields will be public since this is a simple data container
     public final static int SAVE_DATA_VERSION_ID = 100;
     public final long SAVE_DATA_VERSION_ID_INSTANCE = SAVE_DATA_VERSION_ID;
@@ -26,8 +27,8 @@ public class PackedDimData {
     // FIXME Missing dungeon data, not sure how to include it
 
     public PackedDimData(int id, int depth, int packDepth, int parentID, int rootID, int orientation,
-                         DimensionType type, boolean isFilled, PackedDungeonData dungeonData, Point3D origin, List<Integer> childIDs, List<PackedLinkData> links,
-                         List<PackedLinkTail> tails) {
+        DimensionType type, boolean isFilled, PackedDungeonData dungeonData, Point3D origin, List<Integer> childIDs,
+        List<PackedLinkData> links, List<PackedLinkTail> tails) {
         ID = id;
         Depth = depth;
         PackDepth = packDepth;
@@ -47,6 +48,5 @@ public class PackedDimData {
     public String toString() {
         return "ID= " + this.ID;
     }
-
 
 }

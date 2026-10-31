@@ -8,7 +8,9 @@ package org.dimdev.dimdoors.experimental;
  * @author SenseiKiwi
  */
 public class DirectedGraph<U, V> {
+
     private static class GraphNode<P, Q> implements IGraphNode<P, Q> {
+
         private LinkedList<Edge<P, Q>> inbound;
         private LinkedList<Edge<P, Q>> outbound;
         private ILinkedListNode<GraphNode<P, Q>> graphEntry;
@@ -45,11 +47,9 @@ public class DirectedGraph<U, V> {
             graphEntry.remove();
             graphEntry = null;
 
-            for (Edge<P, Q> edge : inbound)
-                edge.remove();
+            for (Edge<P, Q> edge : inbound) edge.remove();
 
-            for (Edge<P, Q> edge : outbound)
-                edge.remove();
+            for (Edge<P, Q> edge : outbound) edge.remove();
 
             inbound = null;
             outbound = null;
@@ -58,6 +58,7 @@ public class DirectedGraph<U, V> {
     }
 
     private static class Edge<P, Q> implements IEdge<P, Q> {
+
         private GraphNode<P, Q> head;
         private GraphNode<P, Q> tail;
         private ILinkedListNode<Edge<P, Q>> headEntry;
@@ -175,8 +176,7 @@ public class DirectedGraph<U, V> {
 
     public IEdge<U, V> findEdge(IGraphNode<U, V> head, IGraphNode<U, V> tail) {
         for (IEdge<U, V> edge : head.outbound()) {
-            if (edge.tail() == tail)
-                return edge;
+            if (edge.tail() == tail) return edge;
         }
         return null;
     }

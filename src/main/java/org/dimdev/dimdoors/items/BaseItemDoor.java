@@ -1,11 +1,8 @@
 package org.dimdev.dimdoors.items;
 
-import org.dimdev.dimdoors.blocks.BaseDimDoor;
-import org.dimdev.dimdoors.config.DDProperties;
-import org.dimdev.dimdoors.core.DimLink;
-import org.dimdev.dimdoors.core.PocketManager;
-import org.dimdev.dimdoors.DimDoors;
-import org.dimdev.dimdoors.tileentities.TileEntityDimDoor;
+import java.util.HashMap;
+import java.util.List;
+
 import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
 import net.minecraft.client.renderer.texture.IIconRegister;
@@ -18,10 +15,15 @@ import net.minecraft.util.MovingObjectPosition;
 import net.minecraft.util.Vec3;
 import net.minecraft.world.World;
 
-import java.util.HashMap;
-import java.util.List;
+import org.dimdev.dimdoors.DimDoors;
+import org.dimdev.dimdoors.blocks.BaseDimDoor;
+import org.dimdev.dimdoors.config.DDProperties;
+import org.dimdev.dimdoors.core.DimLink;
+import org.dimdev.dimdoors.core.PocketManager;
+import org.dimdev.dimdoors.tileentities.TileEntityDimDoor;
 
 public abstract class BaseItemDoor extends ItemDoor {
+
     // Maps non-dimensional door items to their corresponding dimensional door item
     // Also maps dimensional door items to themselves for simplicity
     private static final HashMap<ItemDoor, BaseItemDoor> doorItemMapping = new HashMap<ItemDoor, BaseItemDoor>();
@@ -37,8 +39,7 @@ public abstract class BaseItemDoor extends ItemDoor {
         super(material);
         this.setMaxStackSize(64);
         this.setCreativeTab(DimDoors.dimDoorsCreativeTab);
-        if (properties == null)
-            properties = DDProperties.instance();
+        if (properties == null) properties = DDProperties.instance();
 
         doorItemMapping.put(this, this);
         if (vanillaDoor != null) {
@@ -48,12 +49,16 @@ public abstract class BaseItemDoor extends ItemDoor {
 
     @Override
     public void registerIcons(IIconRegister par1IconRegister) {
-        this.itemIcon = par1IconRegister.registerIcon(DimDoors.modid + ":" + this.getUnlocalizedName().replace("item.", ""));
+        this.itemIcon = par1IconRegister.registerIcon(
+            DimDoors.modid + ":"
+                + this.getUnlocalizedName()
+                    .replace("item.", ""));
     }
 
-    @SuppressWarnings({"rawtypes"})
+    @SuppressWarnings({ "rawtypes" })
     @Override
-    public abstract void addInformation(ItemStack par1ItemStack, EntityPlayer par2EntityPlayer, List par3List, boolean par4);
+    public abstract void addInformation(ItemStack par1ItemStack, EntityPlayer par2EntityPlayer, List par3List,
+        boolean par4);
 
     /**
      * Overriden in subclasses to specify which door block that door item will
@@ -68,7 +73,8 @@ public abstract class BaseItemDoor extends ItemDoor {
      * dimensional doors, we handle this in the EventHookContainer
      */
     @Override
-    public boolean onItemUse(ItemStack stack, EntityPlayer player, World world, int x, int y, int z, int side, float hitX, float hitY, float hitZ) {
+    public boolean onItemUse(ItemStack stack, EntityPlayer player, World world, int x, int y, int z, int side,
+        float hitX, float hitY, float hitZ) {
         return false;
     }
 
@@ -84,7 +90,8 @@ public abstract class BaseItemDoor extends ItemDoor {
      * @param side
      * @return
      */
-    public static boolean tryToPlaceDoor(ItemStack stack, EntityPlayer player, World world, int x, int y, int z, int side) {
+    public static boolean tryToPlaceDoor(ItemStack stack, EntityPlayer player, World world, int x, int y, int z,
+        int side) {
         if (world.isRemote) {
             return false;
         }
@@ -115,7 +122,8 @@ public abstract class BaseItemDoor extends ItemDoor {
      * @param side
      * @return
      */
-    public static boolean placeDoorOnBlock(Block doorBlock, ItemStack stack, EntityPlayer player, World world, int x, int y, int z, int side) {
+    public static boolean placeDoorOnBlock(Block doorBlock, ItemStack stack, EntityPlayer player, World world, int x,
+        int y, int z, int side) {
         if (world.isRemote) {
             return false;
         }
@@ -129,9 +137,10 @@ public abstract class BaseItemDoor extends ItemDoor {
                 }
             }
 
-            if (canPlace(world, x, y, z) && canPlace(world, x, y + 1, z) && player.canPlayerEdit(x, y, z, side, stack)
-                    && (player.canPlayerEdit(x, y + 1, z, side, stack) && stack.stackSize > 0)
-                    && ((stack.getItem() instanceof BaseItemDoor) || PocketManager.getLink(x, y + 1, z, world) != null)) {
+            if (canPlace(world, x, y, z) && canPlace(world, x, y + 1, z)
+                && player.canPlayerEdit(x, y, z, side, stack)
+                && (player.canPlayerEdit(x, y + 1, z, side, stack) && stack.stackSize > 0)
+                && ((stack.getItem() instanceof BaseItemDoor) || PocketManager.getLink(x, y + 1, z, world) != null)) {
                 int orientation = MathHelper.floor_double((player.rotationYaw + 180.0F) * 4.0F / 360.0F - 0.5D) & 3;
                 placeDoorBlock(world, x, y, z, orientation, doorBlock);
 
@@ -167,9 +176,11 @@ public abstract class BaseItemDoor extends ItemDoor {
                     int y = hit.blockY;
                     int z = hit.blockZ;
 
-                    if (player.canPlayerEdit(x, y, z, hit.sideHit, stack) && player.canPlayerEdit(x, y - 1, z, hit.sideHit, stack)) {
+                    if (player.canPlayerEdit(x, y, z, hit.sideHit, stack)
+                        && player.canPlayerEdit(x, y - 1, z, hit.sideHit, stack)) {
                         if (canPlace(world, x, y, z) && canPlace(world, x, y - 1, z)) {
-                            int orientation = MathHelper.floor_double(((player.rotationYaw + 180.0F) * 4.0F / 360.0F) - 0.5D) & 3;
+                            int orientation = MathHelper
+                                .floor_double(((player.rotationYaw + 180.0F) * 4.0F / 360.0F) - 0.5D) & 3;
                             placeDoorBlock(world, x, y - 1, z, orientation, doorBlock);
                             if (!(stack.getItem() instanceof BaseItemDoor)) {
                                 ((TileEntityDimDoor) world.getTileEntity(x, y, z)).hasGennedPair = true;
@@ -189,7 +200,9 @@ public abstract class BaseItemDoor extends ItemDoor {
     public static boolean canPlace(World world, int x, int y, int z) {
         Block block = world.getBlock(x, y, z);
 
-        return (block == DimDoors.blockRift || block.isAir(world, x, y, z) || block.getMaterial().isReplaceable());
+        return (block == DimDoors.blockRift || block.isAir(world, x, y, z)
+            || block.getMaterial()
+                .isReplaceable());
     }
 
     /**
@@ -203,11 +216,14 @@ public abstract class BaseItemDoor extends ItemDoor {
      */
     protected static MovingObjectPosition doRayTrace(World par1World, EntityPlayer par2EntityPlayer, boolean par3) {
         float f = 1.0F;
-        float f1 = par2EntityPlayer.prevRotationPitch + (par2EntityPlayer.rotationPitch - par2EntityPlayer.prevRotationPitch) * f;
-        float f2 = par2EntityPlayer.prevRotationYaw + (par2EntityPlayer.rotationYaw - par2EntityPlayer.prevRotationYaw) * f;
+        float f1 = par2EntityPlayer.prevRotationPitch
+            + (par2EntityPlayer.rotationPitch - par2EntityPlayer.prevRotationPitch) * f;
+        float f2 = par2EntityPlayer.prevRotationYaw
+            + (par2EntityPlayer.rotationYaw - par2EntityPlayer.prevRotationYaw) * f;
         double d0 = par2EntityPlayer.prevPosX + (par2EntityPlayer.posX - par2EntityPlayer.prevPosX) * (double) f;
         double d1 = par2EntityPlayer.prevPosY + (par2EntityPlayer.posY - par2EntityPlayer.prevPosY) * (double) f
-                + (double) (par1World.isRemote ? par2EntityPlayer.getEyeHeight() - par2EntityPlayer.getDefaultEyeHeight() : par2EntityPlayer.getEyeHeight());
+            + (double) (par1World.isRemote ? par2EntityPlayer.getEyeHeight() - par2EntityPlayer.getDefaultEyeHeight()
+                : par2EntityPlayer.getEyeHeight());
         double d2 = par2EntityPlayer.prevPosZ + (par2EntityPlayer.posZ - par2EntityPlayer.prevPosZ) * (double) f;
         Vec3 vec3 = Vec3.createVectorHelper(d0, d1, d2);
         float f3 = MathHelper.cos(-f2 * 0.017453292F - (float) Math.PI);

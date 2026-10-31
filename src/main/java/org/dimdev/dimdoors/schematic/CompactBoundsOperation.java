@@ -1,9 +1,11 @@
 package org.dimdev.dimdoors.schematic;
 
-import org.dimdev.dimdoors.Point3D;
 import net.minecraft.world.World;
 
+import org.dimdev.dimdoors.Point3D;
+
 public class CompactBoundsOperation extends WorldOperation {
+
     private int minX;
     private int minY;
     private int minZ;
@@ -28,8 +30,8 @@ public class CompactBoundsOperation extends WorldOperation {
 
     @Override
     protected boolean applyToBlock(World world, int x, int y, int z) {
-        //This could be done more efficiently, but honestly, this is the simplest approach and it
-        //makes it easy for us to verify that the code is correct.
+        // This could be done more efficiently, but honestly, this is the simplest approach and it
+        // makes it easy for us to verify that the code is correct.
         if (!world.isAirBlock(x, y, z)) {
             maxX = x > maxX ? x : maxX;
             maxZ = z > maxZ ? z : maxZ;
@@ -45,8 +47,8 @@ public class CompactBoundsOperation extends WorldOperation {
     @Override
     protected boolean finish() {
         if (minX == Integer.MAX_VALUE) {
-            //The whole search space was empty!
-            //Compact the space to a single block.
+            // The whole search space was empty!
+            // Compact the space to a single block.
             minX = maxX;
             minY = maxY;
             minZ = maxZ;

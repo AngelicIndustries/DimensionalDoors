@@ -1,5 +1,8 @@
 package org.dimdev.dimdoors;
 
+import java.util.List;
+import java.util.Random;
+
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.potion.Potion;
@@ -7,10 +10,8 @@ import net.minecraft.potion.PotionEffect;
 import net.minecraft.util.AxisAlignedBB;
 import net.minecraft.util.DamageSource;
 
-import java.util.List;
-import java.util.Random;
-
 public class Spells {
+
     public EntityPlayer player;
     public int spellID;
     public int castingTime = 0;
@@ -30,7 +31,6 @@ public class Spells {
     public int plague = 7;
     public int butcher = 8;
 
-
     public Spells(EntityPlayer player, int spellID) {
         this.spellID = spellID;
         this.player = player;
@@ -48,7 +48,6 @@ public class Spells {
             return this.castSmoke();
         }
 
-
         return false;
     }
 
@@ -60,8 +59,14 @@ public class Spells {
 
         if (this.castingTime < this.smokeCastTime) {
             for (int i = 0; i < 16; i++) {
-                this.player.worldObj.spawnParticle("largesmoke", this.player.posX + this.rand.nextDouble() - .5, this.player.posY + (this.rand.nextDouble() - .5) * 2, this.player.posZ + this.rand.nextDouble() - .5,
-                        this.rand.nextGaussian() / 50, this.rand.nextGaussian() / 50, this.rand.nextGaussian() / 50);
+                this.player.worldObj.spawnParticle(
+                    "largesmoke",
+                    this.player.posX + this.rand.nextDouble() - .5,
+                    this.player.posY + (this.rand.nextDouble() - .5) * 2,
+                    this.player.posZ + this.rand.nextDouble() - .5,
+                    this.rand.nextGaussian() / 50,
+                    this.rand.nextGaussian() / 50,
+                    this.rand.nextGaussian() / 50);
 
             }
             return true;
@@ -71,24 +76,54 @@ public class Spells {
 
     public boolean castFire() {
 
-
         if (this.castingTime < this.fireCastTime) {
             for (int i = 0; i < 50; i++) {
-                this.player.worldObj.spawnParticle("flame", this.player.posX + this.rand.nextDouble() - .5, this.player.posY + this.rand.nextDouble() - .5, this.player.posZ + this.rand.nextDouble() - .5,
-                        (this.rand.nextDouble() - .5) / 3, (this.rand.nextDouble() - .5) / 3, (this.rand.nextDouble() - .5 / 3));
+                this.player.worldObj.spawnParticle(
+                    "flame",
+                    this.player.posX + this.rand.nextDouble() - .5,
+                    this.player.posY + this.rand.nextDouble() - .5,
+                    this.player.posZ + this.rand.nextDouble() - .5,
+                    (this.rand.nextDouble() - .5) / 3,
+                    (this.rand.nextDouble() - .5) / 3,
+                    (this.rand.nextDouble() - .5 / 3));
 
-                this.player.worldObj.spawnParticle("flame", this.player.posX + this.rand.nextDouble() - .5, this.player.posY + this.rand.nextDouble() - .5, this.player.posZ + this.rand.nextDouble() - .5,
-                        (this.rand.nextDouble() - .5), (this.rand.nextDouble() - .45) / 2, (this.rand.nextDouble() - .5));
-                this.player.worldObj.spawnParticle("flame", this.player.posX + this.rand.nextDouble() - .5, this.player.posY + this.rand.nextDouble() - .5, this.player.posZ + this.rand.nextDouble() - .5,
-                        (this.rand.nextDouble() - .5) / 10, (this.rand.nextDouble() - .45) / 20, (this.rand.nextDouble() - .5) / 10);
-                this.player.worldObj.spawnParticle("flame", this.player.posX + this.rand.nextDouble() - .5, this.player.posY + this.rand.nextDouble() - .5, this.player.posZ + this.rand.nextDouble() - .5,
-                        (this.rand.nextDouble() - .5) * 2, (this.rand.nextDouble() - .45), (this.rand.nextDouble() - .5) * 2);
+                this.player.worldObj.spawnParticle(
+                    "flame",
+                    this.player.posX + this.rand.nextDouble() - .5,
+                    this.player.posY + this.rand.nextDouble() - .5,
+                    this.player.posZ + this.rand.nextDouble() - .5,
+                    (this.rand.nextDouble() - .5),
+                    (this.rand.nextDouble() - .45) / 2,
+                    (this.rand.nextDouble() - .5));
+                this.player.worldObj.spawnParticle(
+                    "flame",
+                    this.player.posX + this.rand.nextDouble() - .5,
+                    this.player.posY + this.rand.nextDouble() - .5,
+                    this.player.posZ + this.rand.nextDouble() - .5,
+                    (this.rand.nextDouble() - .5) / 10,
+                    (this.rand.nextDouble() - .45) / 20,
+                    (this.rand.nextDouble() - .5) / 10);
+                this.player.worldObj.spawnParticle(
+                    "flame",
+                    this.player.posX + this.rand.nextDouble() - .5,
+                    this.player.posY + this.rand.nextDouble() - .5,
+                    this.player.posZ + this.rand.nextDouble() - .5,
+                    (this.rand.nextDouble() - .5) * 2,
+                    (this.rand.nextDouble() - .45),
+                    (this.rand.nextDouble() - .5) * 2);
             }
 
         }
 
-
-        List<Entity> list = player.worldObj.getEntitiesWithinAABBExcludingEntity(player, AxisAlignedBB.getBoundingBox(player.posX - 7, player.posY - 3, player.posZ - 7, player.posX + 7, player.posY + 7, player.posZ + 7));
+        List<Entity> list = player.worldObj.getEntitiesWithinAABBExcludingEntity(
+            player,
+            AxisAlignedBB.getBoundingBox(
+                player.posX - 7,
+                player.posY - 3,
+                player.posZ - 7,
+                player.posX + 7,
+                player.posY + 7,
+                player.posZ + 7));
         for (Entity entity : list) {
             entity.setFire(3);
             entity.attackEntityFrom(DamageSource.lava, 2);
@@ -97,24 +132,24 @@ public class Spells {
         return true;
     }
     /**
-     public boolean castEnderPush()
-     {
-
-     }
-
-     public boolean castFlood()
-     {
-
-     }
-
-     public boolean castNightVision()
-     {
-
-     }
-
-     public boolean castPlague()
-     {
-
-     }
+     * public boolean castEnderPush()
+     * {
+     * 
+     * }
+     * 
+     * public boolean castFlood()
+     * {
+     * 
+     * }
+     * 
+     * public boolean castNightVision()
+     * {
+     * 
+     * }
+     * 
+     * public boolean castPlague()
+     * {
+     * 
+     * }
      **/
 }

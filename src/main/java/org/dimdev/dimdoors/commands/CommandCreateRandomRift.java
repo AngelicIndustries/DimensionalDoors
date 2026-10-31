@@ -1,21 +1,23 @@
 package org.dimdev.dimdoors.commands;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Random;
+
+import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.util.MathHelper;
+
+import org.dimdev.dimdoors.DimDoors;
 import org.dimdev.dimdoors.core.DimLink;
 import org.dimdev.dimdoors.core.LinkType;
 import org.dimdev.dimdoors.core.NewDimData;
 import org.dimdev.dimdoors.core.PocketManager;
 import org.dimdev.dimdoors.dungeon.DungeonData;
 import org.dimdev.dimdoors.helpers.DungeonHelper;
-import org.dimdev.dimdoors.DimDoors;
 import org.dimdev.dimdoors.world.PocketBuilder;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.util.MathHelper;
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Random;
 
 public class CommandCreateRandomRift extends DDCommandBase {
+
     private static CommandCreateRandomRift instance = null;
     private static final Random random = new Random();
 
@@ -24,8 +26,7 @@ public class CommandCreateRandomRift extends DDCommandBase {
     }
 
     public static CommandCreateRandomRift instance() {
-        if (instance == null)
-            instance = new CommandCreateRandomRift();
+        if (instance == null) instance = new CommandCreateRandomRift();
 
         return instance;
     }
@@ -66,15 +67,22 @@ public class CommandCreateRandomRift extends DDCommandBase {
                 if (PocketBuilder.generateSelectedDungeonPocket(link, DimDoors.properties, result)) {
                     // Create a rift to our selected dungeon and notify the player
                     sender.worldObj.setBlock(x, y + 1, z, DimDoors.blockRift, 0, 3);
-                    sendChat(sender, "Created a rift to \"" + result.schematicName() + "\" dungeon (Dimension ID = " + link.destination().getDimension() + ").");
+                    sendChat(
+                        sender,
+                        "Created a rift to \"" + result.schematicName()
+                            + "\" dungeon (Dimension ID = "
+                            + link.destination()
+                                .getDimension()
+                            + ").");
                 } else {
                     // Dungeon generation failed somehow. Notify the user and remove the useless link.
                     dimension.deleteLink(link);
                     sendChat(sender, "Dungeon generation failed unexpectedly!");
                 }
             } else {
-                //No matches!
-                return new DDCommandResult("Error: The specified dungeon was not found. Use 'list' to see a list of the available dungeons.");
+                // No matches!
+                return new DDCommandResult(
+                    "Error: The specified dungeon was not found. Use 'list' to see a list of the available dungeons.");
             }
         }
         return DDCommandResult.SUCCESS;
@@ -89,7 +97,8 @@ public class CommandCreateRandomRift extends DDCommandBase {
         for (DungeonData dungeon : dungeons) {
             // We need to extract the file's name. Comparing against schematicPath could
             // yield false matches if the query string is contained within the path.
-            dungeonName = dungeon.schematicName().toLowerCase();
+            dungeonName = dungeon.schematicName()
+                .toLowerCase();
             if (dungeonName.contains(normalQuery)) {
                 matches.add(dungeon);
             }

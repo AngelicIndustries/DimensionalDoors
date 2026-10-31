@@ -1,10 +1,7 @@
 package org.dimdev.dimdoors.items;
 
-import org.dimdev.dimdoors.config.DDProperties;
-import org.dimdev.dimdoors.core.PocketManager;
-import org.dimdev.dimdoors.DimDoors;
-import cpw.mods.fml.relauncher.Side;
-import cpw.mods.fml.relauncher.SideOnly;
+import java.util.List;
+
 import net.minecraft.client.renderer.texture.IIconRegister;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLiving;
@@ -18,9 +15,15 @@ import net.minecraft.util.MovingObjectPosition;
 import net.minecraft.util.Vec3;
 import net.minecraft.world.World;
 
-import java.util.List;
+import org.dimdev.dimdoors.DimDoors;
+import org.dimdev.dimdoors.config.DDProperties;
+import org.dimdev.dimdoors.core.PocketManager;
+
+import cpw.mods.fml.relauncher.Side;
+import cpw.mods.fml.relauncher.SideOnly;
 
 public class ItemRiftBlade extends ItemSword {
+
     private final DDProperties properties;
 
     public ItemRiftBlade(DDProperties properties) {
@@ -37,12 +40,17 @@ public class ItemRiftBlade extends ItemSword {
     }
 
     @Override
-    public MovingObjectPosition getMovingObjectPositionFromPlayer(World par1World, EntityPlayer par2EntityPlayer, boolean par3) {
+    public MovingObjectPosition getMovingObjectPositionFromPlayer(World par1World, EntityPlayer par2EntityPlayer,
+        boolean par3) {
         float var4 = 1.0F;
-        float var5 = par2EntityPlayer.prevRotationPitch + (par2EntityPlayer.rotationPitch - par2EntityPlayer.prevRotationPitch) * var4;
-        float var6 = par2EntityPlayer.prevRotationYaw + (par2EntityPlayer.rotationYaw - par2EntityPlayer.prevRotationYaw) * var4;
+        float var5 = par2EntityPlayer.prevRotationPitch
+            + (par2EntityPlayer.rotationPitch - par2EntityPlayer.prevRotationPitch) * var4;
+        float var6 = par2EntityPlayer.prevRotationYaw
+            + (par2EntityPlayer.rotationYaw - par2EntityPlayer.prevRotationYaw) * var4;
         double var7 = par2EntityPlayer.prevPosX + (par2EntityPlayer.posX - par2EntityPlayer.prevPosX) * var4;
-        double var9 = par2EntityPlayer.prevPosY + (par2EntityPlayer.posY - par2EntityPlayer.prevPosY) * var4 + 1.62D - par2EntityPlayer.yOffset;
+        double var9 = par2EntityPlayer.prevPosY + (par2EntityPlayer.posY - par2EntityPlayer.prevPosY) * var4
+            + 1.62D
+            - par2EntityPlayer.yOffset;
         double var11 = par2EntityPlayer.prevPosZ + (par2EntityPlayer.posZ - par2EntityPlayer.prevPosZ) * var4;
         Vec3 var13 = Vec3.createVectorHelper(var7, var9, var11);
         float var14 = MathHelper.cos(-var6 * 0.017453292F - (float) Math.PI);
@@ -60,7 +68,10 @@ public class ItemRiftBlade extends ItemSword {
     }
 
     private boolean teleportToEntity(ItemStack item, Entity par1Entity, EntityPlayer holder) {
-        Vec3 var2 = Vec3.createVectorHelper(holder.posX - par1Entity.posX, holder.boundingBox.minY + holder.height / 2.0F - par1Entity.posY + par1Entity.getEyeHeight(), holder.posZ - par1Entity.posZ);
+        Vec3 var2 = Vec3.createVectorHelper(
+            holder.posX - par1Entity.posX,
+            holder.boundingBox.minY + holder.height / 2.0F - par1Entity.posY + par1Entity.getEyeHeight(),
+            holder.posZ - par1Entity.posZ);
 
         double cooef = (var2.lengthVector() - 2.5) / var2.lengthVector();
         var2.xCoord *= cooef;
@@ -68,7 +79,6 @@ public class ItemRiftBlade extends ItemSword {
         var2.zCoord *= cooef;
         double var5 = holder.posX - var2.xCoord;
         double var9 = holder.posZ - var2.zCoord;
-
 
         double var7 = MathHelper.floor_double(holder.posY - var2.yCoord);
 
@@ -79,7 +89,6 @@ public class ItemRiftBlade extends ItemSword {
             var15++;
         }
         var7 = var15;
-
 
         holder.setPositionAndUpdate(var5, var7, var9);
         holder.playSound("mob.endermen.portal", 1.0F, 1.0F);
@@ -92,12 +101,24 @@ public class ItemRiftBlade extends ItemSword {
     public ItemStack onItemRightClick(ItemStack stack, World world, EntityPlayer player) {
         if (!world.isRemote) {
             @SuppressWarnings("unchecked")
-            List<EntityLiving> list = world.getEntitiesWithinAABB(EntityLiving.class, AxisAlignedBB.getBoundingBox(player.posX - 10, player.posY - 10, player.posZ - 10, player.posX + 10, player.posY + 10, player.posZ + 10));
+            List<EntityLiving> list = world.getEntitiesWithinAABB(
+                EntityLiving.class,
+                AxisAlignedBB.getBoundingBox(
+                    player.posX - 10,
+                    player.posY - 10,
+                    player.posZ - 10,
+                    player.posX + 10,
+                    player.posY + 10,
+                    player.posZ + 10));
             list.remove(player);
 
             for (EntityLiving ent : list) {
-                Vec3 var3 = player.getLook(1.0F).normalize();
-                Vec3 var4 = Vec3.createVectorHelper(ent.posX - player.posX, ent.boundingBox.minY + (ent.height) / 2.0F - (player.posY + player.getEyeHeight()), ent.posZ - player.posZ);
+                Vec3 var3 = player.getLook(1.0F)
+                    .normalize();
+                Vec3 var4 = Vec3.createVectorHelper(
+                    ent.posX - player.posX,
+                    ent.boundingBox.minY + (ent.height) / 2.0F - (player.posY + player.getEyeHeight()),
+                    ent.posZ - player.posZ);
                 double var5 = var4.lengthVector();
                 var4 = var4.normalize();
                 double var7 = var3.dotProduct(var4);
@@ -115,13 +136,14 @@ public class ItemRiftBlade extends ItemSword {
                 int z = hit.blockZ;
                 if (world.getBlock(x, y, z) == DimDoors.blockRift) {
                     if (PocketManager.getLink(x, y, z, world) != null) {
-                        if (player.canPlayerEdit(x, y, z, hit.sideHit, stack) &&
-                                player.canPlayerEdit(x, y + 1, z, hit.sideHit, stack)) {
-                            int orientation = MathHelper.floor_double((player.rotationYaw + 180.0F) * 4.0F / 360.0F - 0.5D) & 3;
+                        if (player.canPlayerEdit(x, y, z, hit.sideHit, stack)
+                            && player.canPlayerEdit(x, y + 1, z, hit.sideHit, stack)) {
+                            int orientation = MathHelper
+                                .floor_double((player.rotationYaw + 180.0F) * 4.0F / 360.0F - 0.5D) & 3;
 
-                            if (BaseItemDoor.canPlace(world, x, y, z) &&
-                                    BaseItemDoor.canPlace(world, x, y - 1, z)) {
-                                ItemDimensionalDoor.placeDoorBlock(world, x, y - 1, z, orientation, DimDoors.transientDoor);
+                            if (BaseItemDoor.canPlace(world, x, y, z) && BaseItemDoor.canPlace(world, x, y - 1, z)) {
+                                ItemDimensionalDoor
+                                    .placeDoorBlock(world, x, y - 1, z, orientation, DimDoors.transientDoor);
                                 player.worldObj.playSoundAtEntity(player, DimDoors.modid + ":riftDoor", 0.6f, 1);
                                 stack.damageItem(3, player);
                                 return stack;
@@ -138,7 +160,10 @@ public class ItemRiftBlade extends ItemSword {
 
     @Override
     public void registerIcons(IIconRegister par1IconRegister) {
-        this.itemIcon = par1IconRegister.registerIcon(DimDoors.modid + ":" + this.getUnlocalizedName().replace("item.", ""));
+        this.itemIcon = par1IconRegister.registerIcon(
+            DimDoors.modid + ":"
+                + this.getUnlocalizedName()
+                    .replace("item.", ""));
     }
 
     /**
@@ -146,8 +171,8 @@ public class ItemRiftBlade extends ItemSword {
      */
     @Override
     public boolean getIsRepairable(ItemStack par1ItemStack, ItemStack par2ItemStack) {
-        //Don't include a call to super.getIsRepairable()!
-        //That would cause this sword to accept diamonds as a repair material (since we set material = Diamond).
+        // Don't include a call to super.getIsRepairable()!
+        // That would cause this sword to accept diamonds as a repair material (since we set material = Diamond).
         return DimDoors.itemStableFabric == par2ItemStack.getItem();
     }
 
@@ -155,7 +180,7 @@ public class ItemRiftBlade extends ItemSword {
      * allows items to add custom lines of information to the mouseover description
      */
     @Override
-    @SuppressWarnings({"unchecked", "rawtypes"})
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     @SideOnly(Side.CLIENT)
     public void addInformation(ItemStack par1ItemStack, EntityPlayer par2EntityPlayer, List par3List, boolean par4) {
         DimDoors.translateAndAdd("info.riftblade", par3List);

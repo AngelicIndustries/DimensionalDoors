@@ -3,6 +3,7 @@ package org.dimdev.dimdoors.experimental;
 import org.dimdev.dimdoors.Point3D;
 
 public class PartitionNode extends BoundingBox {
+
     private PartitionNode parent;
     private PartitionNode leftChild = null;
     private PartitionNode rightChild = null;
@@ -68,10 +69,8 @@ public class PartitionNode extends BoundingBox {
 
     public void remove() {
         if (parent != null) {
-            if (parent.leftChild == this)
-                parent.leftChild = null;
-            else
-                parent.rightChild = null;
+            if (parent.leftChild == this) parent.leftChild = null;
+            else parent.rightChild = null;
             parent = null;
         }
     }

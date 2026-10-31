@@ -3,13 +3,14 @@ package org.dimdev.dimdoors.experimental;
 import java.util.ArrayList;
 
 public class MazeDesign {
+
     private final PartitionNode root;
     private final DirectedGraph<PartitionNode, DoorwayData> rooms;
     private final ArrayList<IGraphNode<PartitionNode, DoorwayData>> cores;
     private ArrayList<BoundingBox> protectedAreas;
 
     public MazeDesign(PartitionNode root, DirectedGraph<PartitionNode, DoorwayData> rooms,
-                      ArrayList<IGraphNode<PartitionNode, DoorwayData>> cores) {
+        ArrayList<IGraphNode<PartitionNode, DoorwayData>> cores) {
         this.root = root;
         this.rooms = rooms;
         this.cores = cores;

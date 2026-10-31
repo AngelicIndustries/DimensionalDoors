@@ -1,10 +1,12 @@
 package org.dimdev.dimdoors.world.gateways;
 
-import org.dimdev.dimdoors.config.DDProperties;
 import net.minecraft.world.World;
 import net.minecraft.world.biome.BiomeGenBase;
 
+import org.dimdev.dimdoors.config.DDProperties;
+
 public abstract class BaseGateway {
+
     protected DDProperties properties;
 
     public BaseGateway(DDProperties properties) {
@@ -25,7 +27,8 @@ public abstract class BaseGateway {
      * Determines whether the specified biome is a valid biome in which to generate this gateway
      *
      * @param biome - the biome to be checked
-     * @return <code>true</code> true if the specified biome is a valid for generating this gateway, otherwise <code>false</code>
+     * @return <code>true</code> true if the specified biome is a valid for generating this gateway, otherwise
+     *         <code>false</code>
      */
     protected boolean isBiomeValid(BiomeGenBase biome) {
         String biomeName = biome.biomeName.toLowerCase();
@@ -56,12 +59,15 @@ public abstract class BaseGateway {
 
     /**
      * Gets the dungeon pack associated with this gateway
+     * 
      * @return the dungeon pack to use for this gateway
      */
-	/*protected DungeonPack getDungeonPack()
-	{
-		return DungeonHelper.instance().getDungeonPack("RUINS");
-	}*/
+    /*
+     * protected DungeonPack getDungeonPack()
+     * {
+     * return DungeonHelper.instance().getDungeonPack("RUINS");
+     * }
+     */
 
     /**
      * Gets the lowercase keywords to be used in checking whether a given biome is a valid location for this gateway
@@ -69,6 +75,6 @@ public abstract class BaseGateway {
      * @return an array of biome keywords to match against
      */
     public String[] getBiomeKeywords() {
-        return new String[]{""};
+        return new String[] { "" };
     }
 }

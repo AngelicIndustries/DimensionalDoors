@@ -1,6 +1,7 @@
 package org.dimdev.dimdoors.util;
 
 public class ConfigurationProcessingException extends Exception {
+
     private static final long serialVersionUID = -4525298050874891911L;
 
     public ConfigurationProcessingException() {

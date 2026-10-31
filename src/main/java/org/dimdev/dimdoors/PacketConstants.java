@@ -1,8 +1,8 @@
 package org.dimdev.dimdoors;
 
 public class PacketConstants {
-    private PacketConstants() {
-    }
+
+    private PacketConstants() {}
 
     public static final String CHANNEL_NAME = "DimDoorsPackets";
 

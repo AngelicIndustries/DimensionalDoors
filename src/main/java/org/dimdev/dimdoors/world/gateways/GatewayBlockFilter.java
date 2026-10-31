@@ -1,10 +1,11 @@
 package org.dimdev.dimdoors.world.gateways;
 
-import org.dimdev.dimdoors.Point3D;
+import net.minecraft.block.Block;
+
 import org.dimdev.dimdoors.DimDoors;
+import org.dimdev.dimdoors.Point3D;
 import org.dimdev.dimdoors.schematic.Schematic;
 import org.dimdev.dimdoors.schematic.SchematicFilter;
-import net.minecraft.block.Block;
 
 public class GatewayBlockFilter extends SchematicFilter {
 

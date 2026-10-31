@@ -3,6 +3,7 @@ package org.dimdev.dimdoors.core;
 import org.dimdev.dimdoors.util.Point4D;
 
 class LinkTail {
+
     private Point4D destination;
     private LinkType linkType;
 

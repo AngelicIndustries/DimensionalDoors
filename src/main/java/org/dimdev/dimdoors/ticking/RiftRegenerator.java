@@ -1,16 +1,17 @@
 package org.dimdev.dimdoors.ticking;
 
-import org.dimdev.dimdoors.blocks.BlockRift;
-import org.dimdev.dimdoors.core.DimLink;
-import org.dimdev.dimdoors.core.PocketManager;
-import org.dimdev.dimdoors.util.Point4D;
+import java.util.PriorityQueue;
+import java.util.Random;
+
 import net.minecraft.block.Block;
 import net.minecraft.util.MathHelper;
 import net.minecraft.world.World;
 import net.minecraftforge.common.DimensionManager;
 
-import java.util.PriorityQueue;
-import java.util.Random;
+import org.dimdev.dimdoors.blocks.BlockRift;
+import org.dimdev.dimdoors.core.DimLink;
+import org.dimdev.dimdoors.core.PocketManager;
+import org.dimdev.dimdoors.util.Point4D;
 
 public class RiftRegenerator implements IRegularTickReceiver {
 
@@ -56,14 +57,16 @@ public class RiftRegenerator implements IRegularTickReceiver {
 
     private void scheduleRegeneration(DimLink link, int minDelay, int maxDelay) {
         if (link != null) {
-            int tickDelay = MathHelper.getRandomIntegerInRange(random, minDelay * TICKS_PER_SECOND, maxDelay * TICKS_PER_SECOND);
+            int tickDelay = MathHelper
+                .getRandomIntegerInRange(random, minDelay * TICKS_PER_SECOND, maxDelay * TICKS_PER_SECOND);
             ticketQueue.add(new RiftTicket(link.source(), tickCount + tickDelay));
         }
     }
 
     private void processTicketQueue() {
         RiftTicket ticket;
-        while (!ticketQueue.isEmpty() && ticketQueue.peek().timestamp() <= tickCount) {
+        while (!ticketQueue.isEmpty() && ticketQueue.peek()
+            .timestamp() <= tickCount) {
             ticket = ticketQueue.remove();
             regenerateRift(ticket.location());
         }
@@ -77,23 +80,20 @@ public class RiftRegenerator implements IRegularTickReceiver {
         // Try to regenerate a rift, or possibly reschedule its regeneration.
         // The world for the given location must be loaded.
         World world = DimensionManager.getWorld(location.getDimension());
-        if (world == null)
-            return;
+        if (world == null) return;
 
         // There must be a link at the given location.
         DimLink link = PocketManager.getLink(location);
-        if (link == null)
-            return;
+        if (link == null) return;
 
         // The chunk at the given location must be loaded.
         // Note: ChunkProviderServer.chunkExists() returns whether a chunk is
         // loaded, not whether it has already been created.
-        if (!world.getChunkProvider().chunkExists(x >> 4, z >> 4))
-            return;
+        if (!world.getChunkProvider()
+            .chunkExists(x >> 4, z >> 4)) return;
 
         // If the location is occupied by an immune DD block, then don't regenerate.
-        if (blockRift.isModBlockImmune(world, x, y, z))
-            return;
+        if (blockRift.isModBlockImmune(world, x, y, z)) return;
 
         // If the location is occupied by an immune block, then reschedule.
         if (blockRift.isBlockImmune(world, x, y, z)) {
@@ -101,8 +101,7 @@ public class RiftRegenerator implements IRegularTickReceiver {
         } else {
             // All of the necessary conditions have been met. Restore the rift!
             Block block = world.getBlock(x, y, z);
-            if (world.setBlock(x, y, z, blockRift))
-                blockRift.dropWorldThread(block, world, x, y, z, random);
+            if (world.setBlock(x, y, z, blockRift)) blockRift.dropWorldThread(block, world, x, y, z, random);
         }
     }
 

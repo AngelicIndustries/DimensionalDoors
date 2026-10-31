@@ -1,11 +1,17 @@
 package org.dimdev.dimdoors;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Random;
 
 public class DeathTracker {
+
     private final ArrayList<String> usernameList;
     private final HashSet<String> usernameSet;
     private final String filePath;
@@ -30,8 +36,7 @@ public class DeathTracker {
                 }
             }
             reader.close();
-        } catch (FileNotFoundException e) {
-        } catch (IOException e) {
+        } catch (FileNotFoundException e) {} catch (IOException e) {
             System.err.println("An unexpected exception occurred while trying to read DeathTracker data:");
             System.err.println(e);
         }

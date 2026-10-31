@@ -1,16 +1,17 @@
 package org.dimdev.dimdoors.network.packets;
 
+import java.io.IOException;
+
 import org.dimdev.dimdoors.watcher.ClientDimData;
+
 import cpw.mods.fml.common.network.simpleimpl.IMessage;
 import io.netty.buffer.ByteBuf;
 
-import java.io.IOException;
-
 public class DeleteDimensionPacket implements IMessage {
+
     private ClientDimData dimensionData = null;
 
-    public DeleteDimensionPacket() {
-    }
+    public DeleteDimensionPacket() {}
 
     public DeleteDimensionPacket(ClientDimData dimensionData) {
         this.dimensionData = dimensionData;
