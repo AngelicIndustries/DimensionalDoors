@@ -26,7 +26,8 @@ public class GatewayGenerator implements IWorldGenerator {
     private static final int CLUSTER_GROWTH_CHANCE = 80;
     private static final int MAX_CLUSTER_GROWTH_CHANCE = 100;
     private static final int MIN_RIFT_Y = 4;
-    private static final int MAX_RIFT_Y = 240;
+    // Rifts stay this far below the top of the world, so up to 240 in a 256 high world
+    private static final int RIFT_CEILING_GAP = 16;
     private static final int CHUNK_LENGTH = 16;
     private static final int GATEWAY_RADIUS = 4;
     private static final int MAX_GATEWAY_GENERATION_ATTEMPTS = 10;
@@ -93,12 +94,15 @@ public class GatewayGenerator implements IWorldGenerator {
 
                 // If the point is within the acceptable altitude range, the block above is empty, and we're
                 // not building on bedrock, then generate a rift there
-                if (y >= MIN_RIFT_Y && y <= MAX_RIFT_Y
+                if (y >= MIN_RIFT_Y && y <= maxRiftY(world)
                     && world.isAirBlock(x, y + 1, z)
                     && world.getBlock(x, y, z) != Blocks.bedrock
                     && // <-- Stops Nether roof spawning. DO NOT REMOVE!
                     world.getBlock(x, y - 1, z) != Blocks.bedrock
-                    && world.getBlock(x, y - 2, z) != Blocks.bedrock) {
+                    && world.getBlock(x, y - 2, z) != Blocks.bedrock
+                    && !world.getBlock(x, y - 1, z)
+                        .getMaterial()
+                        .isLiquid()) {
                     // Create a link. If this is not the first time, create a child link and connect it to the first
                     // link.
                     if (link == null) {
@@ -122,9 +126,10 @@ public class GatewayGenerator implements IWorldGenerator {
 
                 // Check locations for the gateway until we are satisfied or run out of attempts.
                 for (attempts = 0; attempts < MAX_GATEWAY_GENERATION_ATTEMPTS && !valid; attempts++) {
-                    // Pick a random point on the surface of the chunk and check its materials
-                    x = chunkX * CHUNK_LENGTH + random.nextInt(CHUNK_LENGTH);
-                    z = chunkZ * CHUNK_LENGTH + random.nextInt(CHUNK_LENGTH);
+                    // Pick a random point on the surface of the chunk and check its materials. Like vanilla's
+                    // decorations, the point is offset by half a chunk so the gateway stays in generated chunks.
+                    x = chunkX * CHUNK_LENGTH + CHUNK_LENGTH / 2 + random.nextInt(CHUNK_LENGTH);
+                    z = chunkZ * CHUNK_LENGTH + CHUNK_LENGTH / 2 + random.nextInt(CHUNK_LENGTH);
                     y = world.getHeightValue(x, z);
                     valid = checkGatewayLocation(world, x, y, z);
                 }
@@ -152,12 +157,33 @@ public class GatewayGenerator implements IWorldGenerator {
         // Check if the point is within the acceptable altitude range, the block above that point is empty,
         // and the block two levels down is opaque and has a reasonable material. Plus that we're not building
         // on top of bedrock.
-        return (y >= MIN_RIFT_Y && y <= MAX_RIFT_Y
+        return (y >= MIN_RIFT_Y && y <= maxRiftY(world)
             && world.isAirBlock(x, y + 1, z)
             && world.getBlock(x, y, z) != Blocks.bedrock
             && // <-- Stops Nether roof spawning. DO NOT REMOVE!
             world.getBlock(x, y - 1, z) != Blocks.bedrock
-            && checkFoundationMaterial(world, x, y - 2, z));
+            && checkFoundationMaterial(world, x, y - 2, z)
+            && isDry(world, x, y, z));
+    }
+
+    /** No water or lava at the gateway's floor or doorway, so it doesn't stand in a pond or a marsh. */
+    private static boolean isDry(World world, int x, int y, int z) {
+        for (int dx = -GATEWAY_RADIUS; dx <= GATEWAY_RADIUS; dx++) {
+            for (int dz = -GATEWAY_RADIUS; dz <= GATEWAY_RADIUS; dz++) {
+                for (int dy = -1; dy <= 0; dy++) {
+                    if (world.getBlock(x + dx, y + dy, z + dz)
+                        .getMaterial()
+                        .isLiquid()) {
+                        return false;
+                    }
+                }
+            }
+        }
+        return true;
+    }
+
+    private static int maxRiftY(World world) {
+        return world.getHeight() - RIFT_CEILING_GAP;
     }
 
     private static boolean checkFoundationMaterial(World world, int x, int y, int z) {
