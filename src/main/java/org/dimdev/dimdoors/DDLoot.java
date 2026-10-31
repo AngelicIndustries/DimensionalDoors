@@ -66,9 +66,16 @@ public class DDLoot {
             16,
             64);
         addContent(properties.WorldThreadLootEnabled, items, DimDoors.itemWorldThread, 80, 2, 12);
+        addWeighted(items, DimDoors.itemRiftSignature, properties.RiftSignatureLootWeight);
+        addWeighted(items, DimDoors.itemStabilizedRiftSignature, properties.StabilizedRiftSignatureLootWeight);
+        addWeighted(items, DimDoors.itemPersonalDoor, properties.PersonalDimDoorLootWeight);
 
         // Add all the items to our dungeon chest
         addItemsToContainer(DungeonChestInfo, items);
+    }
+
+    private static void addWeighted(ArrayList<WeightedRandomChestContent> items, Item item, int weight) {
+        addContent(weight > 0, items, item, weight);
     }
 
     private static void addContent(boolean include, ArrayList<WeightedRandomChestContent> items, Item item,

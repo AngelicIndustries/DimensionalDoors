@@ -5,6 +5,7 @@ import java.io.File;
 import net.minecraftforge.common.config.Configuration;
 
 import org.dimdev.dimdoors.blocks.BlockRift;
+import org.dimdev.dimdoors.helpers.LimboEscape;
 import org.dimdev.dimdoors.ticking.CustomLimboPopulator;
 import org.dimdev.dimdoors.world.fortresses.DDStructureNetherBridgeStart;
 import org.dimdev.dimdoors.world.gateways.GatewayGenerator;
@@ -50,6 +51,9 @@ public class DDProperties {
     public final boolean RiftBladeLootEnabled;
     public final boolean FabricOfRealityLootEnabled;
     public final boolean WorldThreadLootEnabled;
+    public final int RiftSignatureLootWeight;
+    public final int StabilizedRiftSignatureLootWeight;
+    public final int PersonalDimDoorLootWeight;
 
     /**
      * Other Flags
@@ -65,6 +69,9 @@ public class DDProperties {
     public final boolean TNFREAKINGT_Enabled;
     public final boolean MonolithTeleportationEnabled;
     public final boolean DangerousLimboMonolithsDisabled;
+    public final boolean UniversalLimboInNewWorlds;
+    public final String LimboEscapeDestination;
+    public final boolean LimboEscapeUnravelsLanding;
 
     /**
      * Other
@@ -93,6 +100,21 @@ public class DDProperties {
     private final String CATEGORY_BIOME = "biome";
     private final String CATEGORY_LOOT = "loot";
 
+    private int lootWeight(Configuration config, String item, int weight) {
+        return config
+            .get(
+                CATEGORY_LOOT,
+                item + " Loot Weight",
+                weight,
+                "How often dungeon chests hold a " + item
+                    + ", against 750 for all other loot together. 0 leaves it out. The default is "
+                    + weight
+                    + ".",
+                0,
+                1000)
+            .getInt();
+    }
+
     private DDProperties(File configFile) {
         // Load the configuration. This must be done in the constructor, even though I'd rather have a separate
         // function, because "blank final" variables must be initialized within the constructor.
@@ -109,13 +131,18 @@ public class DDProperties {
             .getBoolean(true);
         CraftingTransTrapdoorAllowed = config.get(CATEGORY_CRAFTING, "Allow Crafting Transdimensional Trapdoor", true)
             .getBoolean(true);
-        CraftingRiftSignatureAllowed = config.get(CATEGORY_CRAFTING, "Allow Crafting Rift Signature", true)
-            .getBoolean(true);
+        CraftingRiftSignatureAllowed = config
+            .get(CATEGORY_CRAFTING, "Allow Crafting Rift Signature", false, "Off by default: Rift Signatures are loot.")
+            .getBoolean(false);
         CraftingRiftRemoverAllowed = config.get(CATEGORY_CRAFTING, "Allow Crafting Rift Remover", true)
             .getBoolean(true);
         CraftingStabilizedRiftSignatureAllowed = config
-            .get(CATEGORY_CRAFTING, "Allow Crafting Stabilized Rift Signature", true)
-            .getBoolean(true);
+            .get(
+                CATEGORY_CRAFTING,
+                "Allow Crafting Stabilized Rift Signature",
+                false,
+                "Off by default: Stabilized Rift Signatures are loot.")
+            .getBoolean(false);
         CraftingRiftBladeAllowed = config.get(CATEGORY_CRAFTING, "Allow Crafting Rift Blade", true)
             .getBoolean(true);
         CraftingStableFabricAllowed = config.get(CATEGORY_CRAFTING, "Allow Crafting Stable Fabric", true)
@@ -129,8 +156,13 @@ public class DDProperties {
             .getBoolean(true);
         CraftingQuartzDoorAllowed = config.get(CATEGORY_CRAFTING, "Allow Crafting Quartz Doors", true)
             .getBoolean(true);
-        CraftingPersonalDimDoorAllowed = config.get(CATEGORY_CRAFTING, "Allow Crafting Personal Dim Doors", true)
-            .getBoolean(true);
+        CraftingPersonalDimDoorAllowed = config
+            .get(
+                CATEGORY_CRAFTING,
+                "Allow Crafting Personal Dim Doors",
+                false,
+                "Off by default: Personal Dimensional Doors are loot.")
+            .getBoolean(false);
 
         WorldThreadRequirementLevel = config.get(
             CATEGORY_CRAFTING,
@@ -146,6 +178,9 @@ public class DDProperties {
             .getBoolean(true);
         WorldThreadLootEnabled = config.get(CATEGORY_LOOT, "Enable World Thread Loot", true)
             .getBoolean(true);
+        RiftSignatureLootWeight = lootWeight(config, "Rift Signature", 20);
+        StabilizedRiftSignatureLootWeight = lootWeight(config, "Stabilized Rift Signature", 6);
+        PersonalDimDoorLootWeight = lootWeight(config, "Personal Dimensional Door", 10);
 
         RiftGriefingEnabled = config
             .get(
@@ -196,6 +231,29 @@ public class DDProperties {
             500,
             "Sets the farthest distance that players may be moved at random when sent to Limbo. Must be greater than or equal to 0.")
             .getInt();
+        UniversalLimboInNewWorlds = config
+            .get(
+                Configuration.CATEGORY_GENERAL,
+                "Universal Limbo In New Worlds",
+                true,
+                "The Enable Universal Limbo setting a new world starts with: whether dying in any dimension sends "
+                    + "players to Limbo. Each world keeps its own setting in DimensionalDoors/DimDoorsWorld.cfg.")
+            .getBoolean(true);
+        LimboEscapeDestination = config.get(
+            Configuration.CATEGORY_GENERAL,
+            "Limbo Escape Destination",
+            LimboEscape.SURFACE,
+            "Where walking on Eternal Fabric sends players: surface (the surface near their Limbo position, "
+                + "within the Limbo Return Range), bed (their bed, or world spawn without one) or spawn (world spawn).",
+            new String[] { LimboEscape.SURFACE, LimboEscape.BED, LimboEscape.SPAWN })
+            .getString();
+        LimboEscapeUnravelsLanding = config
+            .get(
+                Configuration.CATEGORY_GENERAL,
+                "Limbo Escape Unravels Landing",
+                false,
+                "Sets whether a patch of Unraveled Fabric is left under players where they land after escaping Limbo")
+            .getBoolean(false);
         LimboReturnRange = config.get(
             Configuration.CATEGORY_GENERAL,
             "Limbo Return Range",

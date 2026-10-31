@@ -172,7 +172,7 @@ public class CraftingManager {
         }
         if (properties.CraftingQuartzDoorAllowed) {
             GameRegistry.addRecipe(
-                new ShapedOreRecipe(DimDoors.itemQuartzDoor, "yy", "yy", "yy", Character.valueOf('y'), "oreQuartz"));
+                new ShapedOreRecipe(DimDoors.itemQuartzDoor, "yy", "yy", "yy", Character.valueOf('y'), "gemQuartz"));
 
         }
         if (properties.CraftingDDKeysAllowed) {

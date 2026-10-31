@@ -48,16 +48,17 @@ public class DDWorldProperties {
                     + "dungeons in Limbo or by dying (if Hardcore Limbo is disabled). The default value is true.")
             .getBoolean(true);
 
+        boolean universalLimbo = DDProperties.instance().UniversalLimboInNewWorlds;
         UniversalLimboEnabled = config
             .get(
                 Configuration.CATEGORY_GENERAL,
                 "Enable Universal Limbo",
-                false,
+                universalLimbo,
                 "Sets whether players are teleported to Limbo when they die in any dimension (except Limbo). "
-                    + "Normally, players only go to Limbo if they die in a pocket dimension. This setting will not "
+                    + "If false, players only go to Limbo if they die in a pocket dimension. This setting will not "
                     + "affect deaths in Limbo, which can be set with the Hardcore Limbo option. "
-                    + "The default value is false.")
-            .getBoolean(false);
+                    + "New worlds start with Universal Limbo In New Worlds from DimDoors.cfg.")
+            .getBoolean(universalLimbo);
 
         config.save();
     }
