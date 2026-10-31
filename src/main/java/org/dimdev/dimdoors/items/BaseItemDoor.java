@@ -1,5 +1,6 @@
 package org.dimdev.dimdoors.items;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 
@@ -8,6 +9,7 @@ import net.minecraft.block.material.Material;
 import net.minecraft.client.renderer.texture.IIconRegister;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemDoor;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.MathHelper;
@@ -26,7 +28,9 @@ public abstract class BaseItemDoor extends ItemDoor {
 
     // Maps non-dimensional door items to their corresponding dimensional door item
     // Also maps dimensional door items to themselves for simplicity
-    private static final HashMap<ItemDoor, BaseItemDoor> doorItemMapping = new HashMap<ItemDoor, BaseItemDoor>();
+    private static final HashMap<Item, BaseItemDoor> doorItemMapping = new HashMap<Item, BaseItemDoor>();
+    // The same for door items that hold several doors, told apart by damage
+    private static final HashMap<List<Object>, BaseItemDoor> doorStackMapping = new HashMap<List<Object>, BaseItemDoor>();
     private static DDProperties properties = null;
 
     /**
@@ -45,6 +49,22 @@ public abstract class BaseItemDoor extends ItemDoor {
         if (vanillaDoor != null) {
             doorItemMapping.put(vanillaDoor, this);
         }
+    }
+
+    /** Makes a plain door placed under a rift become the given dimensional door. */
+    public static void mapDoorItem(ItemStack plainDoor, BaseItemDoor dimensionalDoor) {
+        if (plainDoor.getItem()
+            .getHasSubtypes()) {
+            doorStackMapping
+                .put(Arrays.<Object>asList(plainDoor.getItem(), plainDoor.getItemDamage()), dimensionalDoor);
+        } else {
+            doorItemMapping.put(plainDoor.getItem(), dimensionalDoor);
+        }
+    }
+
+    private static BaseItemDoor getMappedDoor(ItemStack stack) {
+        BaseItemDoor door = doorStackMapping.get(Arrays.<Object>asList(stack.getItem(), stack.getItemDamage()));
+        return door != null ? door : doorItemMapping.get(stack.getItem());
     }
 
     @Override
@@ -98,7 +118,7 @@ public abstract class BaseItemDoor extends ItemDoor {
         // Retrieve the actual door type that we want to use here.
         // It's okay if stack isn't an ItemDoor. In that case, the lookup will
         // return null, just as if the item was an unrecognized door type.
-        BaseItemDoor mappedItem = doorItemMapping.get(stack.getItem());
+        BaseItemDoor mappedItem = getMappedDoor(stack);
         if (mappedItem == null) {
             return false;
         }

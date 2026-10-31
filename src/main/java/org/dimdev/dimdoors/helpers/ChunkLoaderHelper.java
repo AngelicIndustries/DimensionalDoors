@@ -35,7 +35,8 @@ public class ChunkLoaderHelper implements LoadingCallback {
             int z = ticket.getModData()
                 .getInteger("goldDimDoorZ");
 
-            if (world.getBlock(x, y, z) == DimDoors.goldenDimensionalDoor) {
+            // Golden doors and golden door variants hold chunk loader tile entities
+            if (world.getTileEntity(x, y, z) instanceof IChunkLoader) {
                 IChunkLoader loader = (IChunkLoader) world.getTileEntity(x, y, z);
                 if (!loader.isInitialized()) {
                     loader.initialize(ticket);

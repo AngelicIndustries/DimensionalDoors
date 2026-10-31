@@ -11,6 +11,7 @@ import net.minecraftforge.common.DimensionManager;
 import net.minecraftforge.common.ForgeChunkManager;
 
 import org.dimdev.dimdoors.DimDoors;
+import org.dimdev.dimdoors.blocks.DoorVariantBlock;
 import org.dimdev.dimdoors.config.DDProperties;
 
 /**
@@ -153,6 +154,9 @@ public class LimboDecay {
             return false;
         }
 
+        if (block instanceof DoorVariantBlock) {
+            return false;
+        }
         for (int k = 0; k < getBlocksImmuneToDecay().length; k++) {
             if (block == getBlocksImmuneToDecay()[k]) {
                 return false;

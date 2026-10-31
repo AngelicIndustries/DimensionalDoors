@@ -22,6 +22,7 @@ import org.dimdev.dimdoors.core.NewDimData;
 import org.dimdev.dimdoors.core.PocketManager;
 import org.dimdev.dimdoors.dungeon.DungeonData;
 import org.dimdev.dimdoors.dungeon.DungeonSchematic;
+import org.dimdev.dimdoors.dungeon.pack.DungeonPack;
 import org.dimdev.dimdoors.dungeon.pack.DungeonPackConfig;
 import org.dimdev.dimdoors.experimental.BoundingBox;
 import org.dimdev.dimdoors.helpers.DungeonHelper;
@@ -118,6 +119,11 @@ public class PocketBuilder {
     }
 
     public static boolean generateNewDungeonPocket(DimLink link, DDProperties properties) {
+        return generateNewDungeonPocket(link, properties, null);
+    }
+
+    /** Like {@link #generateNewDungeonPocket(DimLink, DDProperties)}, from the given pack when it isn't null. */
+    public static boolean generateNewDungeonPocket(DimLink link, DDProperties properties, DungeonPack pack) {
         if (link == null) {
             throw new IllegalArgumentException("link cannot be null.");
         }
@@ -133,7 +139,7 @@ public class PocketBuilder {
         NewDimData parent = PocketManager.getDimensionData(
             link.source()
                 .getDimension());
-        Pair<DungeonData, DungeonSchematic> pair = selectNextDungeon(parent, random, properties);
+        Pair<DungeonData, DungeonSchematic> pair = selectNextDungeon(parent, random, properties, pack);
         if (pair == null) {
             System.err.println("Could not select a dungeon for generation!");
             return false;
@@ -173,12 +179,12 @@ public class PocketBuilder {
     }
 
     private static Pair<DungeonData, DungeonSchematic> selectNextDungeon(NewDimData parent, Random random,
-        DDProperties properties) {
+        DDProperties properties, DungeonPack pack) {
         DungeonData dungeon = null;
         DungeonSchematic schematic = null;
 
         dungeon = DungeonHelper.instance()
-            .selectNextDungeon(parent, random);
+            .selectNextDungeon(parent, random, pack);
 
         if (dungeon != null) {
             schematic = loadAndValidateDungeon(dungeon, properties);

@@ -25,8 +25,11 @@ import net.minecraftforge.common.DimensionManager;
 import org.dimdev.dimdoors.DimDoors;
 import org.dimdev.dimdoors.Point3D;
 import org.dimdev.dimdoors.blocks.BaseDimDoor;
+import org.dimdev.dimdoors.blocks.DoorVariantBlock;
 import org.dimdev.dimdoors.blocks.IDimDoor;
 import org.dimdev.dimdoors.config.DDProperties;
+import org.dimdev.dimdoors.config.DoorKind;
+import org.dimdev.dimdoors.helpers.DungeonHelper;
 import org.dimdev.dimdoors.helpers.yCoordHelper;
 import org.dimdev.dimdoors.schematic.BlockRotator;
 import org.dimdev.dimdoors.tileentities.TileEntityDimDoor;
@@ -458,6 +461,14 @@ public class DDTeleporter {
         // Check the destination type and respond accordingly
         switch (link.linkType()) {
             case DUNGEON:
+                // Nether dungeon doors pick from the Nether pack wherever they stand
+                if (door instanceof DoorVariantBlock && ((DoorVariantBlock) door).kind() == DoorKind.NETHER_DUNGEON) {
+                    return PocketBuilder.generateNewDungeonPocket(
+                        link,
+                        properties,
+                        DungeonHelper.instance()
+                            .getDungeonPack("Nether"));
+                }
                 return PocketBuilder.generateNewDungeonPocket(link, properties);
             case POCKET:
                 return PocketBuilder.generateNewPocket(link, properties, door, DimensionType.POCKET);

@@ -16,12 +16,14 @@ import net.minecraftforge.event.world.WorldEvent;
 
 import org.dimdev.dimdoors.config.DDProperties;
 import org.dimdev.dimdoors.config.DDWorldProperties;
+import org.dimdev.dimdoors.config.DoorKind;
 import org.dimdev.dimdoors.core.DDTeleporter;
 import org.dimdev.dimdoors.core.DimLink;
 import org.dimdev.dimdoors.core.DimensionType;
 import org.dimdev.dimdoors.core.NewDimData;
 import org.dimdev.dimdoors.core.PocketManager;
 import org.dimdev.dimdoors.items.BaseItemDoor;
+import org.dimdev.dimdoors.items.ItemDoorVariant;
 import org.dimdev.dimdoors.items.ItemWarpDoor;
 import org.dimdev.dimdoors.ticking.RiftRegenerator;
 import org.dimdev.dimdoors.util.Point4D;
@@ -60,7 +62,8 @@ public class EventHookContainer {
         World world = event.entity.worldObj;
         ItemStack stack = event.entityPlayer.inventory.getCurrentItem();
         if (stack != null) {
-            if (stack.getItem() instanceof ItemWarpDoor) {
+            if (stack.getItem() instanceof ItemWarpDoor || stack.getItem() instanceof ItemDoorVariant
+                && ((ItemDoorVariant) stack.getItem()).kind() == DoorKind.WARP) {
                 NewDimData data = PocketManager.getDimensionData(world);
 
                 if (data.type() == DimensionType.PERSONAL) {

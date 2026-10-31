@@ -43,6 +43,7 @@ public class DDProperties {
     public final boolean CraftingDDKeysAllowed;
     public final boolean CraftingQuartzDoorAllowed;
     public final boolean CraftingPersonalDimDoorAllowed;
+    public final boolean CraftingDungeonDoorsAllowed;
 
     /**
      * Loot Flags
@@ -81,6 +82,8 @@ public class DDProperties {
     public final int ClusterGenerationChance;
     public final int GatewayGenerationChance;
     public final int FortressGatewayGenerationChance;
+    public final String[] DoorVariants;
+    public final int DoorVariantTint;
     public final int MonolithSpawningChance;
     public final int WorldThreadDropChance;
     public final int LimboEntryRange;
@@ -99,6 +102,18 @@ public class DDProperties {
     private final String CATEGORY_PROVIDER = "provider";
     private final String CATEGORY_BIOME = "biome";
     private final String CATEGORY_LOOT = "loot";
+    private final String CATEGORY_DOOR_VARIANTS = "door_variants";
+
+    private static int tint(String hex) {
+        try {
+            return Integer.parseInt(
+                hex.trim()
+                    .replace("#", ""),
+                16) & 0xFFFFFF;
+        } catch (NumberFormatException e) {
+            return 0xFFFFFF;
+        }
+    }
 
     private int lootWeight(Configuration config, String item, int weight) {
         return config
@@ -163,6 +178,13 @@ public class DDProperties {
                 false,
                 "Off by default: Personal Dimensional Doors are loot.")
             .getBoolean(false);
+        CraftingDungeonDoorsAllowed = config
+            .get(
+                CATEGORY_CRAFTING,
+                "Allow Crafting Dungeon Doors",
+                true,
+                "Lets door variants of the dungeon and nether_dungeon kinds be crafted.")
+            .getBoolean(true);
 
         WorldThreadRequirementLevel = config.get(
             CATEGORY_CRAFTING,
@@ -343,6 +365,30 @@ public class DDProperties {
                     + ") that a Rift Gateway will "
                     + "generate as part of a Nether Fortress. The default chance is 33.")
             .getInt();
+
+        DoorVariants = config.get(
+            CATEGORY_DOOR_VARIANTS,
+            "Door Variants",
+            DoorVariantList.DEFAULTS,
+            "Doors that get a dimensional variant, as block registry name=kind. The kinds are pocket (like the "
+                + "Dimensional Door), warp (like the Warp Door), dungeon (opens a new dungeon), nether_dungeon (a "
+                + "new dungeon from the Nether pack), personal (like the Personal Dimensional Door) and golden "
+                + "(like the Golden Dimensional Door). A variant is crafted from door, Stable Fabric (an Ender Pearl "
+                + "for warp ones), door when "
+                + "the crafting option of its kind allows it, so personal ones aren't crafted by default. A plain door "
+                + "placed under a rift becomes its variant, except for personal ones. The iron, wooden, quartz "
+                + "and golden doors with their own kinds stand for our existing doors. Doors from mods that "
+                + "aren't installed are skipped.")
+            .getStringList();
+        DoorVariantTint = tint(
+            config
+                .get(
+                    CATEGORY_DOOR_VARIANTS,
+                    "Door Variant Tint",
+                    "E0D4FF",
+                    "A color, as hex RGB, that door variants are drawn with to tell them from their doors. "
+                        + "FFFFFF draws them untinted.")
+                .getString());
 
         WorldThreadDropChance = config
             .get(

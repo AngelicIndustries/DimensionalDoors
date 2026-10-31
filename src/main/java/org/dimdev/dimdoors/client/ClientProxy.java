@@ -8,6 +8,7 @@ import net.minecraftforge.common.MinecraftForge;
 
 import org.dimdev.dimdoors.CommonProxy;
 import org.dimdev.dimdoors.blocks.BaseDimDoor;
+import org.dimdev.dimdoors.blocks.DoorVariantBlock;
 import org.dimdev.dimdoors.config.DDProperties;
 import org.dimdev.dimdoors.core.DimLink;
 import org.dimdev.dimdoors.core.PocketManager;
@@ -30,6 +31,10 @@ public class ClientProxy extends CommonProxy {
         // MinecraftForgeClient.preloadTexture(RIFT2_PNG);
         RenderingRegistry.registerEntityRenderingHandler(MobMonolith.class, new RenderMobObelisk(.5F));
         RenderingRegistry.registerBlockHandler(new PrivatePocketRender(RenderingRegistry.getNextAvailableRenderId()));
+        if (DDProperties.instance().DoorVariantTint != 0xFFFFFF) {
+            DoorVariantBlock.renderType = RenderingRegistry.getNextAvailableRenderId();
+            RenderingRegistry.registerBlockHandler(new DoorVariantRender(DoorVariantBlock.renderType));
+        }
 
     }
 

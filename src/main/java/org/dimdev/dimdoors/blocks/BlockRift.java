@@ -333,7 +333,8 @@ public class BlockRift extends Block implements ITileEntityProvider {
             // I've set this to access blockResistance directly. Might need changing later.
 
             return (block.blockResistance >= MIN_IMMUNE_RESISTANCE || modBlocksImmuneToRift.contains(block)
-                || blocksImmuneToRift.contains(block));
+                || blocksImmuneToRift.contains(block)
+                || block instanceof DoorVariantBlock);
         }
         return false;
     }
@@ -343,7 +344,7 @@ public class BlockRift extends Block implements ITileEntityProvider {
         // rift-resistant blocks from DD.
         Block block = world.getBlock(x, y, z);
         if (block != null) {
-            return modBlocksImmuneToRift.contains(block);
+            return modBlocksImmuneToRift.contains(block) || block instanceof DoorVariantBlock;
         }
         return false;
     }

@@ -8,9 +8,7 @@ import net.minecraft.block.material.Material;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.entity.EntityList;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.init.Items;
 import net.minecraft.item.Item;
-import net.minecraft.item.ItemDoor;
 import net.minecraft.util.ChatComponentText;
 import net.minecraft.util.StatCollector;
 import net.minecraft.world.biome.BiomeGenBase;
@@ -239,15 +237,12 @@ public class DimDoors {
 
         itemDDKey = (new ItemDDKey()).setUnlocalizedName("itemDDKey");
         itemQuartzDoor = (new ItemQuartzDoor(Material.rock)).setUnlocalizedName("itemQuartzDoor");
-        itemPersonalDoor = (new ItemPersonalDoor(Material.rock, (ItemDoor) itemQuartzDoor))
-            .setUnlocalizedName("itemQuartzDimDoor");
+        itemPersonalDoor = (new ItemPersonalDoor(Material.rock, null)).setUnlocalizedName("itemQuartzDimDoor");
         itemGoldenDoor = (new ItemGoldDoor(Material.wood)).setUnlocalizedName("itemGoldDoor");
-        itemGoldenDimensionalDoor = (new ItemGoldDimDoor(Material.iron, (ItemDoor) itemGoldenDoor))
-            .setUnlocalizedName("itemGoldDimDoor");
-        itemDimensionalDoor = (ItemDimensionalDoor) (new ItemDimensionalDoor(Material.iron, (ItemDoor) Items.iron_door))
+        itemGoldenDimensionalDoor = (new ItemGoldDimDoor(Material.iron, null)).setUnlocalizedName("itemGoldDimDoor");
+        itemDimensionalDoor = (ItemDimensionalDoor) (new ItemDimensionalDoor(Material.iron, null))
             .setUnlocalizedName("itemDimDoor");
-        itemWarpDoor = (new ItemWarpDoor(Material.wood, (ItemDoor) Items.iron_door))
-            .setUnlocalizedName("itemDimDoorWarp");
+        itemWarpDoor = (new ItemWarpDoor(Material.wood, null)).setUnlocalizedName("itemDimDoorWarp");
         itemRiftSignature = (new ItemRiftSignature()).setUnlocalizedName("itemLinkSignature");
         itemRiftRemover = (new itemRiftRemover(Material.wood)).setUnlocalizedName("itemRiftRemover");
         itemStableFabric = (new ItemStableFabric(0)).setUnlocalizedName("itemStableFabric");
@@ -292,6 +287,9 @@ public class DimDoors {
         GameRegistry.registerItem(itemWorldThread, "World Thread");
 
         GameRegistry.registerBlock(blockDimWall, ItemBlockDimWall.class, "Fabric of Reality");
+
+        // Dimensional variants of other doors, from the door variant list
+        DoorVariants.register(properties);
 
         BlockRotator.setupOrientations();
 

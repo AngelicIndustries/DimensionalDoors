@@ -447,7 +447,12 @@ public class DungeonHelper {
     }
 
     public DungeonData selectNextDungeon(NewDimData parent, Random random) {
-        DungeonPack pack = getDimDungeonPack(parent);
+        return selectNextDungeon(parent, random, null);
+    }
+
+    /** Picks the next dungeon from forcedPack, or from the parent's pack when forcedPack is null. */
+    public DungeonData selectNextDungeon(NewDimData parent, Random random, DungeonPack forcedPack) {
+        DungeonPack pack = forcedPack != null ? forcedPack : getDimDungeonPack(parent);
         DungeonData selection;
         DungeonPackConfig config;
         DungeonPack selectedPack;
@@ -457,7 +462,7 @@ public class DungeonHelper {
             selectedPack = pack;
 
             // Are we allowed to switch to another dungeon pack?
-            if (config.allowPackChangeOut()) {
+            if (forcedPack == null && config.allowPackChangeOut()) {
                 // Calculate the chance of switching to a different pack type
                 int packSwitchChance;
                 if (parent.isPocketDimension()) {
