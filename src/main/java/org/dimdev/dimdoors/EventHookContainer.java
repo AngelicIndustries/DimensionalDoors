@@ -1,14 +1,17 @@
 package org.dimdev.dimdoors;
 
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.DamageSource;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldProvider;
 import net.minecraft.world.chunk.Chunk;
+import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.entity.living.LivingDeathEvent;
 import net.minecraftforge.event.entity.living.LivingFallEvent;
+import net.minecraftforge.event.entity.player.PlayerDropsEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent.Action;
 import net.minecraftforge.event.world.ChunkEvent;
@@ -145,13 +148,38 @@ public class EventHookContainer {
                     .getName());
 
             if (properties.LimboEnabled && !properties.LimboReturnsInventoryEnabled) {
-                player.inventory.clearInventory(null, -1);
+                leaveInventory(player, event.source);
                 revivePlayerInLimbo(player);
                 event.setCanceled(true);
             }
             return false;
         }
         return true;
+    }
+
+    /**
+     * The items a player loses on the way into Limbo: dropped where they died, as a normal death drops them (graves and
+     * similar mods see PlayerDropsEvent), or destroyed as Dimensional Doors always did. keepInventory keeps them.
+     */
+    private void leaveInventory(EntityPlayer player, DamageSource source) {
+        if (player.worldObj.getGameRules()
+            .getGameRuleBooleanValue("keepInventory")) {
+            return;
+        }
+        if (!properties.LimboDropsInventory) {
+            player.inventory.clearInventory(null, -1);
+            return;
+        }
+        player.captureDrops = true;
+        player.capturedDrops.clear();
+        player.inventory.dropAllItems();
+        player.captureDrops = false;
+        PlayerDropsEvent drops = new PlayerDropsEvent(player, source, player.capturedDrops, false);
+        if (!MinecraftForge.EVENT_BUS.post(drops)) {
+            for (EntityItem item : player.capturedDrops) {
+                player.joinEntityItemWithWorld(item);
+            }
+        }
     }
 
     private boolean isValidSourceForLimbo(WorldProvider provider) {

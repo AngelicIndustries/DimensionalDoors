@@ -65,6 +65,7 @@ public class DDProperties {
     public final boolean RiftsSpawnEndermenEnabled;
     public final boolean LimboEnabled;
     public final boolean HardcoreLimboEnabled;
+    public final boolean LimboDropsInventory;
     public final boolean RebuildDoorsAtRifts;
     public final boolean LimboReturnsInventoryEnabled;
     public final boolean DoorRenderingEnabled;
@@ -237,6 +238,13 @@ public class DDProperties {
                 false,
                 "Sets whether players that die in Limbo will respawn there")
             .getBoolean(false);
+        LimboDropsInventory = config.get(
+            Configuration.CATEGORY_GENERAL,
+            "Limbo Drops Inventory",
+            true,
+            "When Limbo doesn't return inventories: whether a player's items fall where they died, as in a normal "
+                + "death (graves and similar mods get them), or are destroyed (false, as Dimensional Doors always did).")
+            .getBoolean(true);
         RebuildDoorsAtRifts = config
             .get(
                 Configuration.CATEGORY_GENERAL,
