@@ -199,6 +199,92 @@ public class RenderDimDoor extends TileEntitySpecialRenderer {
         GL11.glEnable(GL11.GL_LIGHTING);
     }
 
+    /**
+     * The doorway for shader packs, which ignore the generated texture coordinates the layers above use (vanilla's End
+     * portal has the same problem under Angelica). The same 16 layers, worked out here instead: the generated
+     * coordinates and the texture matrix for each corner. Their depth coordinate only depends on the axis the doorway
+     * faces, so it is the same at all four corners and dividing per corner gives the same picture.
+     */
+    private void renderShaderDoorway(TileEntityDimDoor tile, double x, double y, double z) {
+        Random rand = new Random(31100L);
+        float time = Minecraft.getSystemTime() % 200000L / 200000.0F;
+        this.bindTexture(warpPath);
+        GL11.glDisable(GL11.GL_LIGHTING);
+        GL11.glEnable(GL11.GL_BLEND);
+        Tessellator tessellator = Tessellator.instance;
+        double[][] corners = doorwayCorners(tile.orientation, x, y, z);
+        for (int count = 0; count < 16; ++count) {
+            // The same values as renderDimDoorTileEntity
+            float var15 = 16 - count;
+            float var16 = count == 1 ? .5F : 0.2625F;
+            float var17 = 1.0F / (var15 + .80F);
+            if (count == 0) {
+                var17 = 0.1F;
+                var15 = 25.0F;
+                var16 = 0.125F;
+                GL11.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
+            } else if (count == 1) {
+                GL11.glBlendFunc(GL11.GL_ONE, GL11.GL_ONE);
+            }
+            double angle = Math.toRadians((count * count * 4321 + count * 9) * 2.0F);
+            double cos = Math.cos(angle), sin = Math.sin(angle);
+            float[] color = tile.getRenderColor(rand);
+            tessellator.startDrawingQuads();
+            tessellator.setBrightness(240 | 240 << 16);
+            tessellator.setColorRGBA_F(color[0] * var17, color[1] * var17, color[2] * var17, color[3]);
+            for (double[] corner : corners) {
+                double[] stq = generatedCoords(tile.orientation, corner[0], corner[1], corner[2]);
+                double q = Math.abs(stq[2]) < 1.0E-4 ? Math.copySign(1.0E-4, stq[2]) : stq[2];
+                double s = stq[0] / q + 0.5, t = stq[1] / q + 0.5;
+                double u = var16 * (cos * s - sin * t + 0.5);
+                double v = var16 * (sin * s + cos * t + 0.5) + time * var15;
+                tessellator.addVertexWithUV(corner[0], corner[1], corner[2], u, v);
+            }
+            tessellator.draw();
+        }
+        GL11.glDisable(GL11.GL_BLEND);
+        GL11.glEnable(GL11.GL_LIGHTING);
+    }
+
+    /** The doorway's corners, in the order the layers above draw them, so the same side shows. */
+    private static double[][] doorwayCorners(int orientation, double x, double y, double z) {
+        switch (orientation) {
+            case 0:
+            case 4:
+                double px = x + (orientation == 0 ? .01 : .15);
+                return new double[][] { { px, y - 1, z }, { px, y - 1, z + 1 }, { px, y + 1, z + 1 },
+                    { px, y + 1, z } };
+            case 1:
+            case 5:
+                double pz = z + (orientation == 1 ? .01 : .15);
+                return new double[][] { { x, y + 1, pz }, { x + 1, y + 1, pz }, { x + 1, y - 1, pz },
+                    { x, y - 1, pz } };
+            case 2:
+            case 6:
+                double nx = x + (orientation == 2 ? .99 : .85);
+                return new double[][] { { nx, y + 1, z }, { nx, y + 1, z + 1 }, { nx, y - 1, z + 1 },
+                    { nx, y - 1, z } };
+            default:
+                double nz = z + (orientation == 3 ? .99 : .85);
+                return new double[][] { { x, y - 1, nz }, { x + 1, y - 1, nz }, { x + 1, y + 1, nz },
+                    { x, y + 1, nz } };
+        }
+    }
+
+    /** The s, t and q the texture planes above give a corner (r isn't used by a 2D texture). */
+    private static double[] generatedCoords(int orientation, double vx, double vy, double vz) {
+        switch (orientation % 4) {
+            case 0:
+                return new double[] { vy, vz, vx + 0.15 };
+            case 1:
+                return new double[] { vy, vx, vz + 0.15 };
+            case 2:
+                return new double[] { vy, vz, vx - 0.15 };
+            default:
+                return new double[] { vy, vx, vz - 0.15 };
+        }
+    }
+
     private FloatBuffer getFloatBuffer(float par1, float par2, float par3, float par4) {
         buffer.clear();
         buffer.put(par1)
@@ -284,7 +370,8 @@ public class RenderDimDoor extends TileEntitySpecialRenderer {
 
             if (tile.openOrClosed) {
 
-                renderDimDoorTileEntity((TileEntityDimDoor) par1TileEntity, par2, par4, par6);
+                if (ShaderPacks.inUse()) renderShaderDoorway(tile, par2, par4, par6);
+                else renderDimDoorTileEntity((TileEntityDimDoor) par1TileEntity, par2, par4, par6);
                 if (tile.lockStatus >= 1) {
                     for (int i = 0; i < 1 + tile.lockStatus; i++) {
                         this.renderKeyHole(tile, par2, par4, par6, i);
