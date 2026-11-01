@@ -66,6 +66,7 @@ public class DDProperties {
     public final boolean LimboEnabled;
     public final boolean HardcoreLimboEnabled;
     public final boolean LimboDropsInventory;
+    public final boolean SeamlessLimboDeath;
     public final boolean RebuildDoorsAtRifts;
     public final boolean LimboReturnsInventoryEnabled;
     public final boolean DoorRenderingEnabled;
@@ -244,6 +245,13 @@ public class DDProperties {
             true,
             "When Limbo doesn't return inventories: whether a player's items fall where they died, as in a normal "
                 + "death (graves and similar mods get them), or are destroyed (false, as Dimensional Doors always did).")
+            .getBoolean(true);
+        SeamlessLimboDeath = config.get(
+            Configuration.CATEGORY_GENERAL,
+            "Seamless Limbo Death",
+            true,
+            "With Hardcore Limbo: dying in Limbo wakes the player up again in Limbo's sky, without the death screen. "
+                + "Items are kept, dropped or destroyed as on the way into Limbo.")
             .getBoolean(true);
         RebuildDoorsAtRifts = config
             .get(

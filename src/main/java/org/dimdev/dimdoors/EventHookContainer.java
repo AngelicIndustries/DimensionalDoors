@@ -128,6 +128,14 @@ public class EventHookContainer {
                 return false;
             }
         }
+        // Inside Limbo, where the check above never applies
+        if (properties.LimboEnabled && properties.LimboReturnsInventoryEnabled
+            && entity instanceof EntityPlayer
+            && isSeamlessLimboDeath(entity.worldObj.provider)) {
+            revivePlayerInLimbo((EntityPlayer) entity);
+            event.setCanceled(true);
+            return false;
+        }
         return true;
     }
 
@@ -154,7 +162,20 @@ public class EventHookContainer {
             }
             return false;
         }
+        if (entity instanceof EntityPlayer && properties.LimboEnabled
+            && !properties.LimboReturnsInventoryEnabled
+            && isSeamlessLimboDeath(entity.worldObj.provider)) {
+            leaveInventory((EntityPlayer) entity, event.source);
+            revivePlayerInLimbo((EntityPlayer) entity);
+            event.setCanceled(true);
+            return false;
+        }
         return true;
+    }
+
+    /** Whether dying here wakes a player up again in Limbo without the death screen. */
+    private boolean isSeamlessLimboDeath(WorldProvider provider) {
+        return provider instanceof LimboProvider && properties.HardcoreLimboEnabled && properties.SeamlessLimboDeath;
     }
 
     /**
