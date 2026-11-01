@@ -65,6 +65,7 @@ public class DDProperties {
     public final boolean RiftsSpawnEndermenEnabled;
     public final boolean LimboEnabled;
     public final boolean HardcoreLimboEnabled;
+    public final boolean RebuildDoorsAtRifts;
     public final boolean LimboReturnsInventoryEnabled;
     public final boolean DoorRenderingEnabled;
     public final boolean TNFREAKINGT_Enabled;
@@ -235,6 +236,15 @@ public class DDProperties {
                 "Enable Hardcore Limbo",
                 false,
                 "Sets whether players that die in Limbo will respawn there")
+            .getBoolean(false);
+        RebuildDoorsAtRifts = config
+            .get(
+                Configuration.CATEGORY_GENERAL,
+                "Rebuild Doors At Rifts",
+                false,
+                "Sets whether coming back to a bare rift (a gateway whose one-use door has vanished, for one) builds a "
+                    + "matching door there, as Dimensional Doors always did. Off: the rift stays a rift, as on modern "
+                    + "versions; place a door in it to use it again.")
             .getBoolean(false);
         LimboEntryRange = config.get(
             Configuration.CATEGORY_GENERAL,

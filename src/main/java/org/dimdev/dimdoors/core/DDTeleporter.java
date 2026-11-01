@@ -614,6 +614,10 @@ public class DDTeleporter {
                     .getY(),
                 link.destination()
                     .getZ());
+            // A bare rift stays a rift, as on modern versions: place a door in it to use it again
+            if (blockToReplace == DimDoors.blockRift && !prop.RebuildDoorsAtRifts) {
+                return;
+            }
 
             if (!destWorld.isAirBlock(
                 link.destination()
