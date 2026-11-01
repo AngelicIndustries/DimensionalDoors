@@ -73,6 +73,7 @@ public class DDProperties {
     public final boolean UniversalLimboInNewWorlds;
     public final String LimboEscapeDestination;
     public final boolean LimboEscapeUnravelsLanding;
+    public final int ExitSearchRadius;
 
     /**
      * Other
@@ -264,6 +265,15 @@ public class DDProperties {
                 false,
                 "Sets whether a patch of Unraveled Fabric is left under players where they land after escaping Limbo")
             .getBoolean(false);
+        ExitSearchRadius = config.get(
+            Configuration.CATEGORY_GENERAL,
+            "Exit Search Radius",
+            8,
+            "How far around its own column, in blocks, a dungeon or pocket exit looks for solid ground before it builds "
+                + "a Fabric of Reality platform under its door. 0 searches the column only.",
+            0,
+            32)
+            .getInt();
         LimboReturnRange = config.get(
             Configuration.CATEGORY_GENERAL,
             "Limbo Return Range",

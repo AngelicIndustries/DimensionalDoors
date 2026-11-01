@@ -30,6 +30,7 @@ import org.dimdev.dimdoors.blocks.IDimDoor;
 import org.dimdev.dimdoors.config.DDProperties;
 import org.dimdev.dimdoors.config.DoorKind;
 import org.dimdev.dimdoors.helpers.DungeonHelper;
+import org.dimdev.dimdoors.helpers.ExitSpot;
 import org.dimdev.dimdoors.helpers.yCoordHelper;
 import org.dimdev.dimdoors.schematic.BlockRotator;
 import org.dimdev.dimdoors.tileentities.TileEntityDimDoor;
@@ -728,19 +729,7 @@ public class DDTeleporter {
         }
 
         int startY = source.getY() - 2;
-        Point3D destination;
-        Point3D locationUp = yCoordHelper.findSafeCubeUp(world, source.getX(), startY, source.getZ());
-        Point3D locationDown = yCoordHelper.findSafeCubeDown(world, source.getX(), startY, source.getZ());
-
-        if (locationUp == null) {
-            destination = locationDown;
-        } else if (locationDown == null) {
-            destination = locationUp;
-        } else if (locationUp.getY() - startY <= startY - locationDown.getY()) {
-            destination = locationUp;
-        } else {
-            destination = locationDown;
-        }
+        Point3D destination = ExitSpot.find(world, source.getX(), startY, source.getZ(), properties.ExitSearchRadius);
         if (destination != null) {
             // Set up a 3x3 platform at the destination
             // Only place fabric of reality if the block is replaceable or air
