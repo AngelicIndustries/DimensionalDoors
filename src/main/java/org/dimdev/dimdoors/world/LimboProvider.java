@@ -24,6 +24,9 @@ import cpw.mods.fml.relauncher.SideOnly;
 
 public class LimboProvider extends WorldProvider {
 
+    @SideOnly(Side.CLIENT)
+    private static IRenderHandler noClouds;
+
     @Override
     public String getDimensionName() {
         return "Limbo";
@@ -44,6 +47,14 @@ public class LimboProvider extends WorldProvider {
     @SideOnly(Side.CLIENT)
     public IRenderHandler getSkyRenderer() {
         return this.skyRenderer;
+    }
+
+    /** No clouds over Limbo. Set here rather than as the sky is drawn, which some renderers never ask for. */
+    @Override
+    @SideOnly(Side.CLIENT)
+    public IRenderHandler getCloudRenderer() {
+        if (noClouds == null) noClouds = new CloudRenderBlank();
+        return noClouds;
     }
 
     @Override
@@ -132,7 +143,6 @@ public class LimboProvider extends WorldProvider {
 
     @Override
     public Vec3 getSkyColor(Entity cameraEntity, float partialTicks) {
-        setCloudRenderer(new CloudRenderBlank());
         return Vec3.createVectorHelper(0, 0, 0);
 
     }

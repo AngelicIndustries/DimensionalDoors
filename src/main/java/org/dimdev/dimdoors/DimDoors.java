@@ -61,6 +61,7 @@ import org.dimdev.dimdoors.network.DimDoorsNetwork;
 import org.dimdev.dimdoors.schematic.BlockRotator;
 import org.dimdev.dimdoors.ticking.CustomLimboPopulator;
 import org.dimdev.dimdoors.ticking.LimboDecayScheduler;
+import org.dimdev.dimdoors.ticking.LimboHunger;
 import org.dimdev.dimdoors.ticking.MobMonolith;
 import org.dimdev.dimdoors.ticking.RiftRegenerator;
 import org.dimdev.dimdoors.ticking.ServerTickHandler;
@@ -188,6 +189,9 @@ public class DimDoors {
         FMLCommonHandler.instance()
             .bus()
             .register(serverTickHandler);
+        FMLCommonHandler.instance()
+            .bus()
+            .register(new LimboHunger(properties));
 
         // Initialize LimboDecay instance: required for BlockLimbo
         limboDecay = new LimboDecay(properties);

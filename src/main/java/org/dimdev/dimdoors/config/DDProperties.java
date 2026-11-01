@@ -67,6 +67,7 @@ public class DDProperties {
     public final boolean HardcoreLimboEnabled;
     public final boolean LimboDropsInventory;
     public final boolean SeamlessLimboDeath;
+    public final boolean HungerInLimbo;
     public final boolean RebuildDoorsAtRifts;
     public final boolean LimboReturnsInventoryEnabled;
     public final boolean DoorRenderingEnabled;
@@ -253,6 +254,14 @@ public class DDProperties {
             "With Hardcore Limbo: dying in Limbo wakes the player up again in Limbo's sky, without the death screen. "
                 + "Items are kept, dropped or destroyed as on the way into Limbo.")
             .getBoolean(true);
+        HungerInLimbo = config
+            .get(
+                Configuration.CATEGORY_GENERAL,
+                "Hunger in Limbo",
+                false,
+                "Sets whether players get hungry in Limbo. Off: food and saturation stay as they were on arrival, and "
+                    + "health still regenerates.")
+            .getBoolean(false);
         RebuildDoorsAtRifts = config
             .get(
                 Configuration.CATEGORY_GENERAL,
