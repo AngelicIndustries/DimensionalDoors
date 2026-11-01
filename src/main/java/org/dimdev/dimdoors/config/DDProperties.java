@@ -69,6 +69,7 @@ public class DDProperties {
     public final boolean SeamlessLimboDeath;
     public final boolean HungerInLimbo;
     public final boolean RebuildDoorsAtRifts;
+    public final int MonolithAggroRange;
     public final boolean LimboReturnsInventoryEnabled;
     public final boolean DoorRenderingEnabled;
     public final boolean TNFREAKINGT_Enabled;
@@ -359,6 +360,15 @@ public class DDProperties {
                 "Sets whether monoliths in Limbo stare at the player rather than attack")
             .getBoolean(true);
 
+        MonolithAggroRange = config
+            .get(
+                CATEGORY_ENTITY,
+                "Monolith Aggro Range",
+                35,
+                "How close, in blocks, a player has to be for a Monolith to notice them.",
+                8,
+                128)
+            .getInt();
         MonolithSpawningChance = config
             .get(
                 Configuration.CATEGORY_GENERAL,

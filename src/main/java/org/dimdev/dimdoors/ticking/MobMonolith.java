@@ -27,7 +27,6 @@ public class MobMonolith extends EntityFlying implements IMob {
     private static final short MIN_AGGRO_CAP = 25;
     private static final int MAX_TEXTURE_STATE = 18;
     private static final int MAX_SOUND_COOLDOWN = 200;
-    private static final int MAX_AGGRO_RANGE = 35;
     private static final int AGGRO_WATCHER_INDEX = 16;
 
     private static final float WIDTH = 3f;
@@ -128,7 +127,7 @@ public class MobMonolith extends EntityFlying implements IMob {
         super.onEntityUpdate();
 
         // Check for players and update aggro levels even if there are no players in range
-        EntityPlayer player = this.worldObj.getClosestPlayerToEntity(this, MAX_AGGRO_RANGE);
+        EntityPlayer player = this.worldObj.getClosestPlayerToEntity(this, DDProperties.instance().MonolithAggroRange);
         boolean visibility = player != null && player.canEntityBeSeen(this);
         this.updateAggroLevel(player, visibility);
 
