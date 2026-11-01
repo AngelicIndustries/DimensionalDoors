@@ -3,6 +3,7 @@ package org.dimdev.dimdoors;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.DamageSource;
 import net.minecraft.world.World;
@@ -220,7 +221,12 @@ public class EventHookContainer {
         player.getFoodStats()
             .addStats(MAX_FOOD_LEVEL, 0);
         Point4D destination = LimboProvider.getLimboSkySpawn(player, properties);
-        DDTeleporter.teleportEntity(player, destination, false);
+        // The move waits for the end of the tick: the death may have come while a world ticks its entities
+        if (player instanceof EntityPlayerMP) {
+            DimDoors.limboArrivals.schedule((EntityPlayerMP) player, destination);
+        } else {
+            DDTeleporter.teleportEntity(player, destination, false);
+        }
     }
 
     @SubscribeEvent

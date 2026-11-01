@@ -60,6 +60,7 @@ import org.dimdev.dimdoors.items.itemRiftRemover;
 import org.dimdev.dimdoors.network.DimDoorsNetwork;
 import org.dimdev.dimdoors.schematic.BlockRotator;
 import org.dimdev.dimdoors.ticking.CustomLimboPopulator;
+import org.dimdev.dimdoors.ticking.LimboArrivals;
 import org.dimdev.dimdoors.ticking.LimboDecayScheduler;
 import org.dimdev.dimdoors.ticking.LimboHunger;
 import org.dimdev.dimdoors.ticking.MobMonolith;
@@ -144,6 +145,7 @@ public class DimDoors {
     public static DDProperties properties;
     public static DDWorldProperties worldProperties;
     public static CustomLimboPopulator spawner; // Added this field temporarily. Will be refactored out later.
+    public static final LimboArrivals limboArrivals = new LimboArrivals();
     public static RiftRegenerator riftRegenerator;
     public static GatewayGenerator gatewayGenerator;
     public static DeathTracker deathTracker;
@@ -192,6 +194,9 @@ public class DimDoors {
         FMLCommonHandler.instance()
             .bus()
             .register(new LimboHunger(properties));
+        FMLCommonHandler.instance()
+            .bus()
+            .register(limboArrivals);
 
         // Initialize LimboDecay instance: required for BlockLimbo
         limboDecay = new LimboDecay(properties);
