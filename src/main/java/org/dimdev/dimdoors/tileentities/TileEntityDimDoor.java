@@ -6,6 +6,7 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.network.NetworkManager;
 import net.minecraft.network.Packet;
 import net.minecraft.network.play.server.S35PacketUpdateTileEntity;
+import net.minecraft.util.AxisAlignedBB;
 
 import org.dimdev.dimdoors.DimDoors;
 import org.dimdev.dimdoors.core.PocketManager;
@@ -75,6 +76,12 @@ public class TileEntityDimDoor extends DDTileEntityBase {
         nbt.setInteger("orientation", this.orientation);
         nbt.setBoolean("isDungeonChainLink", isDungeonChainLink);
         nbt.setBoolean("hasGennedPair", hasGennedPair);
+    }
+
+    /** The doorway is drawn from the upper block down through the lower one, so both have to be in view. */
+    @Override
+    public AxisAlignedBB getRenderBoundingBox() {
+        return AxisAlignedBB.getBoundingBox(xCoord, yCoord - 1, zCoord, xCoord + 1, yCoord + 1, zCoord + 1);
     }
 
     @Override
