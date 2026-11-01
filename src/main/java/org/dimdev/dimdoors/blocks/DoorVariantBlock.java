@@ -1,6 +1,10 @@
 package org.dimdev.dimdoors.blocks;
 
+import java.util.Random;
+
 import net.minecraft.block.Block;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.particle.EffectRenderer;
 import net.minecraft.client.renderer.texture.IIconRegister;
 import net.minecraft.item.Item;
 import net.minecraft.tileentity.TileEntity;
@@ -9,6 +13,7 @@ import net.minecraft.util.StatCollector;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
 
+import org.dimdev.dimdoors.client.GoggleRiftFX;
 import org.dimdev.dimdoors.config.DDProperties;
 import org.dimdev.dimdoors.config.DoorKind;
 import org.dimdev.dimdoors.core.LinkType;
@@ -96,6 +101,39 @@ public class DoorVariantBlock extends BaseDimDoor {
     @Override
     public String getLocalizedName() {
         return StatCollector.translateToLocalFormatted("dimdoors.variant." + kind.id(), base.getLocalizedName());
+    }
+
+    /** An unlinked warp variant looks just like its plain door, so it gives off a rift particle now and then. */
+    @Override
+    @SideOnly(Side.CLIENT)
+    public void randomDisplayTick(World world, int x, int y, int z, Random rand) {
+        if (kind != DoorKind.WARP || rand.nextInt(2) != 0
+            || !isUpperDoorBlock(world.getBlockMetadata(x, y, z))
+            || isDoorOnRift(world, x, y, z)) {
+            return;
+        }
+        // Off either face of the door's panel, which sits at one edge of its block
+        setBlockBoundsBasedOnState(world, x, y, z);
+        double offset = rand.nextBoolean() ? -0.05 : 0.05;
+        double px, pz;
+        if (maxX - minX < maxZ - minZ) {
+            px = x + (offset < 0 ? minX : maxX) + offset;
+            pz = z + minZ + rand.nextDouble() * (maxZ - minZ);
+        } else {
+            px = x + minX + rand.nextDouble() * (maxX - minX);
+            pz = z + (offset < 0 ? minZ : maxZ) + offset;
+        }
+        EffectRenderer effects = Minecraft.getMinecraft().effectRenderer;
+        effects.addEffect(
+            new GoggleRiftFX(
+                world,
+                px,
+                y - 1 + rand.nextDouble() * 2,
+                pz,
+                rand.nextGaussian() * 0.01,
+                rand.nextGaussian() * 0.01,
+                rand.nextGaussian() * 0.01,
+                effects));
     }
 
     @Override
