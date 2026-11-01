@@ -3,6 +3,7 @@ package org.dimdev.dimdoors.items;
 import java.util.List;
 
 import net.minecraft.client.renderer.texture.IIconRegister;
+import net.minecraft.client.renderer.texture.TextureMap;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.IIcon;
@@ -11,13 +12,14 @@ import net.minecraft.util.StatCollector;
 import org.dimdev.dimdoors.DimDoors;
 import org.dimdev.dimdoors.blocks.BaseDimDoor;
 import org.dimdev.dimdoors.blocks.DoorVariantBlock;
-import org.dimdev.dimdoors.config.DDProperties;
+import org.dimdev.dimdoors.client.DoorVariantSprite;
 import org.dimdev.dimdoors.config.DoorKind;
 
+import cpw.mods.fml.common.registry.GameData;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 
-/** The item of a door variant, drawn with the base door's item icon. */
+/** The item of a door variant, drawn as its base door with the portal through its windows (DoorVariantSprite). */
 public class ItemDoorVariant extends BaseItemDoor {
 
     private final DoorVariantBlock door;
@@ -74,22 +76,42 @@ public class ItemDoorVariant extends BaseItemDoor {
     }
 
     @Override
+    @SideOnly(Side.CLIENT)
     public void registerIcons(IIconRegister iconRegister) {
-        // The base door registers the icon this one draws.
+        // The base door registers its own icon; ours is drawn from it when the atlas loads
+        if (iconRegister instanceof TextureMap map) {
+            String name = "dimdoors:door_variant/" + GameData.getItemRegistry()
+                .getNameForObject(this)
+                .replace(':', '/');
+            DoorVariantSprite sprite = new DoorVariantSprite(
+                name,
+                base,
+                map.getTextureType() == 0 ? "textures/blocks" : "textures/items");
+            map.setTextureEntry(name, sprite);
+            itemIcon = sprite;
+        }
     }
 
     @Override
     @SideOnly(Side.CLIENT)
     public IIcon getIconFromDamage(int damage) {
-        return base.getItem()
-            .getIconFromDamage(base.getItemDamage());
+        return drawnIcon() != null ? drawnIcon()
+            : base.getItem()
+                .getIconFromDamage(base.getItemDamage());
     }
 
     @Override
     @SideOnly(Side.CLIENT)
     public IIcon getIconIndex(ItemStack stack) {
-        return base.getItem()
-            .getIconIndex(base);
+        return drawnIcon() != null ? drawnIcon()
+            : base.getItem()
+                .getIconIndex(base);
+    }
+
+    /** Our icon, or null to draw the base door's. */
+    @SideOnly(Side.CLIENT)
+    private IIcon drawnIcon() {
+        return itemIcon instanceof DoorVariantSprite sprite && !sprite.failed() ? itemIcon : null;
     }
 
     @Override
@@ -97,11 +119,5 @@ public class ItemDoorVariant extends BaseItemDoor {
     public int getSpriteNumber() {
         return base.getItem()
             .getSpriteNumber();
-    }
-
-    @Override
-    @SideOnly(Side.CLIENT)
-    public int getColorFromItemStack(ItemStack stack, int pass) {
-        return DDProperties.instance().DoorVariantTint;
     }
 }

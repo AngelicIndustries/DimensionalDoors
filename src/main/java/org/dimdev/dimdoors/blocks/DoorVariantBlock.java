@@ -20,11 +20,8 @@ import org.dimdev.dimdoors.world.PersonalPocketProvider;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 
-/** A dimensional door made from another mod's door, drawn with that door's textures. */
+/** A dimensional door made from another mod's door, drawn exactly like that door, as on modern versions. */
 public class DoorVariantBlock extends BaseDimDoor {
-
-    /** The tinted door renderer, set by the client proxy. Vanilla's door renderer until then. */
-    public static int renderType = 7;
 
     private final Block base;
     private final DoorKind kind;
@@ -117,16 +114,5 @@ public class DoorVariantBlock extends BaseDimDoor {
     @SideOnly(Side.CLIENT)
     public IIcon getIcon(IBlockAccess blockAccess, int x, int y, int z, int side) {
         return base.getIcon(blockAccess, x, y, z, side);
-    }
-
-    @Override
-    public int getRenderType() {
-        return renderType;
-    }
-
-    @Override
-    @SideOnly(Side.CLIENT)
-    public int colorMultiplier(IBlockAccess blockAccess, int x, int y, int z) {
-        return properties.DoorVariantTint;
     }
 }

@@ -83,7 +83,6 @@ public class DDProperties {
     public final int GatewayGenerationChance;
     public final int FortressGatewayGenerationChance;
     public final String[] DoorVariants;
-    public final int DoorVariantTint;
     public final int MonolithSpawningChance;
     public final int WorldThreadDropChance;
     public final int LimboEntryRange;
@@ -103,17 +102,6 @@ public class DDProperties {
     private final String CATEGORY_BIOME = "biome";
     private final String CATEGORY_LOOT = "loot";
     private final String CATEGORY_DOOR_VARIANTS = "door_variants";
-
-    private static int tint(String hex) {
-        try {
-            return Integer.parseInt(
-                hex.trim()
-                    .replace("#", ""),
-                16) & 0xFFFFFF;
-        } catch (NumberFormatException e) {
-            return 0xFFFFFF;
-        }
-    }
 
     private int lootWeight(Configuration config, String item, int weight) {
         return config
@@ -380,15 +368,6 @@ public class DDProperties {
                 + "and golden doors with their own kinds stand for our existing doors. Doors from mods that "
                 + "aren't installed are skipped.")
             .getStringList();
-        DoorVariantTint = tint(
-            config
-                .get(
-                    CATEGORY_DOOR_VARIANTS,
-                    "Door Variant Tint",
-                    "E0D4FF",
-                    "A color, as hex RGB, that door variants are drawn with to tell them from their doors. "
-                        + "FFFFFF draws them untinted.")
-                .getString());
 
         WorldThreadDropChance = config
             .get(
