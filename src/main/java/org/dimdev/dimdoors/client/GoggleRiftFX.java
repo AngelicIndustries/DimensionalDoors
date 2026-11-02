@@ -36,6 +36,11 @@ public class GoggleRiftFX extends EntityFireworkSparkFX {
         this.noClip = true;
     }
 
+    /** Fades in a third of the time, for stabilized rifts. */
+    public void shortenLife() {
+        this.particleMaxAge /= 3;
+    }
+
     public void func_92045_e(boolean par1) {
         this.field_92054_ax = par1;
     }

@@ -30,7 +30,6 @@ import org.dimdev.dimdoors.client.GoggleRiftFX;
 import org.dimdev.dimdoors.config.DDProperties;
 import org.dimdev.dimdoors.core.DimLink;
 import org.dimdev.dimdoors.core.NewDimData;
-import org.dimdev.dimdoors.core.PocketManager;
 import org.dimdev.dimdoors.tileentities.TileEntityRift;
 import org.dimdev.dimdoors.util.Point4D;
 
@@ -41,12 +40,7 @@ import cpw.mods.fml.relauncher.SideOnly;
 public class BlockRift extends Block implements ITileEntityProvider {
 
     private static final float MIN_IMMUNE_RESISTANCE = 5000.0F;
-    private static final int BLOCK_DESTRUCTION_RANGE = 4;
     private static final int RIFT_SPREAD_RANGE = 5;
-    private static final int MAX_BLOCK_SEARCH_CHANCE = 100;
-    private static final int BLOCK_SEARCH_CHANCE = 50;
-    private static final int MAX_BLOCK_DESTRUCTION_CHANCE = 100;
-    private static final int BLOCK_DESTRUCTION_CHANCE = 50;
 
     public static final int MAX_WORLD_THREAD_DROP_CHANCE = 1000;
 
@@ -56,7 +50,6 @@ public class BlockRift extends Block implements ITileEntityProvider {
 
     public BlockRift(Material par2Material, DDProperties properties) {
         super(par2Material);
-        this.setTickRandomly(true);
         this.properties = properties;
         this.modBlocksImmuneToRift = new ArrayList<Block>();
         this.modBlocksImmuneToRift.add(DimDoors.blockDimWall);
@@ -147,32 +140,46 @@ public class BlockRift extends Block implements ITileEntityProvider {
         return null;
     }
 
-    // function that regulates how many blocks it eats/ how fast it eats them.
-    @Override
-    public void updateTick(World world, int x, int y, int z, Random random) {
-        if (properties.RiftGriefingEnabled && !world.isRemote
-            && PocketManager.getLink(x, y, z, world.provider.dimensionId) != null) {
-            // Randomly decide whether to search for blocks to destroy. This reduces the frequency of search operations,
-            // moderates performance impact, and controls the apparent speed of block destruction.
-            if (random.nextInt(MAX_BLOCK_SEARCH_CHANCE) < BLOCK_SEARCH_CHANCE
-                && ((TileEntityRift) world.getTileEntity(x, y, z)).updateNearestRift()) {
-                destroyNearbyBlocks(world, x, y, z, random);
-            }
+    /**
+     * Unravels a block a growing rift reaches, one step at a time as on 6.x: stone to cobblestone to gravel to sand to
+     * nothing, dirt and grass to gravel, anything else straight to nothing. World Thread can drop when a block goes.
+     * Liquids, blocks with tile entities, Limbo's own fabric and rift-immune blocks are left alone.
+     */
+    public void unravel(World world, int x, int y, int z, Random random) {
+        Block block = world.getBlock(x, y, z);
+        int metadata = world.getBlockMetadata(x, y, z);
+        if (block.isAir(world, x, y, z) || block.getMaterial()
+            .isLiquid()
+            || block == DimDoors.blockLimbo
+            || block.hasTileEntity(metadata)
+            || isBlockImmune(world, x, y, z)) {
+            return;
+        }
+        world.playAuxSFX(2001, x, y, z, Block.getIdFromBlock(block) + (metadata << 12));
+        Block next = unravelled(block);
+        if (next != null) {
+            world.setBlock(x, y, z, next, 0, 3);
+        } else {
+            dropWorldThread(block, world, x, y, z, random);
+            world.setBlockToAir(x, y, z);
         }
     }
 
-    private void destroyNearbyBlocks(World world, int x, int y, int z, Random random) {
-        // Find reachable blocks that are vulnerable to rift damage (ignoring air, of course)
-        ArrayList<Point3D> targets = findReachableBlocks(world, x, y, z, BLOCK_DESTRUCTION_RANGE, false);
-
-        // For each block, randomly decide whether to destroy it.
-        // The randomness makes it so the destroyed area appears "noisy" if the rift is exposed to a large surface.
-        for (Point3D target : targets) {
-            if (random.nextInt(MAX_BLOCK_DESTRUCTION_CHANCE) < BLOCK_DESTRUCTION_CHANCE) {
-                dropWorldThread(world.getBlock(target.getX(), target.getY(), target.getZ()), world, x, y, z, random);
-                world.func_147480_a(target.getX(), target.getY(), target.getZ(), false);
-            }
+    private static Block unravelled(Block block) {
+        if (block == Blocks.stone) {
+            return Blocks.cobblestone;
         }
+        if (block == Blocks.cobblestone || block == Blocks.mossy_cobblestone
+            || block == Blocks.dirt
+            || block == Blocks.grass
+            || block == Blocks.mycelium
+            || block == Blocks.farmland) {
+            return Blocks.gravel;
+        }
+        if (block == Blocks.gravel) {
+            return Blocks.sand;
+        }
+        return null;
     }
 
     private ArrayList<Point3D> findReachableBlocks(World world, int x, int y, int z, int range, boolean includeAir) {
@@ -195,7 +202,7 @@ public class BlockRift extends Block implements ITileEntityProvider {
                     targets.add(current);
                 }
                 // Make sure we stay within the search range
-                if (distance < BLOCK_DESTRUCTION_RANGE) {
+                if (distance < range) {
                     addAdjacentBlocks(current.getX(), current.getY(), current.getZ(), distance, pointDistances, points);
                 }
             } else {
@@ -278,24 +285,28 @@ public class BlockRift extends Block implements ITileEntityProvider {
 
     public void randomDisplayTick(World world, int x, int y, int z, Random rand) {
 
-        ArrayList<Point3D> targets = findReachableBlocks(world, x, y, z, 2, false);
-
         TileEntityRift tile = (TileEntityRift) world.getTileEntity(x, y, z);
+        if (tile == null) {
+            return;
+        }
 
         // renders an extra little blob on top of the actual rift location so its easier to find. Eventually will only
-        // render if the player has the goggles.
+        // render if the player has the goggles. A stabilized rift's particles fade sooner, as on 6.x.
+        GoggleRiftFX blob = new GoggleRiftFX(
+            world,
+            x + .5,
+            y + .5,
+            z + .5,
+            rand.nextGaussian() * 0.01D,
+            rand.nextGaussian() * 0.01D,
+            rand.nextGaussian() * 0.01D,
+            FMLClientHandler.instance()
+                .getClient().effectRenderer);
+        if (tile.isStabilized()) {
+            blob.shortenLife();
+        }
         FMLClientHandler.instance()
-            .getClient().effectRenderer.addEffect(
-                new GoggleRiftFX(
-                    world,
-                    x + .5,
-                    y + .5,
-                    z + .5,
-                    rand.nextGaussian() * 0.01D,
-                    rand.nextGaussian() * 0.01D,
-                    rand.nextGaussian() * 0.01D,
-                    FMLClientHandler.instance()
-                        .getClient().effectRenderer));
+            .getClient().effectRenderer.addEffect(blob);
 
         if (tile.shouldClose) {
             // renders an opposite color effect if it is being closed by the rift remover

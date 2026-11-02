@@ -40,6 +40,7 @@ public class DDProperties {
     public final boolean CraftingRiftBladeAllowed;
     public final boolean CraftingTransTrapdoorAllowed;
     public final boolean CraftingStabilizedRiftSignatureAllowed;
+    public final boolean CraftingRiftStabilizerAllowed;
     public final boolean CraftingStableFabricAllowed;
     public final boolean CraftingGoldenDimensionalDoorAllowed;
     public final boolean CraftingGoldenDoorAllowed;
@@ -65,6 +66,8 @@ public class DDProperties {
 
     public final boolean RiftSpreadEnabled;
     public final boolean RiftGriefingEnabled;
+    public final double RiftGrowthSpeed;
+    public final int MaxRiftRadius;
     public final boolean RiftsSpawnEndermenEnabled;
     public final boolean LimboEnabled;
     public final boolean HardcoreLimboEnabled;
@@ -155,6 +158,8 @@ public class DDProperties {
             .getBoolean(false);
         CraftingRiftRemoverAllowed = config.get(CATEGORY_CRAFTING, "Allow Crafting Rift Remover", true)
             .getBoolean(true);
+        CraftingRiftStabilizerAllowed = config.get(CATEGORY_CRAFTING, "Allow Crafting Rift Stabilizer", true)
+            .getBoolean(true);
         CraftingStabilizedRiftSignatureAllowed = config
             .get(
                 CATEGORY_CRAFTING,
@@ -208,13 +213,29 @@ public class DDProperties {
         StabilizedRiftSignatureLootWeight = lootWeight(config, "Stabilized Rift Signature", 6);
         PersonalDimDoorLootWeight = lootWeight(config, "Personal Dimensional Door", 10);
 
-        RiftGriefingEnabled = config
+        RiftGriefingEnabled = config.get(
+            Configuration.CATEGORY_GENERAL,
+            "Enable Rift Griefing",
+            true,
+            "Sets whether growing rifts unravel blocks around them, step by step (stone to cobblestone to gravel to sand to nothing). World Thread can drop when a block goes.")
+            .getBoolean(true);
+        RiftGrowthSpeed = config.get(
+            Configuration.CATEGORY_GENERAL,
+            "Rift Growth Speed",
+            1.0,
+            "How fast open rifts grow while their chunk is loaded, until stabilized, closed or a door is placed on them. The bigger a rift, the farther and more often it unravels blocks. 1 is the pace of the 1.12 rewrite: about 3 blocks around after an hour, about 15 after a day. 0 stops growth.",
+            0.0,
+            100.0)
+            .getDouble(1.0);
+        MaxRiftRadius = config
             .get(
                 Configuration.CATEGORY_GENERAL,
-                "Enable Rift Griefing",
-                true,
-                "Sets whether rifts destroy blocks around them or not")
-            .getBoolean(true);
+                "Max Rift Radius",
+                0,
+                "How far around them open rifts can grow to unravel blocks, in blocks. 0 for no limit.",
+                0,
+                1000)
+            .getInt(0);
         RiftSpreadEnabled = config
             .get(
                 Configuration.CATEGORY_GENERAL,
@@ -222,12 +243,11 @@ public class DDProperties {
                 true,
                 "Sets whether rifts create more rifts when they are near other rifts")
             .getBoolean(true);
-        RiftsSpawnEndermenEnabled = config
-            .get(
-                Configuration.CATEGORY_GENERAL,
-                "Enable Endermen Spawning from Rifts",
-                true,
-                "Sets whether groups of connected rifts will spawn Endermen")
+        RiftsSpawnEndermenEnabled = config.get(
+            Configuration.CATEGORY_GENERAL,
+            "Enable Endermen Spawning from Rifts",
+            true,
+            "Sets whether groups of connected rifts, and single rifts that have grown for about an hour, spawn Endermen")
             .getBoolean(true);
 
         LimboEnabled = config

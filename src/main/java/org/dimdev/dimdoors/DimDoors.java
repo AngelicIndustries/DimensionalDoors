@@ -53,6 +53,7 @@ import org.dimdev.dimdoors.items.ItemPersonalDoor;
 import org.dimdev.dimdoors.items.ItemQuartzDoor;
 import org.dimdev.dimdoors.items.ItemRiftBlade;
 import org.dimdev.dimdoors.items.ItemRiftSignature;
+import org.dimdev.dimdoors.items.ItemRiftStabilizer;
 import org.dimdev.dimdoors.items.ItemStabilizedRiftSignature;
 import org.dimdev.dimdoors.items.ItemStableFabric;
 import org.dimdev.dimdoors.items.ItemUnstableDoor;
@@ -134,6 +135,7 @@ public class DimDoors {
     public static ItemDimensionalDoor itemDimensionalDoor;
     public static Item itemWarpDoor;
     public static Item itemRiftRemover;
+    public static Item itemRiftStabilizer;
     public static Item itemRiftSignature;
     public static Item itemStableFabric;
     public static Item itemUnstableDoor;
@@ -258,6 +260,7 @@ public class DimDoors {
         itemWarpDoor = (new ItemWarpDoor(Material.wood, null)).setUnlocalizedName("itemDimDoorWarp");
         itemRiftSignature = (new ItemRiftSignature()).setUnlocalizedName("itemLinkSignature");
         itemRiftRemover = (new itemRiftRemover(Material.wood)).setUnlocalizedName("itemRiftRemover");
+        itemRiftStabilizer = (new ItemRiftStabilizer()).setUnlocalizedName("itemRiftStabilizer");
         itemStableFabric = (new ItemStableFabric(0)).setUnlocalizedName("itemStableFabric");
         itemUnstableDoor = (new ItemUnstableDoor(Material.iron, null)).setUnlocalizedName("itemChaosDoor");
         itemRiftBlade = (new ItemRiftBlade(properties)).setUnlocalizedName("ItemRiftBlade");
@@ -294,6 +297,7 @@ public class DimDoors {
         GameRegistry.registerItem(itemWarpDoor, "Warp Door Item");
         GameRegistry.registerItem(itemRiftSignature, "Rift Signature");
         GameRegistry.registerItem(itemRiftRemover, "Rift Remover");
+        GameRegistry.registerItem(itemRiftStabilizer, "Rift Stabilizer");
         GameRegistry.registerItem(itemStableFabric, "Stable Fabric Item");
         GameRegistry.registerItem(itemUnstableDoor, "Unstable Door Item");
         GameRegistry.registerItem(itemRiftBlade, "Rift Blade");

@@ -126,6 +126,17 @@ public class CraftingManager {
                 'y',
                 Items.gold_ingot);
         }
+        if (properties.CraftingRiftStabilizerAllowed) {
+            GameRegistry.addRecipe(
+                new ItemStack(DimDoors.itemRiftStabilizer, 1),
+                "x x",
+                " y ",
+                "x x",
+                'x',
+                Items.diamond,
+                'y',
+                DimDoors.itemStableFabric);
+        }
         if (properties.CraftingRiftBladeAllowed) {
             GameRegistry.addRecipe(
                 new ItemStack(DimDoors.itemRiftBlade, 1),

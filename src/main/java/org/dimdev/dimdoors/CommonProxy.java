@@ -47,6 +47,9 @@ public class CommonProxy implements IGuiHandler {
     public void spawnMonolithParticle(World world, double x, double y, double z, double motionX, double motionY,
         double motionZ) {}
 
+    public void spawnRiftParticle(World world, double x, double y, double z, double motionX, double motionY,
+        double motionZ) {}
+
     public void writeNBTToFile(World world) {
         boolean flag = true;
 

@@ -33,6 +33,12 @@ public class TileEntityRift extends DDTileEntityBase {
     private static final int MAX_HOSTILE_ENDERMAN_CHANCE = 3;
     private static final int UPDATE_PERIOD = 200;
     private static final int CLOSING_PERIOD = 40;
+    // Growth follows the 1.12 rewrite: the size grows like the square root of the time the rift has been loaded, and
+    // it unravels a block within size / 400 blocks with a chance of size / 500000 each tick
+    private static final float SIZE_PER_BLOCK = 400;
+    private static final float MAX_UNRAVEL_CHANCE = 500000;
+    // Single rifts spawn Endermen once they unravel this far (about an hour loaded at the default speed)
+    private static final float ENDERMAN_RADIUS = 3;
 
     private static final Random random = new Random();
 
@@ -46,7 +52,9 @@ public class TileEntityRift extends DDTileEntityBase {
     public int spawnedEndermenID = 0;
 
     public int riftRotation = random.nextInt(360);
-    public float growth = 0;
+    public float size = 0;
+    private boolean stabilized = false;
+    private int syncedRadius;
 
     public TileEntityRift() {
         // Vary the update times of rifts to prevent all the rifts in a cluster
@@ -78,19 +86,94 @@ public class TileEntityRift extends DDTileEntityBase {
             return;
         }
 
+        DDProperties properties = DimDoors.properties;
+        if (!stabilized) {
+            grow(properties);
+            if (worldObj.isRemote) {
+                spawnGrowthParticles();
+            } else if (properties.RiftGriefingEnabled && random.nextFloat() * MAX_UNRAVEL_CHANCE < size) {
+                unravel();
+            }
+        }
+
         if (updateTimer >= UPDATE_PERIOD) {
-            spawnEndermen(DimDoors.properties);
+            spawnEndermen(properties);
+            syncSize();
             updateTimer = 0;
         } else if (updateTimer == UPDATE_PERIOD / 2) {
             updateNearestRift();
-            spread(DimDoors.properties);
+            spread(properties);
         }
-        growth += 1F / (growth + 1);
         updateTimer++;
     }
 
+    /** How far around it this rift unravels blocks. */
+    public float radius() {
+        return size / SIZE_PER_BLOCK;
+    }
+
+    public boolean isStabilized() {
+        return stabilized;
+    }
+
+    /** Stops this rift growing, unravelling blocks and spawning Endermen, for good (the Rift Stabilizer). */
+    public void stabilize() {
+        stabilized = true;
+        markDirty();
+        if (!worldObj.isRemote) {
+            worldObj.markBlockForUpdate(xCoord, yCoord, zCoord);
+        }
+    }
+
+    private void grow(DDProperties properties) {
+        if (properties.RiftGrowthSpeed <= 0 || properties.MaxRiftRadius > 0 && radius() >= properties.MaxRiftRadius) {
+            return;
+        }
+        for (int n = 0; n < 10; n++) {
+            size += properties.RiftGrowthSpeed / (size + 1);
+        }
+    }
+
+    /** Unravels one block at a random spot within the radius, at least a block away, as the 1.12 rewrite does. */
+    private void unravel() {
+        float radius = radius();
+        DimDoors.blockRift
+            .unravel(worldObj, xCoord + offset(radius), yCoord + offset(radius), zCoord + offset(radius), random);
+    }
+
+    private static int offset(float radius) {
+        double offset = (random.nextDouble() * 2 - 1) * radius;
+        return (int) (offset > 0 ? Math.ceil(offset) : Math.floor(offset));
+    }
+
+    /** Clients grow their copy too; this corrects it each time the radius passes another block. */
+    private void syncSize() {
+        int radius = (int) radius();
+        if (!worldObj.isRemote && radius != syncedRadius) {
+            syncedRadius = radius;
+            worldObj.markBlockForUpdate(xCoord, yCoord, zCoord);
+        }
+    }
+
+    /** A growing rift's cloud of particles gets denser and wider with its size. */
+    private void spawnGrowthParticles() {
+        float radius = radius();
+        if (random.nextFloat() >= Math.min(1, radius / 4)) {
+            return;
+        }
+        double spread = 0.15 + 0.08 * Math.min(radius, 10);
+        DimDoors.proxy.spawnRiftParticle(
+            worldObj,
+            xCoord + 0.5 + random.nextGaussian() * spread,
+            yCoord + 0.5 + random.nextGaussian() * spread,
+            zCoord + 0.5 + random.nextGaussian() * spread,
+            random.nextGaussian() * 0.01,
+            random.nextGaussian() * 0.01,
+            random.nextGaussian() * 0.01);
+    }
+
     private void spawnEndermen(DDProperties properties) {
-        if (worldObj.isRemote || !properties.RiftsSpawnEndermenEnabled) {
+        if (worldObj.isRemote || !properties.RiftsSpawnEndermenEnabled || stabilized) {
             return;
         }
 
@@ -101,8 +184,8 @@ public class TileEntityRift extends DDTileEntityBase {
         }
 
         if (random.nextInt(MAX_ENDERMAN_SPAWNING_CHANCE) < ENDERMAN_SPAWNING_CHANCE) {
-            // Endermen will only spawn from groups of rifts
-            if (updateNearestRift()) {
+            // Endermen will only spawn from groups of rifts and from rifts that have grown a while
+            if (updateNearestRift() || radius() >= ENDERMAN_RADIUS) {
                 List<EntityEnderman> list = worldObj.getEntitiesWithinAABB(
                     EntityEnderman.class,
                     AxisAlignedBB
@@ -112,6 +195,7 @@ public class TileEntityRift extends DDTileEntityBase {
                     EntityEnderman enderman = new EntityEnderman(worldObj);
                     enderman.setLocationAndAngles(xCoord + 0.5, yCoord - 1, zCoord + 0.5, 5, 6);
                     worldObj.spawnEntityInWorld(enderman);
+                    spawnedEndermenID = enderman.getEntityId();
 
                     if (random.nextInt(MAX_HOSTILE_ENDERMAN_CHANCE) < HOSTILE_ENDERMAN_CHANCE) {
                         EntityPlayer player = this.worldObj.getClosestPlayerToEntity(enderman, 50);
@@ -126,7 +210,7 @@ public class TileEntityRift extends DDTileEntityBase {
 
     private void closeRift() {
         NewDimData dimension = PocketManager.createDimensionData(worldObj);
-        if (growth < CLOSING_PERIOD / 2) {
+        if (size < CLOSING_PERIOD / 2) {
             for (DimLink riftLink : dimension.findRiftsInRange(worldObj, 6, xCoord, yCoord, zCoord)) {
                 Point4D location = riftLink.source();
                 TileEntityRift rift = (TileEntityRift) worldObj
@@ -137,7 +221,7 @@ public class TileEntityRift extends DDTileEntityBase {
                 }
             }
         }
-        if (growth <= 0 && !worldObj.isRemote) {
+        if (size <= 0 && !worldObj.isRemote) {
             DimLink link = PocketManager.getLink(this.xCoord, this.yCoord, this.zCoord, worldObj);
             if (link != null && !worldObj.isRemote) {
                 dimension.deleteLink(link);
@@ -146,7 +230,8 @@ public class TileEntityRift extends DDTileEntityBase {
             worldObj.playSound(xCoord + 0.5, yCoord + 0.5, zCoord + 0.5, "mods.DimDoors.sfx.riftClose", 0.7f, 1, false);
         }
 
-        growth--;
+        // Grown rifts close about as fast as new ones
+        size -= Math.max(1, size / CLOSING_PERIOD);
     }
 
     public boolean updateNearestRift() {
@@ -192,7 +277,8 @@ public class TileEntityRift extends DDTileEntityBase {
     public void spread(DDProperties properties) {
         if (worldObj.isRemote || !properties.RiftSpreadEnabled
             || random.nextInt(MAX_RIFT_SPREAD_CHANCE) < RIFT_SPREAD_CHANCE
-            || this.shouldClose) {
+            || this.shouldClose
+            || this.stabilized) {
             return;
         }
 
@@ -224,7 +310,8 @@ public class TileEntityRift extends DDTileEntityBase {
         this.shouldClose = nbt.getBoolean("shouldClose");
         this.spawnedEndermenID = nbt.getInteger("spawnedEndermenID");
         this.riftRotation = nbt.getInteger("riftRotation");
-        this.growth = nbt.getFloat("growth");
+        this.size = nbt.getFloat("size");
+        this.stabilized = nbt.getBoolean("stabilized");
 
     }
 
@@ -238,7 +325,8 @@ public class TileEntityRift extends DDTileEntityBase {
         nbt.setBoolean("shouldClose", this.shouldClose);
         nbt.setInteger("spawnedEndermenID", this.spawnedEndermenID);
         nbt.setInteger("riftRotation", this.riftRotation);
-        nbt.setFloat("growth", this.growth);
+        nbt.setFloat("size", this.size);
+        nbt.setBoolean("stabilized", this.stabilized);
 
     }
 

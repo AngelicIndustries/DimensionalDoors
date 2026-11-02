@@ -57,6 +57,15 @@ public class ClientProxy extends CommonProxy {
     }
 
     @Override
+    public void spawnRiftParticle(World world, double x, double y, double z, double motionX, double motionY,
+        double motionZ) {
+        Minecraft mc = Minecraft.getMinecraft();
+        int setting = mc.gameSettings.particleSetting;
+        if (setting == 2 || setting == 1 && world.rand.nextInt(3) == 0) return;
+        mc.effectRenderer.addEffect(new GoggleRiftFX(world, x, y, z, motionX, motionY, motionZ, mc.effectRenderer));
+    }
+
+    @Override
     public void updateDoorTE(BaseDimDoor door, World world, int x, int y, int z) {
         TileEntity tile = world.getTileEntity(x, y, z);
         if (tile instanceof TileEntityDimDoor) {
