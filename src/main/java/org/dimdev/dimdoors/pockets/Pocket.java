@@ -1,0 +1,171 @@
+package org.dimdev.dimdoors.pockets;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
+import org.dimdev.dimdoors.core.DimensionType;
+import org.dimdev.dimdoors.dungeon.DungeonData;
+import org.dimdev.dimdoors.util.Point4D;
+
+/**
+ * A pocket: one cell of a shared pocket dimension, with its place in the pocket tree. Legacy kept this per pocket
+ * dimension (NewDimData); the pocket's links stay with its dimension's data.
+ */
+public final class Pocket {
+
+    private final int id;
+    private final int dimension;
+    private final DimensionType type;
+    private final int rootDimension;
+    private final List<Pocket> children = new ArrayList<>();
+    private Pocket parent;
+    private int depth;
+    private int packDepth;
+    private Point4D origin;
+    private int orientation;
+    private DungeonData dungeon;
+    private boolean built;
+    private String owner;
+    private VirtualLocation virtualLocation;
+
+    /** Made by PocketRegistry, which hands out the IDs (cell numbers). */
+    Pocket(int id, int dimension, DimensionType type, Pocket parent, int rootDimension) {
+        this.id = id;
+        this.dimension = dimension;
+        this.type = type;
+        this.rootDimension = rootDimension;
+        setParent(parent);
+    }
+
+    /** The cell number in its dimension. */
+    public int id() {
+        return id;
+    }
+
+    /** The shared pocket dimension it is in. */
+    public int dimension() {
+        return dimension;
+    }
+
+    public DimensionType type() {
+        return type;
+    }
+
+    /** The real dimension this pocket's tree hangs from. */
+    public int rootDimension() {
+        return rootDimension;
+    }
+
+    /** The pocket it was entered from, or null for one entered from a real dimension. */
+    public Pocket parent() {
+        return parent;
+    }
+
+    public List<Pocket> children() {
+        return Collections.unmodifiableList(children);
+    }
+
+    /** 1 for a pocket entered from a real dimension, one more for each pocket inside it. */
+    public int depth() {
+        return depth;
+    }
+
+    /** Hangs this pocket and its subtree from another pocket, or from its real dimension (null). */
+    public void setParent(Pocket parent) {
+        if (this.parent != null) this.parent.children.remove(this);
+        this.parent = parent;
+        if (parent != null) parent.children.add(this);
+        updateDepth();
+    }
+
+    private void updateDepth() {
+        depth = parent == null ? 1 : parent.depth + 1;
+        for (Pocket child : children) child.updateDepth();
+    }
+
+    public int packDepth() {
+        return packDepth;
+    }
+
+    public void setPackDepth(int packDepth) {
+        this.packDepth = packDepth;
+    }
+
+    public int cellX() {
+        return PocketGrid.cellX(id);
+    }
+
+    public int cellZ() {
+        return PocketGrid.cellZ(id);
+    }
+
+    /** Whether a block column lies in this pocket's cell. */
+    public boolean contains(int x, int z) {
+        return PocketGrid.cellOfBlock(x) == cellX() && PocketGrid.cellOfBlock(z) == cellZ();
+    }
+
+    /** Where it was entered, once built. */
+    public Point4D origin() {
+        return origin;
+    }
+
+    public int orientation() {
+        return orientation;
+    }
+
+    public void setOrigin(Point4D origin, int orientation) {
+        this.origin = origin;
+        this.orientation = orientation;
+    }
+
+    public DungeonData dungeon() {
+        return dungeon;
+    }
+
+    public void setDungeon(DungeonData dungeon) {
+        this.dungeon = dungeon;
+    }
+
+    public boolean isBuilt() {
+        return built;
+    }
+
+    public void setBuilt(boolean built) {
+        this.built = built;
+    }
+
+    /** The player a personal pocket belongs to, or null. */
+    public String owner() {
+        return owner;
+    }
+
+    public void setOwner(String owner) {
+        this.owner = owner;
+    }
+
+    public VirtualLocation virtualLocation() {
+        return virtualLocation;
+    }
+
+    public void setVirtualLocation(VirtualLocation virtualLocation) {
+        this.virtualLocation = virtualLocation;
+    }
+
+    /**
+     * The real x a block x in this pocket stands for, through its virtual location (its origin, or its cell's middle).
+     */
+    public int toVirtualX(int x) {
+        return virtualLocation.x() + x - (origin != null ? origin.getX() : PocketGrid.cellCenter(cellX()));
+    }
+
+    /** The real z a block z in this pocket stands for, as toVirtualX. */
+    public int toVirtualZ(int z) {
+        return virtualLocation.z() + z - (origin != null ? origin.getZ() : PocketGrid.cellCenter(cellZ()));
+    }
+
+    @Override
+    public String toString() {
+        return type + " pocket " + id + " in dimension " + dimension;
+    }
+}
