@@ -319,6 +319,10 @@ public class DimDoors {
                 "There is a provider ID conflict between PersonalPocketProvider from Dimensional Doors and another provider type. Fix your configuration!");
 
         DimensionManager.registerDimension(properties.LimboDimensionID, properties.LimboProviderID);
+        // The shared pocket dimensions; pockets and dungeons are drawn alike, personal pockets bright
+        DimensionManager.registerDimension(properties.PublicPocketDimensionID, properties.PocketProviderID);
+        DimensionManager.registerDimension(properties.DungeonPocketDimensionID, properties.PocketProviderID);
+        DimensionManager.registerDimension(properties.PersonalPocketDimensionID, properties.PersonalPocketProviderID);
 
         GameRegistry.registerTileEntity(TileEntityDimDoor.class, "TileEntityDimDoor");
         GameRegistry.registerTileEntity(TileEntityRift.class, "TileEntityRift");

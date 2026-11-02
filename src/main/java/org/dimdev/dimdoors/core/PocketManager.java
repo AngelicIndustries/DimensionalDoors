@@ -14,6 +14,7 @@ import org.dimdev.dimdoors.DimDoors;
 import org.dimdev.dimdoors.config.DDProperties;
 import org.dimdev.dimdoors.helpers.Compactor;
 import org.dimdev.dimdoors.helpers.DeleteFolder;
+import org.dimdev.dimdoors.pockets.SharedPockets;
 import org.dimdev.dimdoors.saving.DDSaveHandler;
 import org.dimdev.dimdoors.saving.OldSaveImporter;
 import org.dimdev.dimdoors.saving.PackedDimData;
@@ -179,6 +180,7 @@ public class PocketManager {
         // Register Limbo
         DDProperties properties = DDProperties.instance();
         registerDimension(properties.LimboDimensionID, null, DimensionType.ROOT);
+        SharedPockets.load();
 
         loadInternal();
 
@@ -568,6 +570,7 @@ public class PocketManager {
         }
 
         unregisterPockets();
+        SharedPockets.unload();
         dimensionData = null;
         personalPocketsMapping = null;
         rootDimensions = null;

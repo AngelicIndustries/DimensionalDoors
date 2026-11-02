@@ -19,6 +19,9 @@ public class DDProperties {
     public final int LimboBiomeID;
     public final int PocketBiomeID;
     public final int LimboDimensionID;
+    public final int PublicPocketDimensionID;
+    public final int DungeonPocketDimensionID;
+    public final int PersonalPocketDimensionID;
     public final int LimboProviderID;
     public final int PocketProviderID;
     public final int PersonalPocketProviderID;
@@ -402,6 +405,19 @@ public class DDProperties {
             .getInt();
 
         LimboDimensionID = config.get(CATEGORY_DIMENSION, "Limbo Dimension ID", -23)
+            .getInt();
+        PublicPocketDimensionID = config
+            .get(
+                CATEGORY_DIMENSION,
+                "Public Pocket Dimension ID",
+                -24,
+                "The dimension that holds pockets, each in a cell of its own.")
+            .getInt();
+        DungeonPocketDimensionID = config
+            .get(CATEGORY_DIMENSION, "Dungeon Pocket Dimension ID", -25, "The dimension that holds dungeon pockets.")
+            .getInt();
+        PersonalPocketDimensionID = config
+            .get(CATEGORY_DIMENSION, "Personal Pocket Dimension ID", -26, "The dimension that holds personal pockets.")
             .getInt();
         PocketProviderID = config.get(CATEGORY_PROVIDER, "Pocket Provider ID", 124)
             .getInt();

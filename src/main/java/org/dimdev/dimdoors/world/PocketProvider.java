@@ -2,6 +2,7 @@ package org.dimdev.dimdoors.world;
 
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.util.MathHelper;
 import net.minecraft.util.Vec3;
 import net.minecraft.world.WorldProvider;
 import net.minecraft.world.biome.WorldChunkManagerHell;
@@ -14,6 +15,8 @@ import org.dimdev.dimdoors.config.DDProperties;
 import org.dimdev.dimdoors.core.DimensionType;
 import org.dimdev.dimdoors.core.NewDimData;
 import org.dimdev.dimdoors.core.PocketManager;
+import org.dimdev.dimdoors.pockets.Pocket;
+import org.dimdev.dimdoors.pockets.SharedPockets;
 import org.dimdev.dimdoors.ticking.CustomLimboPopulator;
 
 import cpw.mods.fml.relauncher.Side;
@@ -38,8 +41,15 @@ public class PocketProvider extends WorldProvider {
         super.worldChunkMgr = new WorldChunkManagerHell(DimDoors.pocketBiome, 1);
     }
 
+    /** The pocket type this dimension shares, or null for one of Legacy's own pocket dimensions. */
+    protected DimensionType sharedType() {
+        return SharedPockets.typeOf(dimensionId);
+    }
+
     @Override
     public String getSaveFolder() {
+        DimensionType shared = sharedType();
+        if (shared != null) return "DimensionalDoors/" + SharedPockets.folderOf(shared);
         return (dimensionId == 0 ? null : "DimensionalDoors/pocketDimID" + dimensionId);
     }
 
@@ -86,22 +96,26 @@ public class PocketProvider extends WorldProvider {
             return;
         }
 
-        NewDimData data = PocketManager.getDimensionData(this.dimensionId);
-        if (data == null || data.type() == DimensionType.POCKET) {
+        DimensionType type = sharedType();
+        if (type == null) {
+            NewDimData data = PocketManager.getDimensionData(this.dimensionId);
+            type = data == null ? null : data.type();
+        }
+        if (type == null || type == DimensionType.POCKET) {
             super.generateLightBrightnessTable();
             return;
         }
-        float modifier = 0.0F;
 
         for (int steps = 0; steps <= 15; ++steps) {
             float var3 = (float) (Math.pow(steps, 1.5) / Math.pow(15.0F, 1.5));
             this.lightBrightnessTable[15 - steps] = var3;
-            System.out.println(this.lightBrightnessTable[steps] + "light");
         }
     }
 
     @Override
     public String getDimensionName() {
+        DimensionType shared = sharedType();
+        if (shared != null) return SharedPockets.nameOf(shared);
         // TODO: This should be a proper name. We need to show people proper names for things whenever possible.
         // The question is whether this should be "Pocket Dimension" or "Pocket Dimension #" -- I'm not going to change
         // it out of concern that it could break something. ~SenseiKiwi
@@ -114,6 +128,11 @@ public class PocketProvider extends WorldProvider {
 
         if (properties.LimboEnabled) {
             respawnDim = properties.LimboDimensionID;
+        } else if (sharedType() != null) {
+            // The real dimension the pocket the player is in hangs from
+            Pocket pocket = SharedPockets
+                .pocketAt(dimensionId, MathHelper.floor_double(player.posX), MathHelper.floor_double(player.posZ));
+            respawnDim = pocket != null ? pocket.rootDimension() : 0;
         } else {
             respawnDim = PocketManager.getDimensionData(this.dimensionId)
                 .root()
