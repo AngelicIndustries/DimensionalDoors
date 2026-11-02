@@ -47,9 +47,10 @@ public class LimboDecay {
 
     public Block[] getBlocksImmuneToDecay() {
         if (blocksImmuneToDecay == null) {
+            // Fadeblooms belong to Limbo: they grow on its fabric and outlast it
             blocksImmuneToDecay = new Block[] { DimDoors.blockLimbo, DimDoors.blockDimWallPerm, DimDoors.transientDoor,
                 DimDoors.dimensionalDoor, DimDoors.warpDoor, DimDoors.blockRift, DimDoors.unstableDoor,
-                DimDoors.goldenDoor, DimDoors.goldenDimensionalDoor };
+                DimDoors.goldenDoor, DimDoors.goldenDimensionalDoor, DimDoors.fadebloom };
         }
 
         return blocksImmuneToDecay;

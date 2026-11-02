@@ -70,6 +70,11 @@ public class DDProperties {
     public final boolean HungerInLimbo;
     public final boolean DarkLimbo;
     public final float LimboAmbientLight;
+    public final boolean FadebloomsEnabled;
+    public final int FadebloomLight;
+    public final int FadebloomHeldLight;
+    public final int FadebloomGlow;
+    public final int FadebloomPatches;
     public final boolean RebuildDoorsAtRifts;
     public final int MonolithAggroRange;
     public final boolean LimboReturnsInventoryEnabled;
@@ -281,6 +286,49 @@ public class DDProperties {
             0.0,
             1.0)
             .getDouble();
+        FadebloomsEnabled = config.get(
+            Configuration.CATEGORY_GENERAL,
+            "Enable Fadeblooms",
+            false,
+            "Sets whether Fadeblooms exist: faintly glowing flowers that grow in Limbo and light up a little around "
+                + "players who carry them. Off: they aren't registered or generated.")
+            .getBoolean(false);
+        FadebloomLight = config.get(
+            Configuration.CATEGORY_GENERAL,
+            "Fadebloom Light",
+            1,
+            "The light level a planted Fadebloom gives off. Eyes in the Shadows judges Fadeblooms by it, carried ones "
+                + "too, so keep it low enough that it never keeps the eyes away.",
+            0,
+            15)
+            .getInt();
+        FadebloomHeldLight = config
+            .get(
+                Configuration.CATEGORY_GENERAL,
+                "Fadebloom Held Light",
+                14,
+                "The light level around a player carrying a Fadebloom (Angelica's dynamic lights).",
+                0,
+                15)
+            .getInt();
+        FadebloomGlow = config.get(
+            Configuration.CATEGORY_GENERAL,
+            "Fadebloom Glow",
+            8,
+            "How brightly a Fadebloom's petals are drawn even in the dark, as a light level from 0 (lit like any plant) "
+                + "to 15 (full brightness).",
+            0,
+            15)
+            .getInt();
+        FadebloomPatches = config
+            .get(
+                Configuration.CATEGORY_GENERAL,
+                "Fadebloom Patches",
+                2,
+                "How many patches of one to four Fadeblooms a newly generated Limbo chunk tries to grow.",
+                0,
+                16)
+            .getInt();
         RebuildDoorsAtRifts = config
             .get(
                 Configuration.CATEGORY_GENERAL,

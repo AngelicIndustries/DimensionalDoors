@@ -7,7 +7,9 @@ import net.minecraft.world.World;
 import net.minecraftforge.common.MinecraftForge;
 
 import org.dimdev.dimdoors.CommonProxy;
+import org.dimdev.dimdoors.DimDoors;
 import org.dimdev.dimdoors.blocks.BaseDimDoor;
+import org.dimdev.dimdoors.blocks.BlockFadebloom;
 import org.dimdev.dimdoors.config.DDProperties;
 import org.dimdev.dimdoors.core.DimLink;
 import org.dimdev.dimdoors.core.PocketManager;
@@ -30,6 +32,10 @@ public class ClientProxy extends CommonProxy {
         // MinecraftForgeClient.preloadTexture(RIFT2_PNG);
         RenderingRegistry.registerEntityRenderingHandler(MobMonolith.class, new RenderMobObelisk(.5F));
         RenderingRegistry.registerBlockHandler(new PrivatePocketRender(RenderingRegistry.getNextAvailableRenderId()));
+        if (DimDoors.fadebloom != null) {
+            BlockFadebloom.renderType = RenderingRegistry.getNextAvailableRenderId();
+            RenderingRegistry.registerBlockHandler(new FadebloomRender(BlockFadebloom.renderType));
+        }
 
     }
 

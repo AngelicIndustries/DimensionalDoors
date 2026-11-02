@@ -20,6 +20,7 @@ import org.dimdev.dimdoors.blocks.BlockDimWall;
 import org.dimdev.dimdoors.blocks.BlockDimWallPerm;
 import org.dimdev.dimdoors.blocks.BlockDoorGold;
 import org.dimdev.dimdoors.blocks.BlockDoorQuartz;
+import org.dimdev.dimdoors.blocks.BlockFadebloom;
 import org.dimdev.dimdoors.blocks.BlockGoldDimDoor;
 import org.dimdev.dimdoors.blocks.BlockLimbo;
 import org.dimdev.dimdoors.blocks.BlockRift;
@@ -45,6 +46,7 @@ import org.dimdev.dimdoors.helpers.DungeonHelper;
 import org.dimdev.dimdoors.items.ItemBlockDimWall;
 import org.dimdev.dimdoors.items.ItemDDKey;
 import org.dimdev.dimdoors.items.ItemDimensionalDoor;
+import org.dimdev.dimdoors.items.ItemFadebloom;
 import org.dimdev.dimdoors.items.ItemGoldDimDoor;
 import org.dimdev.dimdoors.items.ItemGoldDoor;
 import org.dimdev.dimdoors.items.ItemPersonalDoor;
@@ -117,6 +119,7 @@ public class DimDoors {
     public static Block goldenDimensionalDoor;
     public static Block unstableDoor;
     public static Block blockLimbo;
+    public static Block fadebloom;
     public static DimensionalDoor dimensionalDoor;
     public static Block blockDimWall;
     public static TransTrapdoor transTrapdoor;
@@ -231,6 +234,7 @@ public class DimDoors {
         blockLimbo = new BlockLimbo(15, Material.iron, properties.LimboDimensionID, limboDecay).setHardness(.2F)
             .setBlockName("BlockLimbo")
             .setLightLevel(.0F);
+        if (properties.FadebloomsEnabled) fadebloom = new BlockFadebloom(properties);
         unstableDoor = (new UnstableDoor(Material.iron, properties).setHardness(.2F)
             .setBlockName("chaosDoor")
             .setLightLevel(.0F)
@@ -276,6 +280,7 @@ public class DimDoors {
         GameRegistry.registerBlock(warpDoor, null, "Warp Door");
         GameRegistry.registerBlock(blockRift, "Rift");
         GameRegistry.registerBlock(blockLimbo, "Unraveled Fabric");
+        if (fadebloom != null) GameRegistry.registerBlock(fadebloom, ItemFadebloom.class, "fadebloom");
         GameRegistry.registerBlock(dimensionalDoor, null, "Dimensional Door");
         GameRegistry.registerBlock(transTrapdoor, "Transdimensional Trapdoor");
         GameRegistry.registerBlock(blockDimWallPerm, "Fabric of RealityPerm");

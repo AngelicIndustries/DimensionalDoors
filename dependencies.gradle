@@ -1,3 +1,6 @@
 dependencies {
     testImplementation("junit:junit:4.13.2")
+
+    // Angelica's dynamic light API for the carried Fadebloom (ItemFadebloom), optional at runtime.
+    compileOnly("com.github.GTNewHorizons:Angelica:2.2.37:dev") { transitive = false }
 }

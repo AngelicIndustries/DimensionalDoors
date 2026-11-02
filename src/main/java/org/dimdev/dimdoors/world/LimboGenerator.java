@@ -6,7 +6,6 @@ import java.util.Random;
 import net.minecraft.block.Block;
 import net.minecraft.entity.EnumCreatureType;
 import net.minecraft.init.Blocks;
-import net.minecraft.util.IProgressUpdate;
 import net.minecraft.util.MathHelper;
 import net.minecraft.world.ChunkPosition;
 import net.minecraft.world.World;
@@ -164,6 +163,7 @@ public class LimboGenerator extends ChunkProviderGenerate {
         LimboGenerator.rand.setSeed(chunkX * 341873128712L + chunkZ * 132897987541L);
         Block[] var3 = new Block[32768];
         this.func_147424_a(chunkX, chunkZ, var3);
+        growFadeblooms(chunkX, chunkZ, var3);
         Chunk var4 = new Chunk(this.worldObj, var3, chunkX, chunkZ);
         var4.generateSkylightMap();
 
@@ -185,10 +185,39 @@ public class LimboGenerator extends ChunkProviderGenerate {
 
     }
 
-    @Override
-    public boolean saveChunks(boolean var1, IProgressUpdate var2) {
-        // TODO Auto-generated method stub
-        return super.saveChunks(var1, var2);
+    /**
+     * Patches of one to four Fadeblooms on the fabric's surface, the faint lights of Limbo. They grow with the terrain:
+     * Limbo's chunks are marked populated as they are made (Monoliths come from their own spawner), so populate never
+     * runs. A chunk lights its light sources when it is first lit.
+     */
+    private void growFadeblooms(int chunkX, int chunkZ, Block[] blocks) {
+        if (properties.FadebloomPatches <= 0 || DimDoors.fadebloom == null) {
+            return;
+        }
+        int height = blocks.length / 256;
+        Random random = new Random(
+            this.worldObj.getSeed() ^ chunkX * 341873128712L ^ chunkZ * 132897987541L ^ 0x4C696D626FL);
+        for (int patch = 0; patch < properties.FadebloomPatches; patch++) {
+            int centerX = 2 + random.nextInt(12);
+            int centerZ = 2 + random.nextInt(12);
+            int count = 1 + random.nextInt(4);
+            for (int i = 0; i < count; i++) {
+                int x = centerX + random.nextInt(5) - 2;
+                int z = centerZ + random.nextInt(5) - 2;
+                int column = (x * 16 + z) * height;
+                for (int y = height - 2; y > 0; y--) {
+                    Block block = blocks[column + y];
+                    if (block == null || block == Blocks.air) {
+                        continue;
+                    }
+                    Block above = blocks[column + y + 1];
+                    if (block == DimDoors.blockLimbo && (above == null || above == Blocks.air)) {
+                        blocks[column + y + 1] = DimDoors.fadebloom;
+                    }
+                    break;
+                }
+            }
+        }
     }
 
     private double[] initializeNoiseField(double[] par1ArrayOfDouble, int par2, int par3, int par4, int par5, int par6,
