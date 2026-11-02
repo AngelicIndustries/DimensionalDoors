@@ -1,12 +1,13 @@
 package org.dimdev.dimdoors.world.gateways;
 
-import java.util.ArrayList;
 import java.util.Random;
 
 import net.minecraft.block.material.Material;
 import net.minecraft.init.Blocks;
 import net.minecraft.world.World;
+import net.minecraft.world.biome.BiomeGenBase;
 import net.minecraft.world.chunk.IChunkProvider;
+import net.minecraftforge.common.BiomeDictionary;
 import net.minecraftforge.common.DimensionManager;
 
 import org.dimdev.dimdoors.DimDoors;
@@ -15,6 +16,7 @@ import org.dimdev.dimdoors.core.DimLink;
 import org.dimdev.dimdoors.core.LinkType;
 import org.dimdev.dimdoors.core.NewDimData;
 import org.dimdev.dimdoors.core.PocketManager;
+import org.dimdev.dimdoors.world.LimboProvider;
 import org.dimdev.dimdoors.world.PocketProvider;
 
 import cpw.mods.fml.common.IWorldGenerator;
@@ -36,8 +38,7 @@ public class GatewayGenerator implements IWorldGenerator {
     private static final int END_DIMENSION_ID = 1;
     private static final String SPIRIT_WORLD_NAME = "Spirit World";
 
-    private ArrayList<BaseGateway> gateways;
-    private BaseGateway defaultGateway;
+    private BaseGateway limboGateway;
 
     private final DDProperties properties;
 
@@ -47,12 +48,7 @@ public class GatewayGenerator implements IWorldGenerator {
     }
 
     private void initialize() {
-        gateways = new ArrayList<BaseGateway>();
-        defaultGateway = new GatewayTwoPillars(properties);
-
-        // Add gateways here
-        gateways.add(new GatewaySandstonePillars(properties));
-        gateways.add(new GatewayLimbo(properties));
+        limboGateway = new GatewayLimbo(properties);
     }
 
     @Override
@@ -76,7 +72,6 @@ public class GatewayGenerator implements IWorldGenerator {
 
         int x, y, z;
         int attempts;
-        boolean valid;
         DimLink link;
         NewDimData dimension;
 
@@ -121,36 +116,38 @@ public class GatewayGenerator implements IWorldGenerator {
         // This only happens if a rift cluster was NOT generated.
         else if (DimDoors.worldProperties.RiftGatewayDimensions.isAccepted(dimensionID)
             && random.nextInt(MAX_GATEWAY_GENERATION_CHANCE) < properties.GatewayGenerationChance) {
-                valid = false;
-                x = y = z = 0; // Stop the compiler from freaking out
-
-                // Check locations for the gateway until we are satisfied or run out of attempts.
-                for (attempts = 0; attempts < MAX_GATEWAY_GENERATION_ATTEMPTS && !valid; attempts++) {
+                // Check locations for the gateway until one is built or we run out of attempts.
+                for (attempts = 0; attempts < MAX_GATEWAY_GENERATION_ATTEMPTS; attempts++) {
                     // Pick a random point on the surface of the chunk and check its materials. Like vanilla's
                     // decorations, the point is offset by half a chunk so the gateway stays in generated chunks.
                     x = chunkX * CHUNK_LENGTH + CHUNK_LENGTH / 2 + random.nextInt(CHUNK_LENGTH);
                     z = chunkZ * CHUNK_LENGTH + CHUNK_LENGTH / 2 + random.nextInt(CHUNK_LENGTH);
                     y = world.getHeightValue(x, z);
-                    valid = checkGatewayLocation(world, x, y, z);
-                }
 
-                // Build the gateway if we found a valid location
-                if (valid) {
-                    ArrayList<BaseGateway> validGateways = new ArrayList<BaseGateway>();
-                    for (BaseGateway gateway : gateways) {
-                        if (gateway.isLocationValid(world, x, y, z)) {
-                            validGateways.add(gateway);
+                    if (world.provider instanceof LimboProvider) {
+                        if (checkGatewayLocation(world, x, y, z) && limboGateway.generate(world, x, y - 1, z)) {
+                            break;
                         }
-                    }
-                    // Add the default gateway if the rest were rejected
-                    if (validGateways.isEmpty()) {
-                        validGateways.add(defaultGateway);
-                    }
-                    // Randomly select a gateway from the pool of viable gateways
-                    validGateways.get(random.nextInt(validGateways.size()))
-                        .generate(world, x, y - 1, z);
+                    } else if (isSeaSurface(world, x, y, z)) {
+                        // 6.x builds its prismarine gateway on the sea floor, at any depth
+                        int floor = GatewayTemplate.groundAt(world, x, z, true);
+                        if (floor >= MIN_RIFT_Y && StyledGateways.generate(world, random, x, floor, z, true)) {
+                            break;
+                        }
+                    } else if (checkGatewayLocation(world, x, y, z)
+                        && StyledGateways.generate(world, random, x, y - 1, z, false)) {
+                            break;
+                        }
                 }
             }
+    }
+
+    /** Water at the surface of an ocean biome. */
+    private static boolean isSeaSurface(World world, int x, int y, int z) {
+        BiomeGenBase biome = world.getBiomeGenForCoords(x, z);
+        return biome != null && BiomeDictionary.isBiomeOfType(biome, BiomeDictionary.Type.OCEAN)
+            && world.getBlock(x, y - 1, z)
+                .getMaterial() == Material.water;
     }
 
     private static boolean checkGatewayLocation(World world, int x, int y, int z) {

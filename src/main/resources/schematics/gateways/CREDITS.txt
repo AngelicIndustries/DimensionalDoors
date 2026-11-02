@@ -1,0 +1,4 @@
+Converted from Dimensional Doors 6.x (branch 1.21.1, GPL-3.0), data/dimdoors/structure/gateways:
+enclosed_west from enclosed.nbt, enclosed_east from enclosed_sandstone.nbt, enclosed_mud from enclosed_mud.nbt,
+two_pillars from two_pillars.nbt, pillars_torches from sandstone_pillars.nbt, pillars_lanterns from
+red_sandstone_pillars.nbt. Blocks became roles (base, column, accent, stairs, mud, light) that GatewayStyle fills.
