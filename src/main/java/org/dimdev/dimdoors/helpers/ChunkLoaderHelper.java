@@ -28,6 +28,11 @@ public class ChunkLoaderHelper implements LoadingCallback {
 
     @Override
     public void ticketsLoaded(List<Ticket> tickets, World world) {
+        // Forge hands out tickets before our own world-load handler runs, and checking them loads chunks. Load the
+        // pockets first, so dungeons marked for reset lose their region files before anything reads them.
+        if (!world.isRemote && !PocketManager.isLoaded()) {
+            PocketManager.load();
+        }
         for (Ticket ticket : tickets) {
             boolean loaded = false;
             int x = ticket.getModData()
