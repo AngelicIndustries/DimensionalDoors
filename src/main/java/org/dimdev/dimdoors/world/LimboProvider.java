@@ -84,6 +84,15 @@ public class LimboProvider extends WorldProvider {
 
     @Override
     protected void generateLightBrightnessTable() {
+        if (properties.DarkLimbo) {
+            // Vanilla's curve: unlit places are black, unless Limbo Ambient Light lifts them
+            // (MixinEntityRendererLimboLight)
+            for (int level = 0; level <= 15; ++level) {
+                float dark = 1.0F - level / 15.0F;
+                this.lightBrightnessTable[level] = (1.0F - dark) / (dark * 3.0F + 1.0F);
+            }
+            return;
+        }
         float modifier = 0.0F;
 
         for (int steps = 0; steps <= 15; ++steps) {
@@ -116,7 +125,14 @@ public class LimboProvider extends WorldProvider {
         float var6 = var5;
         var5 = 1.0F - (float) ((Math.cos(var5 * Math.PI) + 1.0D) / 2.0D);
         var5 = var6 + (var5 - var6) / 3.0F;
-        return 0;
+        // Dark Limbo is a moonless midnight (Limbo's own moon overhead, no stars); otherwise a noon that never ends
+        return properties.DarkLimbo ? 0.5F : 0;
+    }
+
+    @Override
+    @SideOnly(Side.CLIENT)
+    public float getStarBrightness(float partialTicks) {
+        return properties.DarkLimbo ? 0 : super.getStarBrightness(partialTicks);
     }
 
     @SideOnly(Side.CLIENT)

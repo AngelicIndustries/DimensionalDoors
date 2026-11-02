@@ -9,7 +9,9 @@
     "MixinMapGenNetherBridgeStart",
     "MixinNetherBridgeThrone"
   ],
-  "client": [],
+  "client": [
+    "MixinEntityRendererLimboLight"
+  ],
   "server": [],
   "injectors": {
     "defaultRequire": 1

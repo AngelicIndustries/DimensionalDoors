@@ -5,17 +5,23 @@ import java.util.Random;
 import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
 import net.minecraft.client.renderer.texture.IIconRegister;
+import net.minecraft.client.renderer.texture.TextureMap;
 import net.minecraft.util.IIcon;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
 
 import org.dimdev.dimdoors.DimDoors;
+import org.dimdev.dimdoors.client.BrightenedSprite;
 import org.dimdev.dimdoors.world.LimboDecay;
 
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 
 public class BlockLimbo extends Block {
+
+    /** How much brighter than its file Unraveled Fabric is drawn under Dark Limbo. */
+    private static final float UNRAVELED_FABRIC_BRIGHTNESS = 2.0F;
 
     private final int limboDimensionID;
     private final LimboDecay decay;
@@ -38,8 +44,20 @@ public class BlockLimbo extends Block {
     }
 
     @Override
+    @SideOnly(Side.CLIENT)
     public void registerBlockIcons(IIconRegister iconRegister) {
-        this.blockIcon = iconRegister.registerIcon(DimDoors.modid + ":" + this.getUnlocalizedName());
+        String name = DimDoors.modid + ":" + this.getUnlocalizedName();
+        // Nearly black as drawn: under Dark Limbo's real lighting it shows a little of the light that falls on it
+        if (DimDoors.properties.DarkLimbo && iconRegister instanceof TextureMap) {
+            BrightenedSprite sprite = new BrightenedSprite(
+                name + "_lit",
+                new ResourceLocation(DimDoors.modid, "textures/blocks/" + this.getUnlocalizedName() + ".png"),
+                UNRAVELED_FABRIC_BRIGHTNESS);
+            ((TextureMap) iconRegister).setTextureEntry(name + "_lit", sprite);
+            this.blockIcon = sprite;
+        } else {
+            this.blockIcon = iconRegister.registerIcon(name);
+        }
     }
 
     @Override

@@ -68,6 +68,8 @@ public class DDProperties {
     public final boolean LimboDropsInventory;
     public final boolean SeamlessLimboDeath;
     public final boolean HungerInLimbo;
+    public final boolean DarkLimbo;
+    public final float LimboAmbientLight;
     public final boolean RebuildDoorsAtRifts;
     public final int MonolithAggroRange;
     public final boolean LimboReturnsInventoryEnabled;
@@ -263,6 +265,22 @@ public class DDProperties {
                 "Sets whether players get hungry in Limbo. Off: food and saturation stay as they were on arrival, and "
                     + "health still regenerates.")
             .getBoolean(false);
+        DarkLimbo = config.get(
+            Configuration.CATEGORY_GENERAL,
+            "Dark Limbo",
+            true,
+            "Sets whether Limbo is dark: a midnight without stars where unlit places are black and the Eternal Fabric "
+                + "glows. Off: Limbo is evenly bright, as Dimensional Doors always had it.")
+            .getBoolean(true);
+        LimboAmbientLight = (float) config.get(
+            Configuration.CATEGORY_GENERAL,
+            "Limbo Ambient Light",
+            0.0,
+            "With Dark Limbo and no shader pack: how far all light in Limbo is lifted toward white, evenly in grey, from 0 "
+                + "(unlit places are black) to 1 (full light everywhere). Shader packs light Limbo their own way.",
+            0.0,
+            1.0)
+            .getDouble();
         RebuildDoorsAtRifts = config
             .get(
                 Configuration.CATEGORY_GENERAL,
