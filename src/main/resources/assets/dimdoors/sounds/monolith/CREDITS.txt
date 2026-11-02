@@ -1,0 +1,10 @@
+Monolith sounds, all CC0 (public domain) from Freesound, made mono with a fixed gain:
+
+drone.ogg     Distorted Bass Drone - Loopable by kkenny101   https://freesound.org/s/868442/
+notice1.ogg   Sub Rush 1 by JarredGibb                       https://freesound.org/s/263892/
+notice2.ogg   Sub Rush 2 by JarredGibb                       https://freesound.org/s/263895/
+notice3.ogg   Sub Rush 3 by JarredGibb                       https://freesound.org/s/263893/
+notice4.ogg   Sub Rush 4 by JarredGibb                       https://freesound.org/s/263894/
+aggro1.ogg    Bass Sweep 1 by XimenaSoundBytes               https://freesound.org/s/789228/
+aggro2.ogg    Bass Sweep 2 by XimenaSoundBytes               https://freesound.org/s/789229/
+surge.ogg     Dirty Bass FX by CVLTIV8R                      https://freesound.org/s/812948/

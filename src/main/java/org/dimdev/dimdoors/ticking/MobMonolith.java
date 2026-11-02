@@ -210,10 +210,7 @@ public class MobMonolith extends EntityFlying implements IMob {
      */
     private void playSounds(EntityPlayer entityPlayer) {
         float aggroPercent = this.getAggroProgress();
-        if (this.soundTime <= 0) {
-            this.playSound(DimDoors.modid + ":monk", 1F, 1F);
-            this.soundTime = 100;
-        }
+        // The drone, notice and aggro sounds are the client's (MonolithSounds); monk played here before them
         if ((aggroPercent > 0.70) && this.soundTime < 100) {
             this.worldObj.playSoundEffect(
                 entityPlayer.posX,

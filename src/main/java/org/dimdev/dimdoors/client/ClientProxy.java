@@ -19,6 +19,7 @@ import org.dimdev.dimdoors.tileentities.TileEntityTransTrapdoor;
 
 import cpw.mods.fml.client.registry.ClientRegistry;
 import cpw.mods.fml.client.registry.RenderingRegistry;
+import cpw.mods.fml.common.FMLCommonHandler;
 import cpw.mods.fml.common.network.simpleimpl.MessageContext;
 
 public class ClientProxy extends CommonProxy {
@@ -36,6 +37,12 @@ public class ClientProxy extends CommonProxy {
             BlockFadebloom.renderType = RenderingRegistry.getNextAvailableRenderId();
             RenderingRegistry.registerBlockHandler(new FadebloomRender(BlockFadebloom.renderType));
         }
+        FMLCommonHandler.instance()
+            .bus()
+            .register(new MonolithSounds());
+        FMLCommonHandler.instance()
+            .bus()
+            .register(new LimboSounds());
 
     }
 

@@ -3,4 +3,7 @@ dependencies {
 
     // Angelica's dynamic light API for the carried Fadebloom (ItemFadebloom), optional at runtime.
     compileOnly("com.github.GTNewHorizons:Angelica:2.2.37:dev") { transitive = false }
+
+    // AngelLib's sound range and width for the Monoliths' sounds (MonolithSounds), optional at runtime.
+    compileOnly("industries.angelic.angellib:AngelLib:1.0.0:dev") { transitive = false }
 }
