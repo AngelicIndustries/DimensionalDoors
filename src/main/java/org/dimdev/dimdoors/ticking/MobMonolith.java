@@ -240,8 +240,8 @@ public class MobMonolith extends EntityFlying implements IMob {
     private void spawnParticles(EntityPlayer player) {
         int count = 10 * aggro / MAX_AGGRO;
         for (int i = 1; i < count; ++i) {
-            player.worldObj.spawnParticle(
-                "portal",
+            DimDoors.proxy.spawnMonolithParticle(
+                player.worldObj,
                 player.posX + (this.rand.nextDouble() - 0.5D) * this.width,
                 player.posY + this.rand.nextDouble() * player.height - 0.75D,
                 player.posZ + (this.rand.nextDouble() - 0.5D) * player.width,

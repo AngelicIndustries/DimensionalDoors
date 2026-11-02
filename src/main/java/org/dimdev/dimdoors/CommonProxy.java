@@ -43,6 +43,10 @@ public class CommonProxy implements IGuiHandler {
 
     public void loadTextures() {}
 
+    /** A red portal particle around a player a Monolith is about to take (client only). */
+    public void spawnMonolithParticle(World world, double x, double y, double z, double motionX, double motionY,
+        double motionZ) {}
+
     public void writeNBTToFile(World world) {
         boolean flag = true;
 
