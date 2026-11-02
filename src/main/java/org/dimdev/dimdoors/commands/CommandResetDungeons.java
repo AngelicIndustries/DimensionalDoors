@@ -1,15 +1,15 @@
 package org.dimdev.dimdoors.commands;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.util.MathHelper;
+import net.minecraft.world.World;
+import net.minecraftforge.common.DimensionManager;
 
-import org.dimdev.dimdoors.core.DimLink;
 import org.dimdev.dimdoors.core.DimensionType;
-import org.dimdev.dimdoors.core.LinkType;
-import org.dimdev.dimdoors.core.NewDimData;
 import org.dimdev.dimdoors.core.PocketManager;
+import org.dimdev.dimdoors.pockets.Pocket;
+import org.dimdev.dimdoors.pockets.PocketRegistry;
+import org.dimdev.dimdoors.pockets.SharedPockets;
 
 public class CommandResetDungeons extends DDCommandBase {
 
@@ -31,63 +31,36 @@ public class CommandResetDungeons extends DDCommandBase {
             return DDCommandResult.TOO_MANY_ARGUMENTS;
         }
 
-        int id;
-        int resetCount = 0;
-        int dungeonCount = 0;
-        HashSet<Integer> deletedDimensions = new HashSet<Integer>();
-        ArrayList<NewDimData> loadedDungeons = new ArrayList<NewDimData>();
-
-        // Copy the list of dimensions to iterate over the copy. Otherwise,
-        // we would trigger an exception by modifying the original list.
-        ArrayList<NewDimData> dimensions = new ArrayList<NewDimData>();
-        for (NewDimData dimension : PocketManager.getDimensions()) {
-
-            dimensions.add(dimension);
-        }
-
-        // Iterate over the list of dimensions. Check which ones are dungeons.
-        // If a dungeon is found, try to delete it. If it can't be deleted,
-        // then it must be loaded and needs to be updated to prevent bugs.
-        for (NewDimData dimension : dimensions) {
-            if (dimension.type() == DimensionType.DUNGEON) {
-                dungeonCount++;
-                id = dimension.id();
-                if (PocketManager.deletePocket(dimension, true)) {
-                    resetCount++;
-                    deletedDimensions.add(id);
-                } else {
-                    loadedDungeons.add(dimension);
-                }
-            }
-
-        }
-
-        // Modify the loaded dungeons to prevent bugs
-        for (NewDimData dungeon : loadedDungeons) {
-            // Find top-most loaded dungeons and update their parents.
-            // They will automatically update their children.
-            // Dungeons with non-dungeon parents don't need to be fixed.
-            if (dungeon.parent() == null) {
-                dungeon.setParentToRoot();
-            }
-
-            // Links to any deleted dungeons must be replaced
-            for (DimLink link : dungeon.links()) {
-                if (link.hasDestination() && deletedDimensions.contains(
-                    link.destination()
-                        .getDimension())) {
-
-                    if (link.linkType() == LinkType.DUNGEON) {
-                        dungeon.createLink(link.source(), LinkType.DUNGEON, link.orientation(), null);
-                    } else if (link.linkType() == LinkType.REVERSE) {
-                        dungeon.createLink(link.source(), LinkType.DUNGEON_EXIT, link.orientation(), null);
-                    }
-                }
+        // A dungeon's region file can't be deleted while its dimension may be loaded. Mark the dungeons instead: they
+        // are reset at the next server start, before the dimension loads. Dungeons with players in them are skipped.
+        PocketRegistry dungeons = SharedPockets.registry(DimensionType.DUNGEON);
+        World world = DimensionManager.getWorld(dungeons.dimension());
+        int marked = 0;
+        for (Pocket dungeon : dungeons.pockets()) {
+            if (world == null || !hasPlayers(world, dungeon)) {
+                dungeons.markForReset(dungeon);
+                marked++;
             }
         }
+        PocketManager.save(true);
 
         // Notify the user of the results
-        sendChat(sender, ("Reset complete. " + resetCount + " out of " + dungeonCount + " dungeons were reset."));
+        sendChat(
+            sender,
+            (marked + " out of "
+                + dungeons.pockets()
+                    .size()
+                + " dungeons will be reset when the server restarts."));
         return DDCommandResult.SUCCESS;
+    }
+
+    private static boolean hasPlayers(World world, Pocket dungeon) {
+        for (Object entity : world.playerEntities) {
+            EntityPlayer player = (EntityPlayer) entity;
+            if (dungeon.contains(MathHelper.floor_double(player.posX), MathHelper.floor_double(player.posZ))) {
+                return true;
+            }
+        }
+        return false;
     }
 }

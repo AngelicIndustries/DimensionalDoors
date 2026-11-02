@@ -8,9 +8,9 @@ import java.util.Random;
 
 import net.minecraft.util.WeightedRandom;
 
-import org.dimdev.dimdoors.core.NewDimData;
 import org.dimdev.dimdoors.dungeon.DungeonData;
 import org.dimdev.dimdoors.helpers.DungeonHelper;
+import org.dimdev.dimdoors.pockets.Pocket;
 import org.dimdev.dimdoors.util.WeightedContainer;
 
 public class DungeonPack {
@@ -112,7 +112,7 @@ public class DungeonPack {
         }
     }
 
-    public DungeonData getNextDungeon(NewDimData parent, Random random) {
+    public DungeonData getNextDungeon(Pocket parent, Random random) {
         if (allDungeons.isEmpty()) {
             return null;
         }
@@ -130,7 +130,7 @@ public class DungeonPack {
             // Search over (DuplicateSearchLevels - 1); zero means don't search at all,
             // one means search only up to the level of the immediate parent, and so on.
             // Since we start with the parent, we need to drop the max levels by one.
-            NewDimData ancestor = DungeonHelper.getAncestor(parent, this, config.getDuplicateSearchLevels() - 1);
+            Pocket ancestor = DungeonHelper.getAncestor(parent, this, config.getDuplicateSearchLevels() - 1);
             if (ancestor != null) {
                 subtreeHistory = DungeonHelper.listDungeonsInTree(ancestor, this, MAX_SUBTREE_LIST_SIZE);
             }

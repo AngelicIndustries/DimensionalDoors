@@ -33,6 +33,7 @@ import org.dimdev.dimdoors.dungeon.pack.DungeonPackConfig;
 import org.dimdev.dimdoors.dungeon.pack.DungeonPackConfigReader;
 import org.dimdev.dimdoors.dungeon.pack.DungeonType;
 import org.dimdev.dimdoors.items.ItemDimensionalDoor;
+import org.dimdev.dimdoors.pockets.Pocket;
 import org.dimdev.dimdoors.util.FileFilters;
 import org.dimdev.dimdoors.util.WeightedContainer;
 
@@ -202,13 +203,13 @@ public class DungeonHelper {
         return dungeonPackMapping.get(name.toUpperCase());
     }
 
-    private DungeonPack getDimDungeonPack(NewDimData dimension) {
+    private DungeonPack getDimDungeonPack(Pocket pocket, int dimension) {
         // TODO: Drop support for dim-based packs and switch to embedding the pack
         // in the link data itself. That would solve the dungeon pre-generation issue.
         // Gateways should dictate which packs are being used, not the dimensions.
 
         DungeonPack pack;
-        DungeonData dungeon = dimension.dungeon();
+        DungeonData dungeon = pocket != null ? pocket.dungeon() : null;
         if (dungeon != null) {
             pack = dungeon.dungeonType().Owner;
 
@@ -217,7 +218,7 @@ public class DungeonHelper {
                 pack = RuinsPack;
             }
         } else {
-            if (dimension.id() == NETHER_DIMENSION_ID) {
+            if (pocket == null && dimension == NETHER_DIMENSION_ID) {
                 pack = NetherPack;
             } else {
                 pack = RuinsPack;
@@ -446,13 +447,12 @@ public class DungeonHelper {
         }
     }
 
-    public DungeonData selectNextDungeon(NewDimData parent, Random random) {
-        return selectNextDungeon(parent, random, null);
-    }
-
-    /** Picks the next dungeon from forcedPack, or from the parent's pack when forcedPack is null. */
-    public DungeonData selectNextDungeon(NewDimData parent, Random random, DungeonPack forcedPack) {
-        DungeonPack pack = forcedPack != null ? forcedPack : getDimDungeonPack(parent);
+    /**
+     * Picks the next dungeon from forcedPack, or when forcedPack is null from the pack of the pocket a door is in (null
+     * outside pockets) or of the real dimension it is in.
+     */
+    public DungeonData selectNextDungeon(Pocket parent, int dimension, Random random, DungeonPack forcedPack) {
+        DungeonPack pack = forcedPack != null ? forcedPack : getDimDungeonPack(parent, dimension);
         DungeonData selection;
         DungeonPackConfig config;
         DungeonPack selectedPack;
@@ -465,7 +465,7 @@ public class DungeonHelper {
             if (forcedPack == null && config.allowPackChangeOut()) {
                 // Calculate the chance of switching to a different pack type
                 int packSwitchChance;
-                if (parent.isPocketDimension()) {
+                if (parent != null) {
                     packSwitchChance = MIN_PACK_SWITCH_CHANCE + parent.packDepth() * PACK_SWITCH_CHANCE_PER_LEVEL;
                 } else {
                     packSwitchChance = START_PACK_SWITCH_CHANCE;
@@ -543,47 +543,44 @@ public class DungeonHelper {
     }
 
     /**
-     * Lists all of the dungeons found by iterating through a dimension's ancestors. The search stops when a non-dungeon
-     * dimension is found or when the pack of a dungeon differs from the specified pack.
+     * Lists all of the dungeons found by iterating through a pocket's ancestors. The search stops when a non-dungeon
+     * pocket is found or when the pack of a dungeon differs from the specified pack.
      *
-     * @param start   - the first dimension to include in the history
+     * @param start   - the first pocket to include in the history, or null for a real dimension
      * @param pack    - the pack to which any dungeons must belong in order to be listed
      * @param maxSize - the maximum number of dungeons that can be listed
      * @return a list of dungeons used in a given chain
      */
-    public static ArrayList<DungeonData> getDungeonChainHistory(NewDimData start, DungeonPack pack, int maxSize) {
-        if (start == null) {
-            throw new IllegalArgumentException("dimension cannot be null.");
-        }
+    public static ArrayList<DungeonData> getDungeonChainHistory(Pocket start, DungeonPack pack, int maxSize) {
         int count = 0;
-        NewDimData current = start;
-        DungeonData dungeon = current.dungeon();
+        Pocket current = start;
         ArrayList<DungeonData> history = new ArrayList<DungeonData>();
 
-        while (count < maxSize && dungeon != null && dungeon.dungeonType().Owner == pack) {
-            history.add(dungeon);
+        while (count < maxSize && current != null
+            && current.dungeon() != null
+            && current.dungeon()
+                .dungeonType().Owner == pack) {
+            history.add(current.dungeon());
             current = current.parent();
-            dungeon = current.dungeon();
             count++;
         }
         return history;
     }
 
     /**
-     * Performs a breadth-first listing of all dungeons rooted at a specified dimension. Only dungeons from the
+     * Performs a breadth-first listing of all dungeons rooted at a specified pocket. Only dungeons from the
      * specified pack will be included.
      *
-     * @param root    - the pocket dimension that serves as the root for the dungeon tree
+     * @param root    - the pocket that serves as the root for the dungeon tree
      * @param pack    - the pack to which any dungeons must belong in order to be listed
      * @param maxSize - the maximum number of dungeons that can be listed
      * @return a list of the dungeons used in a given dungeon tree
      */
-    public static ArrayList<DungeonData> listDungeonsInTree(NewDimData root, DungeonPack pack, int maxSize) {
-        int count = 0;
-        NewDimData current;
+    public static ArrayList<DungeonData> listDungeonsInTree(Pocket root, DungeonPack pack, int maxSize) {
+        Pocket current;
         DungeonData dungeon;
         ArrayList<DungeonData> dungeons = new ArrayList<DungeonData>();
-        Queue<NewDimData> pendingDimensions = new LinkedList<NewDimData>();
+        Queue<Pocket> pendingDimensions = new LinkedList<Pocket>();
         pendingDimensions.add(root);
 
         // Perform a breadth-first search through the dungeon graph
@@ -594,7 +591,7 @@ public class DungeonHelper {
             if (dungeon != null && dungeon.dungeonType().Owner == pack) {
                 dungeons.add(dungeon);
                 // Add all child dungeons for checking later
-                for (NewDimData child : current.children()) {
+                for (Pocket child : current.children()) {
                     pendingDimensions.add(child);
                 }
             }
@@ -603,18 +600,18 @@ public class DungeonHelper {
     }
 
     /**
-     * Gets the highest ancestor of a dimension with a dungeon that belongs to the specified pack.
+     * Gets the highest ancestor of a pocket with a dungeon that belongs to the specified pack.
      *
-     * @param dimension - the first dimension to include in the search
+     * @param dimension - the first pocket to include in the search, or null for a real dimension
      * @param pack      - the pack to which the ancestors must belong
      * @param maxLevels - the maximum number of ancestors to check
      * @return the highest ancestor that belongs to the specified pack within the specified levels, or <code>null</code>
      *         if none exists
      */
-    public static NewDimData getAncestor(NewDimData dimension, DungeonPack pack, int maxLevels) {
-        // Find the ancestor of a dimension located a specified number of levels up.
-        NewDimData parent = dimension;
-        NewDimData current = null;
+    public static Pocket getAncestor(Pocket dimension, DungeonPack pack, int maxLevels) {
+        // Find the ancestor of a pocket located a specified number of levels up.
+        Pocket parent = dimension;
+        Pocket current = null;
 
         // We solve this inductively. We begin with null as the first valid ancestor,
         // like a kind of virtual child dimension. Then "current" references the

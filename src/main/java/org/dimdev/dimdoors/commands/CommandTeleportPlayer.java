@@ -5,8 +5,10 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.World;
 
 import org.dimdev.dimdoors.core.DDTeleporter;
-import org.dimdev.dimdoors.core.NewDimData;
+import org.dimdev.dimdoors.core.DimensionType;
 import org.dimdev.dimdoors.core.PocketManager;
+import org.dimdev.dimdoors.pockets.Pocket;
+import org.dimdev.dimdoors.pockets.SharedPockets;
 import org.dimdev.dimdoors.util.Point4D;
 
 public class CommandTeleportPlayer extends DDCommandBase {
@@ -34,7 +36,6 @@ public class CommandTeleportPlayer extends DDCommandBase {
         World world;
         int dimensionID;
         Point4D destination;
-        NewDimData dimension;
         boolean checkOrientation;
         EntityPlayer targetPlayer;
 
@@ -81,12 +82,21 @@ public class CommandTeleportPlayer extends DDCommandBase {
         // DDTeleporter considers destination points. It assumes that the
         // point provided is the upper block of a door.
         if (command.length == 2) {
-            // Check if the destination is a pocket dimension
-            dimension = PocketManager.createDimensionData(world);
-            if (dimension.isPocketDimension()) {
-                // The destination is a pocket dimension.
-                // Teleport the player to its original entrance (the origin).
-                destination = dimension.origin();
+            // Check if the destination is a shared pocket dimension
+            DimensionType shared = SharedPockets.typeOf(dimensionID);
+            if (shared != null) {
+                // Teleport the player to the entrance (the origin) of its first pocket
+                Pocket first = null;
+                for (Pocket pocket : SharedPockets.registry(shared)
+                    .pockets()) {
+                    if (pocket.origin() != null && (first == null || pocket.id() < first.id())) {
+                        first = pocket;
+                    }
+                }
+                if (first == null) {
+                    return new DDCommandResult("Error: That dimension has no pockets yet");
+                }
+                destination = first.origin();
                 checkOrientation = true;
             } else {
                 // The destination is not a pocket dimension, which means we

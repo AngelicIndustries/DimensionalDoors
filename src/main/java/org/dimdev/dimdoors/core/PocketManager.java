@@ -4,16 +4,15 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 
 import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
 import net.minecraftforge.common.DimensionManager;
 
-import org.dimdev.dimdoors.DimDoors;
 import org.dimdev.dimdoors.config.DDProperties;
 import org.dimdev.dimdoors.helpers.Compactor;
-import org.dimdev.dimdoors.helpers.DeleteFolder;
+import org.dimdev.dimdoors.pockets.Pocket;
+import org.dimdev.dimdoors.pockets.PocketGrid;
 import org.dimdev.dimdoors.pockets.SharedPockets;
 import org.dimdev.dimdoors.saving.DDSaveHandler;
 import org.dimdev.dimdoors.saving.OldSaveImporter;
@@ -31,9 +30,9 @@ import io.netty.buffer.ByteBuf;
 
 /**
  * This class regulates all the operations involving the storage and
- * manipulation of dimensions. It handles saving dim data, teleporting the
- * player, and creating/registering new dimensions as well as loading old
- * dimensions on startup
+ * manipulation of dimensions. It handles saving dim data and the pockets,
+ * registering new pockets in the shared pocket dimensions, and loading
+ * both on startup
  */
 public class PocketManager {
 
@@ -47,14 +46,8 @@ public class PocketManager {
         // that any link destinations must be real dimensions controlled by
         // PocketManager.
 
-        public InnerDimData(int id, InnerDimData parent, DimensionType type,
-            IUpdateWatcher<ClientLinkData> linkWatcher) {
-            super(id, parent, type, linkWatcher);
-        }
-
-        public InnerDimData(int id, NewDimData root, DimensionType type) {
-            // This constructor is meant for client-side code only
-            super(id, root, type);
+        public InnerDimData(int id, DimensionType type, IUpdateWatcher<ClientLinkData> linkWatcher) {
+            super(id, type, linkWatcher);
         }
 
     }
@@ -92,12 +85,12 @@ public class PocketManager {
 
         @Override
         public void onCreated(ClientDimData data) {
-            registerClientDimension(data.ID, data.rootID, data.type);
+            registerClientDimension(data.ID, data.type);
         }
 
         @Override
         public void onDeleted(ClientDimData data) {
-            deletePocket(getDimensionData(data.ID), false);
+            // Dimension data is never deleted: pockets are cells of the shared dimensions
         }
 
         @Override
@@ -116,12 +109,10 @@ public class PocketManager {
         // exposing a private constructor ONLY to a very specific trusted class.
 
         @Override
-        public NewDimData registerDimension(int dimensionID, int rootID, DimensionType type) {
-            return registerClientDimension(dimensionID, rootID, type);
+        public NewDimData registerDimension(int dimensionID, DimensionType type) {
+            return registerClientDimension(dimensionID, type);
         }
     }
-
-    private static final int OVERWORLD_DIMENSION_ID = 0;
 
     private static volatile boolean isLoading = false;
     private static volatile boolean isLoaded = false;
@@ -137,12 +128,6 @@ public class PocketManager {
     // HashMap that maps all the dimension IDs registered with DimDoors to their
     // DD data.
     private static HashMap<Integer, InnerDimData> dimensionData = null;
-    // ArrayList that stores the dimension IDs of any dimension that has been
-    // deleted.
-    private static ArrayList<Integer> dimensionIDBlackList = null;
-
-    // Stores all the personal pocket mappings
-    private static HashMap<String, NewDimData> personalPocketsMapping = null;
 
     public static boolean isLoaded() {
         return isLoaded;
@@ -165,8 +150,6 @@ public class PocketManager {
 
         dimensionData = new HashMap<Integer, InnerDimData>();
         rootDimensions = new ArrayList<NewDimData>();
-        dimensionIDBlackList = new ArrayList<Integer>();
-        personalPocketsMapping = new HashMap<String, NewDimData>();
 
         if (FMLCommonHandler.instance()
             .getEffectiveSide()
@@ -177,154 +160,111 @@ public class PocketManager {
             isLoaded = true;
             return;
         }
-        // Register Limbo
+        // Register Limbo and the shared pocket dimensions
         DDProperties properties = DDProperties.instance();
-        registerDimension(properties.LimboDimensionID, null, DimensionType.ROOT);
-        SharedPockets.load();
+        createDimensionData(properties.LimboDimensionID);
+        for (DimensionType type : SharedPockets.TYPES) createDimensionData(SharedPockets.dimensionOf(type));
+
+        File saveDir = DimensionManager.getCurrentSaveRootDirectory();
+        try {
+            SharedPockets.load(saveDir != null ? pocketsFile(saveDir) : null, DDSaveHandler::findDungeon);
+            if (saveDir != null) resetPockets(saveDir);
+        } catch (IOException e) {
+            // Don't go on without the pockets: new ones would be built over the old
+            throw new RuntimeException("Could not load the Dimensional Doors pockets", e);
+        }
 
         loadInternal();
-
-        // Register pocket dimensions
-        registerPockets(properties);
+        fixLostLinks();
 
         isLoaded = true;
         isLoading = false;
     }
 
+    private static File pocketsFile(File saveDir) {
+        return new File(saveDir, "DimensionalDoors/data/pockets.json");
+    }
+
+    /** Deletes the region files of the pockets reset dungeons marked, before their dimension loads. */
+    private static void resetPockets(File saveDir) throws IOException {
+        int count = SharedPockets.applyResets((type, cellX, cellZ) -> {
+            File region = new File(
+                saveDir,
+                "DimensionalDoors/" + SharedPockets.folderOf(type)
+                    + "/region/"
+                    + PocketGrid.regionFileName(cellX, cellZ));
+            if (region.exists() && !region.delete()) throw new IOException("Could not delete " + region);
+        })
+            .size();
+        if (count > 0) System.out.println("Reset " + count + " dungeons");
+    }
+
+    /**
+     * Whether a link destination is gone: in a pocket that was reset, or in a dimension that no longer exists (as
+     * Legacy's own pocket dimensions, which aren't imported).
+     */
+    public static boolean isLostDestination(Point4D destination) {
+        int dimension = destination.getDimension();
+        if (SharedPockets.isShared(dimension)) return SharedPockets.pocketAt(destination) == null;
+        return !DimensionManager.isDimensionRegistered(dimension);
+    }
+
+    /**
+     * Re-makes a link whose destination is lost, as Legacy did for deleted pockets: pocket and dungeon links make a new
+     * pocket on their next use, and other links in pockets become exits. Returns false for a link that can't be used
+     * anymore.
+     */
+    public static boolean fixLostLink(DimLink link) {
+        NewDimData start = getDimensionData(
+            link.source()
+                .getDimension());
+        switch (link.linkType()) {
+            case DUNGEON:
+            case POCKET:
+            case PERSONAL:
+                start.createLink(link.source(), link.linkType(), link.orientation(), null);
+                return true;
+            default:
+                if (!start.isPocketDimension()) return false;
+                // This could be the only way out of a pocket
+                Pocket pocket = SharedPockets.pocketAt(link.source());
+                boolean dungeon = pocket != null && pocket.type() == DimensionType.DUNGEON;
+                start.createLink(
+                    link.source(),
+                    dungeon ? LinkType.DUNGEON_EXIT : LinkType.SAFE_EXIT,
+                    link.orientation(),
+                    null);
+                return true;
+        }
+    }
+
+    /**
+     * After loading: drops the links of reset pockets, and fixes or drops links into them and into Legacy's pocket
+     * dimensions, before their cells are used again.
+     */
+    private static void fixLostLinks() {
+        int fixed = 0;
+        for (InnerDimData dimension : dimensionData.values()) {
+            for (DimLink link : dimension.getAllLinks()) {
+                if (dimension.isPocketDimension() && SharedPockets.pocketAt(link.source()) == null) {
+                    dimension.deleteLink(link);
+                    fixed++;
+                } else if (link.hasDestination() && isLostDestination(link.destination())) {
+                    if (!fixLostLink(link)) dimension.deleteLink(link);
+                    fixed++;
+                }
+            }
+        }
+        if (fixed > 0) System.out.println("Fixed " + fixed + " links into pockets that are gone");
+    }
+
     public static boolean registerPackedDimData(PackedDimData packedData) {
-        InnerDimData dimData;
-        DimensionType type = DimensionType.getTypeFromIndex(packedData.DimensionType);
-        if (type == null) {
-            throw new IllegalArgumentException("Invalid dimension type");
+        // Legacy's pocket dimensions (not their own roots) aren't imported: their pockets are lost
+        if (packedData.ID != packedData.RootID) {
+            return false;
         }
-        // register roots
-        if (packedData.ID == packedData.ParentID) {
-            dimData = new InnerDimData(packedData.ID, null, type, linkWatcher);
-            dimData.root = dimData;
-            dimData.parent = dimData;
-            dimData.depth = packedData.Depth;
-            dimData.isFilled = packedData.IsFilled;
-            dimData.origin = new Point4D(
-                packedData.Origin.getX(),
-                packedData.Origin.getY(),
-                packedData.Origin.getZ(),
-                packedData.ID);
-
-            PocketManager.rootDimensions.add(dimData);
-        } else
-        // register children
-        {
-            InnerDimData test = PocketManager.dimensionData.get(packedData.ParentID);
-            dimData = new InnerDimData(packedData.ID, test, type, linkWatcher);
-            dimData.isFilled = packedData.IsFilled;
-            dimData.origin = new Point4D(
-                packedData.Origin.getX(),
-                packedData.Origin.getY(),
-                packedData.Origin.getZ(),
-                packedData.ID);
-            dimData.root = PocketManager.createDimensionData(packedData.RootID);
-
-            if (packedData.DungeonData != null) {
-                dimData.dungeon = DDSaveHandler.unpackDungeonData(packedData.DungeonData);
-            }
-
-        }
-        PocketManager.dimensionData.put(dimData.id, dimData);
-        getDimwatcher().onCreated(new ClientDimData(dimData));
-
+        createDimensionData(packedData.ID);
         return true;
-    }
-
-    public static boolean deletePocket(NewDimData target, boolean deleteFolder) {
-        // We can't delete the dimension if it's currently loaded or if it's not
-        // actually a pocket.
-        // We cast to InnerDimData so that if anyone tries to be a smartass and
-        // create their
-        // own version of NewDimData, this will throw an exception.
-        InnerDimData dimension = (InnerDimData) target;
-        if (dimension.isPocketDimension() && DimensionManager.getWorld(dimension.id()) == null) {
-            if (deleteFolder) {
-                deleteDimensionFiles(dimension);
-            }
-            // Note: We INTENTIONALLY don't unregister the dimensions that we
-            // delete with Forge. Instead, we keep them registered to stop Forge
-            // from reallocating those IDs to other mods such as Mystcraft. This
-            // is to prevent bugs. Blacklisted dimensions are still properly
-            // unregistered when the server shuts down.
-            dimensionIDBlackList.add(dimension.id);
-            deleteDimensionData(dimension);
-            return true;
-        }
-        return false;
-    }
-
-    private static void deleteDimensionFiles(InnerDimData dimension) {
-        // We assume that the caller checks if the dimension is loaded, for the
-        // sake of efficiency. Don't call this on a loaded dimension or bad
-        // things will happen!
-        String saveRootPath = DimensionManager.getCurrentSaveRootDirectory()
-            .getAbsolutePath();
-        File saveDirectory = new File(saveRootPath + "/DimensionalDoors/pocketDimID" + dimension.id());
-        DeleteFolder.deleteFolder(saveDirectory);
-        File dataFile = new File(saveRootPath + "/DimensionalDoors/data/dim_" + dimension.id() + ".txt");
-        dataFile.delete();
-    }
-
-    private static void deleteDimensionData(InnerDimData dimension) {
-        // We assume that the caller checks if the dimension is loaded, for the
-        // sake of efficiency. Don't call this on a loaded dimension or bad
-        // things will happen!
-        if (dimensionData.remove(dimension.id()) != null) {
-            // Raise the dim deleted event
-            getDimwatcher().onDeleted(new ClientDimData(dimension));
-            dimension.clear();
-        } else {
-            // This should never happen. A simple sanity check.
-            throw new IllegalArgumentException("The specified dimension is not listed with PocketManager.");
-        }
-    }
-
-    private static void registerPockets(DDProperties properties) {
-        for (NewDimData dimension : dimensionData.values()) {
-            if (dimension.isPocketDimension()) {
-                try {
-                    if (dimension.type() == DimensionType.PERSONAL) {
-                        if (!DimensionManager.isDimensionRegistered(dimension.id())) {
-                            DimensionManager.registerDimension(dimension.id(), properties.PersonalPocketProviderID);
-                        }
-                    } else {
-                        DimensionManager.registerDimension(dimension.id(), properties.PocketProviderID);
-                    }
-                } catch (Exception e) {
-                    System.err.println(
-                        "Could not register pocket dimension #" + dimension.id()
-                            + ". Probably caused by a version update/save data corruption/other mods.");
-                    e.printStackTrace();
-                }
-            }
-        }
-    }
-
-    private static void unregisterPockets() {
-        for (NewDimData dimension : dimensionData.values()) {
-            if (dimension.isPocketDimension()) {
-                try {
-                    DimensionManager.unregisterDimension(dimension.id());
-                } catch (Exception e) {
-                    System.err.println(
-                        "An unexpected error occurred while unregistering pocket dimension #" + dimension.id() + ":");
-                    e.printStackTrace();
-                }
-            }
-        }
-        for (Integer dimID : dimensionIDBlackList) {
-            try {
-                DimensionManager.unregisterDimension(dimID);
-            } catch (Exception e) {
-                System.err.println("An unexpected error occurred while unregistering blacklisted dim #" + dimID + ":");
-                e.printStackTrace();
-            }
-        }
     }
 
     /**
@@ -372,7 +312,9 @@ public class PocketManager {
         isSaving = true;
 
         try {
-            DDSaveHandler.saveAll(dimensionData.values(), dimensionIDBlackList, checkModified);
+            DDSaveHandler.saveAll(dimensionData.values(), checkModified);
+            File saveDir = DimensionManager.getCurrentSaveRootDirectory();
+            if (saveDir != null) SharedPockets.save(pocketsFile(saveDir), checkModified);
         } catch (Exception e) {
             // Wrap the exception in a RuntimeException so functions that call
             // PocketManager.save() don't need to catch it. We want MC to
@@ -400,74 +342,43 @@ public class PocketManager {
     }
 
     public static NewDimData registerDimension(World world) {
-        return registerDimension(world.provider.dimensionId, null, DimensionType.ROOT);
+        return createDimensionData(world.provider.dimensionId);
     }
 
     /**
-     * method to register a new pocket with DD and with forge.
-     *
-     * @param parent
-     * @param type
-     * @param playername
-     * @return
+     * Registers a new pocket entered through a link's source, in the next free cell of its type's shared dimension. It
+     * hangs from the pocket the source is in, or from the source's real dimension. Pockets made inside personal pockets
+     * are personal too, as in Legacy, but only a player's own personal pocket has an owner.
      */
-    public static NewDimData registerPocket(NewDimData parent, DimensionType type, String playername) {
-        if (parent == null) {
-            throw new IllegalArgumentException(
-                "parent cannot be null. A pocket dimension must always have a parent dimension.");
+    public static Pocket registerPocket(Point4D source, DimensionType type, String owner) {
+        if (type == DimensionType.PERSONAL && owner == null) {
+            throw new IllegalArgumentException("A personal pocket must be attached to a player");
         }
-
-        DDProperties properties = DDProperties.instance();
-        int dimensionID = DimensionManager.getNextFreeDimId();
-
-        // register a personal pocket
-        if (type == DimensionType.PERSONAL) {
-            if (playername == null) {
-                throw new IllegalArgumentException("A personal pocket must be attached to a playername");
-            }
-            DimensionManager.registerDimension(dimensionID, properties.PersonalPocketProviderID);
-            NewDimData data = registerDimension(dimensionID, (InnerDimData) parent, type);
-            personalPocketsMapping.put(playername, data);
-            return data;
-        } else { // register a pocket as personal if its parents are personal, but
-            // without a mapping.
-            if (parent.type == DimensionType.PERSONAL) {
-                DimensionManager.registerDimension(dimensionID, properties.PersonalPocketProviderID);
-                NewDimData data = registerDimension(dimensionID, (InnerDimData) parent, DimensionType.PERSONAL);
-                return data;
-            }
-
-            // register a standard pocket
-            DimensionManager.registerDimension(dimensionID, properties.PocketProviderID);
-            return registerDimension(dimensionID, (InnerDimData) parent, type);
+        Pocket parent = SharedPockets.pocketAt(source);
+        if (parent != null && parent.type() == DimensionType.PERSONAL) {
+            type = DimensionType.PERSONAL;
         }
-
+        Pocket pocket = SharedPockets.registry(type)
+            .newPocket(parent, SharedPockets.rootDimensionOf(source));
+        if (owner != null) {
+            pocket.setOwner(owner);
+        }
+        return pocket;
     }
 
-    public static NewDimData registerPocket(NewDimData parent, DimensionType type) {
-        return registerPocket(parent, type, null);
+    public static Pocket registerPocket(Point4D source, DimensionType type) {
+        return registerPocket(source, type, null);
     }
 
-    /**
-     * Registers a dimension with DD but NOT with forge.
-     *
-     * @param dimensionID
-     * @param parent
-     * @param type
-     * @return
-     */
-    private static NewDimData registerDimension(int dimensionID, InnerDimData parent, DimensionType type) {
+    /** Registers a dimension's data with DD (not with Forge). */
+    private static NewDimData registerDimension(int dimensionID, DimensionType type) {
         if (dimensionData.containsKey(dimensionID)) {
-            if (PocketManager.dimensionIDBlackList.contains(dimensionID)) {
-                throw new IllegalArgumentException(
-                    "Cannot register a dimension with ID = " + dimensionID + " because it has been blacklisted.");
-            }
             throw new IllegalArgumentException(
                 "Cannot register a dimension with ID = " + dimensionID + " because it has already been registered.");
         }
-        InnerDimData dimension = new InnerDimData(dimensionID, parent, type, linkWatcher);
+        InnerDimData dimension = new InnerDimData(dimensionID, type, linkWatcher);
         dimensionData.put(dimensionID, dimension);
-        if (!dimension.isPocketDimension()) {
+        if (type == DimensionType.ROOT) {
             rootDimensions.add(dimension);
         }
         getDimwatcher().onCreated(new ClientDimData(dimension));
@@ -476,41 +387,10 @@ public class PocketManager {
     }
 
     @SideOnly(Side.CLIENT)
-    private static NewDimData registerClientDimension(int dimensionID, int rootID, DimensionType type) {
-        // No need to raise events heres since this code should only run on the
-        // client side. createDimensionData() always handles root dimensions
-        // properly, even if they weren't defined before.
-
-        // SenseiKiwi: I'm a little worried about how createDimensionData will
-        // raise
-        // an event when it creates any root dimensions... Needs checking later.
-
-        InnerDimData root = (InnerDimData) createDimensionData(rootID);
-        InnerDimData dimension;
-
-        if (rootID != dimensionID) {
-            dimension = dimensionData.get(dimensionID);
-            if (dimension == null) {
-                dimension = new InnerDimData(dimensionID, root, type);
-                dimensionData.put(dimension.id(), dimension);
-            }
-        } else {
-            dimension = root;
-        }
-        if (dimension.isPocketDimension() && !DimensionManager.isDimensionRegistered(dimension.id())) {
-            // Im registering pocket dims here. I *think* we can assume that if
-            // its a pocket and we are
-            // registering its dim data, we also need to register it with forge.
-
-            // New packet stuff prevents this from always being true,
-            // unfortuantly. I send the dimdata to the client when they
-            // teleport.
-            // Steven
-            int providerID = DimDoors.properties.PocketProviderID;
-            if (type == DimensionType.PERSONAL) providerID = DimDoors.properties.PersonalPocketProviderID;
-            DimensionManager.registerDimension(dimensionID, providerID);
-        }
-        return dimension;
+    private static NewDimData registerClientDimension(int dimensionID, DimensionType type) {
+        // No need to raise events here since this code should only run on the client side
+        NewDimData dimension = dimensionData.get(dimensionID);
+        return dimension != null ? dimension : registerDimension(dimensionID, type);
     }
 
     public static NewDimData getDimensionData(int dimensionID) {
@@ -541,9 +421,10 @@ public class PocketManager {
         // and create a NewDimData instance for it.
         NewDimData dimension = PocketManager.dimensionData.get(dimensionID);
 
-        // if we do not have a record of it, then it must be a root
+        // if we do not have a record of it, then it must be a root or a shared pocket dimension
         if (dimension == null) {
-            dimension = registerDimension(dimensionID, null, DimensionType.ROOT);
+            DimensionType shared = SharedPockets.typeOf(dimensionID);
+            dimension = registerDimension(dimensionID, shared != null ? shared : DimensionType.ROOT);
         }
         return dimension;
     }
@@ -569,10 +450,8 @@ public class PocketManager {
             throw new IllegalStateException("Pocket dimensions have already been unloaded!");
         }
 
-        unregisterPockets();
         SharedPockets.unload();
         dimensionData = null;
-        personalPocketsMapping = null;
         rootDimensions = null;
         isLoaded = false;
         isConnected = false;
@@ -594,10 +473,6 @@ public class PocketManager {
             return dimension.getLink(x, y, z);
         }
         return null;
-    }
-
-    public static boolean isBlackListed(int dimensionID) {
-        return PocketManager.dimensionIDBlackList.contains(dimensionID);
     }
 
     public static void registerDimWatcher(IUpdateWatcher<ClientDimData> watcher) {
@@ -626,14 +501,6 @@ public class PocketManager {
         return dimensionData.containsKey(dimensionID);
     }
 
-    public static void createAndRegisterBlacklist(List<Integer> blacklist) {
-        // TODO - create a special blacklist provider
-        for (Integer dimID : blacklist) {
-            PocketManager.dimensionIDBlackList.add(dimID);
-            DimensionManager.registerDimension(dimID, DDProperties.instance().PocketProviderID);
-        }
-    }
-
     public static void readPacket(ByteBuf input) throws IOException {
         // TODO- figure out why this is getting called so frequently
         if (isLoaded) {
@@ -659,19 +526,8 @@ public class PocketManager {
         return linkWatcher;
     }
 
-    public static NewDimData getPersonalDimensionForPlayer(String name) {
-        if (personalPocketsMapping.containsKey(name)) {
-            return personalPocketsMapping.get(name);
-        }
-        return null;
-    }
-
-    public static void setPersonalPocketsMapping(HashMap<String, NewDimData> ppMap) {
-        personalPocketsMapping = ppMap;
-    }
-
-    public static HashMap<String, NewDimData> getPersonalPocketMapping() {
-        // TODO Auto-generated method stub
-        return personalPocketsMapping;
+    /** The personal pocket a player owns, or null. */
+    public static Pocket getPersonalPocket(String owner) {
+        return SharedPockets.personalPocketOf(owner);
     }
 }

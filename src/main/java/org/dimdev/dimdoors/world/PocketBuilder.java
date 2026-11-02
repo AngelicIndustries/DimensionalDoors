@@ -18,7 +18,6 @@ import org.dimdev.dimdoors.config.DDProperties;
 import org.dimdev.dimdoors.core.DimLink;
 import org.dimdev.dimdoors.core.DimensionType;
 import org.dimdev.dimdoors.core.LinkType;
-import org.dimdev.dimdoors.core.NewDimData;
 import org.dimdev.dimdoors.core.PocketManager;
 import org.dimdev.dimdoors.dungeon.DungeonData;
 import org.dimdev.dimdoors.dungeon.DungeonSchematic;
@@ -28,6 +27,10 @@ import org.dimdev.dimdoors.experimental.BoundingBox;
 import org.dimdev.dimdoors.helpers.DungeonHelper;
 import org.dimdev.dimdoors.helpers.yCoordHelper;
 import org.dimdev.dimdoors.items.ItemDimensionalDoor;
+import org.dimdev.dimdoors.pockets.Pocket;
+import org.dimdev.dimdoors.pockets.PocketGrid;
+import org.dimdev.dimdoors.pockets.SharedPockets;
+import org.dimdev.dimdoors.pockets.VirtualLocation;
 import org.dimdev.dimdoors.schematic.BlockRotator;
 import org.dimdev.dimdoors.util.Pair;
 import org.dimdev.dimdoors.util.Point4D;
@@ -46,38 +49,63 @@ public class PocketBuilder {
 
     private PocketBuilder() {}
 
-    private static boolean buildDungeonPocket(DungeonData dungeon, NewDimData dimension, DimLink link,
+    private static boolean buildDungeonPocket(DungeonData dungeon, Pocket pocket, DimLink link,
         DungeonSchematic schematic, World world, DDProperties properties) {
-        // Calculate the destination point
+        // The dungeon's entrance goes in the middle of its cell, at the source door's height
         DungeonPackConfig packConfig = dungeon.dungeonType().Owner != null ? dungeon.dungeonType().Owner.getConfig()
             : null;
         Point4D source = link.source();
         int orientation = link.orientation();
-        Point3D destination;
-
-        if (packConfig != null && packConfig.doDistortDoorCoordinates()) {
-            destination = calculateNoisyDestination(source, dimension, dungeon, orientation);
-        } else {
-            destination = new Point3D(source.getX(), source.getY(), source.getZ());
-        }
-
-        destination.setY(
+        Point3D destination = new Point3D(
+            PocketGrid.cellCenter(pocket.cellX()),
             yCoordHelper.adjustDestinationY(
-                destination.getY(),
+                source.getY(),
                 world.getHeight(),
                 schematic.getEntranceDoorLocation()
                     .getY(),
-                schematic.getHeight()));
+                schematic.getHeight()),
+            PocketGrid.cellCenter(pocket.cellZ()));
+
+        // Legacy built dungeons ahead of the door, farther with depth; now that moves where the dungeon stands
+        Point4D virtual = SharedPockets.toVirtual(source);
+        if (packConfig != null && packConfig.doDistortDoorCoordinates()) {
+            virtual = calculateNoisyDestination(virtual, pocket, dungeon, orientation);
+        }
 
         // Generate the dungeon
         schematic.copyToWorld(world, destination, orientation, link, random, properties, false);
 
         // Finish up destination initialization
-        dimension
-            .initializeDungeon(destination.getX(), destination.getY(), destination.getZ(), orientation, link, dungeon);
-        dimension.setFilled(true);
+        pocket.setDungeon(dungeon);
+        pocket.setPackDepth(Pocket.packDepthOf(pocket.parent(), dungeon));
+        initializePocket(pocket, link, destination, orientation, virtual);
 
         return true;
+    }
+
+    /**
+     * Points the link a pocket was entered through at its entrance, and records where it stands in the real world.
+     */
+    private static void initializePocket(Pocket pocket, DimLink link, Point3D entrance, int orientation,
+        Point4D virtual) {
+        Point4D origin = new Point4D(entrance.getX(), entrance.getY(), entrance.getZ(), pocket.dimension());
+        PocketManager.getDimensionData(
+            link.source()
+                .getDimension())
+            .pointLinkAt(link, origin);
+        pocket.setOrigin(origin, orientation);
+        pocket.setVirtualLocation(new VirtualLocation(virtual.getDimension(), virtual.getX(), virtual.getZ()));
+        pocket.setBuilt(true);
+    }
+
+    /** Loads a new pocket's dimension, or returns null with a message if it can't be. */
+    private static World loadPocketWorld(Pocket pocket) {
+        World world = PocketManager.loadDimension(pocket.dimension());
+        if (world == null || world.provider == null) {
+            System.err.println("Could not load the dimension of " + pocket + "!");
+            return null;
+        }
+        return world;
     }
 
     public static boolean generateSelectedDungeonPocket(DimLink link, DDProperties properties, DungeonData dungeon) {
@@ -101,21 +129,14 @@ public class PocketBuilder {
             return false;
         }
 
-        // Register a new dimension
-        NewDimData parent = PocketManager.getDimensionData(
-            link.source()
-                .getDimension());
-        NewDimData dimension = PocketManager.registerPocket(parent, DimensionType.DUNGEON);
-
-        // Load a world
-        World world = PocketManager.loadDimension(dimension.id());
-
-        if (world == null || world.provider == null) {
-            System.err.println("Could not initialize dimension for a dungeon!");
+        // Register a new pocket
+        Pocket pocket = PocketManager.registerPocket(link.source(), DimensionType.DUNGEON);
+        World world = loadPocketWorld(pocket);
+        if (world == null) {
             return false;
         }
 
-        return PocketBuilder.buildDungeonPocket(dungeon, dimension, link, schematic, world, properties);
+        return PocketBuilder.buildDungeonPocket(dungeon, pocket, link, schematic, world, properties);
     }
 
     public static boolean generateNewDungeonPocket(DimLink link, DDProperties properties) {
@@ -136,10 +157,13 @@ public class PocketBuilder {
         }
 
         // Choose a dungeon to generate
-        NewDimData parent = PocketManager.getDimensionData(
-            link.source()
-                .getDimension());
-        Pair<DungeonData, DungeonSchematic> pair = selectNextDungeon(parent, random, properties, pack);
+        Point4D source = link.source();
+        Pair<DungeonData, DungeonSchematic> pair = selectNextDungeon(
+            SharedPockets.pocketAt(source),
+            source.getDimension(),
+            random,
+            properties,
+            pack);
         if (pair == null) {
             System.err.println("Could not select a dungeon for generation!");
             return false;
@@ -147,23 +171,19 @@ public class PocketBuilder {
         DungeonData dungeon = pair.getFirst();
         DungeonSchematic schematic = pair.getSecond();
 
-        // Register a new dimension
-        NewDimData dimension = PocketManager.registerPocket(parent, DimensionType.DUNGEON);
-
-        // Load a world
-        World world = PocketManager.loadDimension(dimension.id());
-
-        if (world == null || world.provider == null) {
-            System.err.println("Could not initialize dimension for a dungeon!");
+        // Register a new pocket
+        Pocket pocket = PocketManager.registerPocket(source, DimensionType.DUNGEON);
+        World world = loadPocketWorld(pocket);
+        if (world == null) {
             return false;
         }
 
-        return buildDungeonPocket(dungeon, dimension, link, schematic, world, properties);
+        return buildDungeonPocket(dungeon, pocket, link, schematic, world, properties);
     }
 
-    private static Point3D calculateNoisyDestination(Point4D source, NewDimData dimension, DungeonData dungeon,
+    private static Point4D calculateNoisyDestination(Point4D source, Pocket pocket, DungeonData dungeon,
         int orientation) {
-        int depth = NewDimData.calculatePackDepth(dimension.parent(), dungeon);
+        int depth = Pocket.packDepthOf(pocket.parent(), dungeon);
         int forwardNoise = MathHelper.getRandomIntegerInRange(random, 10 * depth, 130 * depth);
         int sidewaysNoise = MathHelper.getRandomIntegerInRange(random, -10 * depth, 10 * depth);
 
@@ -175,16 +195,16 @@ public class PocketBuilder {
         Point3D zeroPoint = new Point3D(0, 0, 0);
         BlockRotator
             .transformPoint(linkDestination, zeroPoint, orientation - BlockRotator.EAST_DOOR_METADATA, sourcePoint);
-        return linkDestination;
+        return new Point4D(linkDestination.getX(), source.getY(), linkDestination.getZ(), source.getDimension());
     }
 
-    private static Pair<DungeonData, DungeonSchematic> selectNextDungeon(NewDimData parent, Random random,
-        DDProperties properties, DungeonPack pack) {
+    private static Pair<DungeonData, DungeonSchematic> selectNextDungeon(Pocket parent, int sourceDimension,
+        Random random, DDProperties properties, DungeonPack pack) {
         DungeonData dungeon = null;
         DungeonSchematic schematic = null;
 
         dungeon = DungeonHelper.instance()
-            .selectNextDungeon(parent, random, pack);
+            .selectNextDungeon(parent, sourceDimension, random, pack);
 
         if (dungeon != null) {
             schematic = loadAndValidateDungeon(dungeon, properties);
@@ -322,57 +342,13 @@ public class PocketBuilder {
         validatePocketSetup(link, size, wallThickness, properties, door);
 
         try {
-            // Register a new dimension
-            NewDimData parent = PocketManager.getDimensionData(
-                link.source()
-                    .getDimension());
-            NewDimData dimension = PocketManager.registerPocket(
-                parent,
+            Pocket pocket = PocketManager.registerPocket(
+                link.source(),
                 DimensionType.PERSONAL,
                 player.getGameProfile()
                     .getId()
                     .toString());
-
-            // Load a world
-            World world = PocketManager.loadDimension(dimension.id());
-
-            if (world == null || world.provider == null) {
-                System.err.println("Could not initialize dimension for a pocket!");
-                return false;
-            }
-
-            // Calculate the destination point
-            Point4D source = link.source();
-            int destinationY = yCoordHelper.adjustDestinationY(
-                link.source()
-                    .getY(),
-                world.getHeight(),
-                wallThickness + 1,
-                size);
-            int orientation = getDoorOrientation(source, properties);
-
-            // Place a link leading back out of the pocket
-            DimLink reverseLink = dimension
-                .createLink(source.getX(), destinationY, source.getZ(), LinkType.REVERSE, (link.orientation() + 2) % 4);
-            parent.setLinkDestination(reverseLink, source.getX(), source.getY(), source.getZ());
-
-            // Build the actual pocket area
-            buildPocket(
-                world,
-                source.getX(),
-                destinationY,
-                source.getZ(),
-                orientation,
-                size,
-                wallThickness,
-                properties,
-                door);
-
-            // Finish up destination initialization
-            dimension.initializePocket(source.getX(), destinationY, source.getZ(), orientation, link);
-            dimension.setFilled(true);
-
-            return true;
+            return buildNewPocket(pocket, link, size, wallThickness, properties, door);
         } catch (Exception e) {
             e.printStackTrace();
             return false;
@@ -384,53 +360,56 @@ public class PocketBuilder {
         validatePocketSetup(link, size, wallThickness, properties, door);
 
         try {
-            // Register a new dimension
-            NewDimData parent = PocketManager.getDimensionData(
-                link.source()
-                    .getDimension());
-            NewDimData dimension = PocketManager.registerPocket(parent, type);
-
-            // Load a world
-            World world = PocketManager.loadDimension(dimension.id());
-
-            if (world == null || world.provider == null) {
-                System.err.println("Could not initialize dimension for a pocket!");
-                return false;
-            }
-
-            // Calculate the destination point
-            Point4D source = link.source();
-            int destinationY = yCoordHelper
-                .adjustDestinationY(source.getY(), world.getHeight(), wallThickness + 1, size);
-            int orientation = getDoorOrientation(source, properties);
-
-            // Place a link leading back out of the pocket
-
-            DimLink reverseLink = dimension
-                .createLink(source.getX(), destinationY, source.getZ(), LinkType.REVERSE, (link.orientation() + 2) % 4);
-            parent.setLinkDestination(reverseLink, source.getX(), source.getY(), source.getZ());
-
-            // Build the actual pocket area
-            buildPocket(
-                world,
-                source.getX(),
-                destinationY,
-                source.getZ(),
-                orientation,
-                size,
-                wallThickness,
-                properties,
-                door);
-
-            // Finish up destination initialization
-            dimension.initializePocket(source.getX(), destinationY, source.getZ(), orientation, link);
-            dimension.setFilled(true);
-
-            return true;
+            Pocket pocket = PocketManager.registerPocket(link.source(), type);
+            return buildNewPocket(pocket, link, size, wallThickness, properties, door);
         } catch (Exception e) {
             e.printStackTrace();
             return false;
         }
+    }
+
+    /** Builds an empty pocket in the middle of its cell, at the source door's height. */
+    private static boolean buildNewPocket(Pocket pocket, DimLink link, int size, int wallThickness,
+        DDProperties properties, Block door) {
+        World world = loadPocketWorld(pocket);
+        if (world == null) {
+            return false;
+        }
+
+        // Calculate the destination point
+        Point4D source = link.source();
+        Point3D entrance = new Point3D(
+            PocketGrid.cellCenter(pocket.cellX()),
+            yCoordHelper.adjustDestinationY(source.getY(), world.getHeight(), wallThickness + 1, size),
+            PocketGrid.cellCenter(pocket.cellZ()));
+        int orientation = getDoorOrientation(source, properties);
+
+        // Place a link leading back out of the pocket
+        DimLink reverseLink = PocketManager.createDimensionData(world)
+            .createLink(
+                entrance.getX(),
+                entrance.getY(),
+                entrance.getZ(),
+                LinkType.REVERSE,
+                (link.orientation() + 2) % 4);
+        PocketManager.createDimensionData(world)
+            .pointLinkAt(reverseLink, source);
+
+        // Build the actual pocket area
+        buildPocket(
+            world,
+            entrance.getX(),
+            entrance.getY(),
+            entrance.getZ(),
+            orientation,
+            size,
+            wallThickness,
+            properties,
+            door);
+
+        // Finish up destination initialization
+        initializePocket(pocket, link, entrance, orientation, SharedPockets.toVirtual(source));
+        return true;
     }
 
     private static void buildPocket(World world, int x, int y, int z, int orientation, int size, int wallThickness,
@@ -570,7 +549,7 @@ public class PocketBuilder {
         chunk.setChunkModified();
     }
 
-    public static BoundingBox calculateDefaultBounds(NewDimData pocket) {
+    public static BoundingBox calculateDefaultBounds(Pocket pocket) {
         // Calculate the XZ bounds of this pocket assuming that it has the default size
         // The Y bounds will be set to encompass the height of a chunk.
 

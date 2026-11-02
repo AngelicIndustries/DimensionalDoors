@@ -5,7 +5,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
-import java.util.Stack;
 import java.util.TreeMap;
 
 import net.minecraft.item.ItemStack;
@@ -15,17 +14,19 @@ import net.minecraft.world.World;
 import org.dimdev.dimdoors.DimDoors;
 import org.dimdev.dimdoors.Point3D;
 import org.dimdev.dimdoors.config.DDProperties;
-import org.dimdev.dimdoors.dungeon.DungeonData;
-import org.dimdev.dimdoors.dungeon.pack.DungeonPack;
+import org.dimdev.dimdoors.pockets.SharedPockets;
 import org.dimdev.dimdoors.saving.IPackable;
 import org.dimdev.dimdoors.saving.PackedDimData;
-import org.dimdev.dimdoors.saving.PackedDungeonData;
 import org.dimdev.dimdoors.saving.PackedLinkData;
 import org.dimdev.dimdoors.saving.PackedLinkTail;
 import org.dimdev.dimdoors.util.Point4D;
 import org.dimdev.dimdoors.watcher.ClientLinkData;
 import org.dimdev.dimdoors.watcher.IUpdateWatcher;
 
+/**
+ * The links of one dimension: a real one, Limbo or one of the shared pocket dimensions. The pockets themselves (their
+ * tree, entrances and dungeons) are in the pockets package.
+ */
 public abstract class NewDimData implements IPackable<PackedDimData> {
 
     private static class InnerDimLink extends DimLink {
@@ -130,77 +131,21 @@ public abstract class NewDimData implements IPackable<PackedDimData> {
     protected int id;
     protected Map<Point4D, InnerDimLink> linkMapping;
     protected List<InnerDimLink> linkList;
-    protected boolean isFilled;
-    protected int depth;
-    protected int packDepth;
     protected DimensionType type;
-    protected NewDimData parent;
-    protected NewDimData root;
-    protected List<NewDimData> children;
-    protected Point4D origin;
-    protected int orientation;
-    protected DungeonData dungeon;
     protected boolean modified;
     public IUpdateWatcher<ClientLinkData> linkWatcher;
 
     // Don't write this field to a file - it should be recreated on startup
     private final Map<ChunkCoordIntPair, List<InnerDimLink>> chunkMapping;
 
-    protected NewDimData(int id, NewDimData parent, DimensionType type, IUpdateWatcher<ClientLinkData> linkWatcher) {
-        if (type != DimensionType.ROOT && (parent == null)) {
-            throw new NullPointerException(
-                "Dimensions can be pocket dimensions if and only if they have a parent dimension.");
-        }
-
+    protected NewDimData(int id, DimensionType type, IUpdateWatcher<ClientLinkData> linkWatcher) {
         this.id = id;
         this.linkMapping = new TreeMap<Point4D, InnerDimLink>(); // Should be stored in oct tree -- temporary solution
         this.linkList = new ArrayList<InnerDimLink>(); // Should be stored in oct tree -- temporary solution
-        this.children = new ArrayList<NewDimData>();
-        this.parent = parent;
-        this.packDepth = 0;
         this.type = type;
-        this.isFilled = false;
-        this.orientation = 0;
-        this.origin = null;
-        this.dungeon = null;
         this.linkWatcher = linkWatcher;
         this.chunkMapping = new HashMap<ChunkCoordIntPair, List<InnerDimLink>>();
         this.modified = true;
-
-        // Register with parent
-        if (parent != null) {
-            // We don't need to raise an update event for adding a child because the child's creation will be signaled.
-            this.root = parent.root;
-            this.depth = parent.depth + 1;
-            parent.children.add(this);
-            parent.modified = true;
-        } else {
-            this.root = this;
-            this.depth = 0;
-        }
-    }
-
-    protected NewDimData(int id, NewDimData root, DimensionType type) {
-        // This constructor is meant for client-side code only
-        if (root == null) {
-            throw new IllegalArgumentException("root cannot be null.");
-        }
-
-        this.id = id;
-        this.linkMapping = new TreeMap<Point4D, InnerDimLink>(); // Should be stored in oct tree -- temporary solution
-        this.linkList = new ArrayList<InnerDimLink>(); // Should be stored in oct tree -- temporary solution
-        this.children = new ArrayList<NewDimData>();
-        this.parent = null;
-        this.packDepth = 0;
-        this.type = type;
-        this.isFilled = false;
-        this.orientation = 0;
-        this.origin = null;
-        this.dungeon = null;
-        this.linkWatcher = null;
-        this.depth = 0;
-        this.root = root;
-        this.chunkMapping = null;
     }
 
     public DimLink findNearestRift(World world, int range, int x, int y, int z) {
@@ -405,167 +350,37 @@ public abstract class NewDimData implements IPackable<PackedDimData> {
         return results;
     }
 
+    /** Whether this is one of the shared pocket dimensions. */
     public boolean isPocketDimension() {
-        return (root != this);
+        return SharedPockets.isShared(id);
     }
 
+    /** ROOT for a real dimension, otherwise the type of pockets this shared dimension holds. */
     public DimensionType type() {
         return this.type;
-    }
-
-    public boolean isFilled() {
-        return isFilled;
-    }
-
-    public void setFilled(boolean isFilled) {
-        this.isFilled = isFilled;
-        this.modified = true;
     }
 
     public int id() {
         return id;
     }
 
-    public int depth() {
-        return depth;
-    }
-
-    public int packDepth() {
-        return packDepth;
-    }
-
-    public Point4D origin() {
-        return origin;
-    }
-
-    public NewDimData parent() {
-        return parent;
-    }
-
-    public NewDimData root() {
-        return root;
-    }
-
-    public int orientation() {
-        return orientation;
-    }
-
-    public DungeonData dungeon() {
-        return dungeon;
-    }
-
-    public boolean isInitialized() {
-        return (origin != null);
-    }
-
     public int linkCount() {
         return linkList.size();
-    }
-
-    public Iterable<NewDimData> children() {
-        return children;
     }
 
     public Iterable<? extends DimLink> links() {
         return linkList;
     }
 
-    public void initializeDungeon(int originX, int originY, int originZ, int orientation, DimLink incoming,
-        DungeonData dungeon) {
-        if (this.type != DimensionType.DUNGEON) {
-            throw new IllegalStateException("Cannot invoke initializeDungeon() on a non-dungeon dimension.");
-        }
-        if (isInitialized()) {
-            throw new IllegalStateException("The dimension has already been initialized.");
-        }
-        if (orientation < 0 || orientation > 3) {
-            throw new IllegalArgumentException("orientation must be between 0 and 3, inclusive.");
-        }
-        setLinkDestination(incoming, originX, originY, originZ);
-        this.origin = incoming.destination();
-        this.orientation = orientation;
-        this.dungeon = dungeon;
-        this.packDepth = calculatePackDepth(parent, dungeon);
-        this.modified = true;
-    }
-
-    /**
-     * Effectively moves the dungeon to the 'top' of a chain as far as dungeon generation is concerned.
-     */
-    public void setParentToRoot() {
-        // Update this dimension's information
-        if (parent != null) {
-            parent.children.remove(this);
-        }
-        this.depth = 1;
-        this.parent = this.root;
-        this.root.children.add(this);
-        this.root.modified = true;
-        this.modified = true;
-        if (this.type == DimensionType.DUNGEON) {
-            this.packDepth = calculatePackDepth(this.parent, this.dungeon);
-        }
-
-        // Update the depths for child dimensions using a depth-first traversal
-        Stack<NewDimData> ordering = new Stack<NewDimData>();
-        ordering.addAll(this.children);
-
-        while (!ordering.isEmpty()) {
-            NewDimData current = ordering.pop();
-            current.resetDepth();
-            ordering.addAll(current.children);
-        }
-    }
-
-    private void resetDepth() {
-        // We assume that this is only applied to dimensions with parents
-        this.depth = this.parent.depth + 1;
-        if (this.type == DimensionType.DUNGEON) {
-            this.packDepth = calculatePackDepth(this.parent, this.dungeon);
-        }
-        this.modified = true;
-    }
-
-    public static int calculatePackDepth(NewDimData parent, DungeonData current) {
-        DungeonData predecessor = parent.dungeon();
-        if (current == null) {
-            throw new IllegalArgumentException("current cannot be null.");
-        }
-        if (predecessor == null) {
-            return 1;
-        }
-
-        DungeonPack predOwner = predecessor.dungeonType().Owner;
-        DungeonPack currentOwner = current.dungeonType().Owner;
-        if (currentOwner == null) {
-            return 1;
-        }
-        if (predOwner == null) {
-            return 1;
-        }
-        if (predOwner == currentOwner) {
-            return parent.packDepth + 1;
-        }
-        return 1;
-    }
-
-    public void initializePocket(int originX, int originY, int originZ, int orientation, DimLink incoming) {
-        if (!isPocketDimension()) {
-            throw new IllegalStateException("Cannot invoke initializePocket() on a non-pocket dimension.");
-        }
-        if (isInitialized()) {
-            throw new IllegalStateException("The dimension has already been initialized.");
-        }
-
-        setLinkDestination(incoming, originX, originY, originZ);
-        this.origin = incoming.destination();
-        this.orientation = orientation;
-        this.modified = true;
-    }
-
     public void setLinkDestination(DimLink incoming, int x, int y, int z) {
         InnerDimLink link = (InnerDimLink) incoming;
         link.setDestination(x, y, z, this);
+        this.modified = true;
+    }
+
+    /** Points one of this dimension's links at a destination, which needn't have data of its own. */
+    public void pointLinkAt(DimLink link, Point4D destination) {
+        link.tail.setDestination(destination);
         this.modified = true;
     }
 
@@ -619,53 +434,8 @@ public abstract class NewDimData implements IPackable<PackedDimData> {
         this.modified = false;
     }
 
-    public void clear() {
-        // If this dimension has a parent, remove it from its parent's list of children
-        if (parent != null) {
-            parent.children.remove(this);
-        }
-        // Remove this dimension as the parent of its children
-        for (NewDimData child : children) {
-            child.parent = null;
-        }
-        // Clear all fields
-        id = Integer.MIN_VALUE;
-        linkMapping.clear();
-        linkMapping = null;
-        linkList.clear();
-        linkList = null;
-        children.clear();
-        children = null;
-        type = null;
-        isFilled = false;
-        depth = Integer.MIN_VALUE;
-        packDepth = Integer.MIN_VALUE;
-        origin = null;
-        orientation = Integer.MIN_VALUE;
-        dungeon = null;
-        linkWatcher = null;
-    }
-
     public PackedDimData pack() {
-        ArrayList<Integer> ChildIDs = new ArrayList<Integer>();
         ArrayList<PackedLinkData> Links = new ArrayList<PackedLinkData>();
-        ArrayList<PackedLinkTail> Tails = new ArrayList<PackedLinkTail>();
-        PackedDungeonData packedDungeon = null;
-
-        if (this.dungeon != null) {
-            packedDungeon = new PackedDungeonData(
-                dungeon.weight(),
-                dungeon.isOpen(),
-                dungeon.isInternal(),
-                dungeon.schematicPath(),
-                dungeon.schematicName(),
-                dungeon.dungeonType().Name,
-                dungeon.dungeonType().Owner.getName());
-        }
-        // Make a list of children
-        for (NewDimData data : this.children) {
-            ChildIDs.add(data.id);
-        }
         for (DimLink link : this.links()) {
             ArrayList<Point3D> children = new ArrayList<Point3D>();
             Point3D parentPoint = new Point3D(-1, -1, -1);
@@ -680,38 +450,22 @@ public abstract class NewDimData implements IPackable<PackedDimData> {
             }
             PackedLinkTail tail = new PackedLinkTail(link.tail.getDestination(), link.tail.getLinkType());
             Links.add(new PackedLinkData(link.point, parentPoint, tail, link.orientation, children, link.lock));
-
-            PackedLinkTail tempTail = new PackedLinkTail(link.tail.getDestination(), link.tail.getLinkType());
-            if (Tails.contains(tempTail)) {
-                Tails.add(tempTail);
-            }
-
         }
-        int parentID = this.id;
-        Point3D originPoint = new Point3D(0, 0, 0);
-        if (this.parent != null) {
-            parentID = this.parent.id;
-        }
-        if (this.origin != null) {
-            originPoint = this.origin.toPoint3D();
-        }
+        // The pocket tree fields of Legacy's format are left at a root dimension's values: pockets save on their own
         return new PackedDimData(
             this.id,
-            depth,
-            this.packDepth,
-            parentID,
-            this.root()
-                .id(),
-            orientation,
+            0,
+            0,
+            this.id,
+            this.id,
+            0,
             type,
-            isFilled,
-            packedDungeon,
-            originPoint,
-            ChildIDs,
+            false,
+            null,
+            new Point3D(0, 0, 0),
+            new ArrayList<Integer>(),
             Links,
-            Tails);
-        // FIXME: IMPLEMENTATION PLZTHX
-        // I tried
+            new ArrayList<PackedLinkTail>());
     }
 
     @Override

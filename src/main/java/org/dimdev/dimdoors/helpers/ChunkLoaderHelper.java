@@ -15,9 +15,11 @@ import net.minecraftforge.common.ForgeChunkManager.Type;
 import org.dimdev.dimdoors.DimDoors;
 import org.dimdev.dimdoors.IChunkLoader;
 import org.dimdev.dimdoors.Point3D;
-import org.dimdev.dimdoors.core.NewDimData;
+import org.dimdev.dimdoors.core.DimensionType;
 import org.dimdev.dimdoors.core.PocketManager;
 import org.dimdev.dimdoors.experimental.BoundingBox;
+import org.dimdev.dimdoors.pockets.Pocket;
+import org.dimdev.dimdoors.pockets.SharedPockets;
 import org.dimdev.dimdoors.world.PocketBuilder;
 
 import cpw.mods.fml.common.event.FMLServerStartingEvent;
@@ -61,7 +63,7 @@ public class ChunkLoaderHelper implements LoadingCallback {
         return ticket;
     }
 
-    public static void forcePocketChunks(NewDimData pocket, Ticket ticket) {
+    public static void forcePocketChunks(Pocket pocket, Ticket ticket) {
         BoundingBox bounds = PocketBuilder.calculateDefaultBounds(pocket);
         Point3D minCorner = bounds.minCorner();
         Point3D maxCorner = bounds.maxCorner();
@@ -80,17 +82,14 @@ public class ChunkLoaderHelper implements LoadingCallback {
     }
 
     public static void loadForcedChunkWorlds(FMLServerStartingEvent event) {
-        for (NewDimData data : PocketManager.getDimensions()) {
-            if (data.isPocketDimension()) {
-                String chunkDir = DimensionManager.getCurrentSaveRootDirectory() + "/DimensionalDoors/pocketDimID"
-                    + data.id();
+        for (DimensionType type : SharedPockets.TYPES) {
+            File file = new File(
+                DimensionManager.getCurrentSaveRootDirectory(),
+                "DimensionalDoors/" + SharedPockets.folderOf(type));
 
-                File file = new File(chunkDir);
-
-                if (file.exists()) {
-                    if (ForgeChunkManager.savedWorldHasForcedChunkTickets(file)) {
-                        PocketManager.loadDimension(data.id());
-                    }
+            if (file.exists()) {
+                if (ForgeChunkManager.savedWorldHasForcedChunkTickets(file)) {
+                    PocketManager.loadDimension(SharedPockets.dimensionOf(type));
                 }
             }
         }

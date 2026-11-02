@@ -13,9 +13,10 @@ import net.minecraftforge.common.DimensionManager;
 
 import org.dimdev.dimdoors.DimDoors;
 import org.dimdev.dimdoors.config.DDProperties;
-import org.dimdev.dimdoors.core.NewDimData;
 import org.dimdev.dimdoors.core.PocketManager;
 import org.dimdev.dimdoors.helpers.yCoordHelper;
+import org.dimdev.dimdoors.pockets.Pocket;
+import org.dimdev.dimdoors.pockets.SharedPockets;
 import org.dimdev.dimdoors.util.ChunkLocation;
 
 public class CustomLimboPopulator implements IRegularTickReceiver {
@@ -85,12 +86,13 @@ public class CustomLimboPopulator implements IRegularTickReceiver {
     }
 
     private void placeMonolithsInPocket(int dimensionID, int chunkX, int chunkZ) {
-        NewDimData dimension = PocketManager.getDimensionData(dimensionID);
+        Pocket dungeon = SharedPockets
+            .pocketAt(dimensionID, chunkX * CHUNK_SIZE + CHUNK_SIZE / 2, chunkZ * CHUNK_SIZE + CHUNK_SIZE / 2);
         World pocket = DimensionManager.getWorld(dimensionID);
 
-        if (pocket == null || dimension == null
-            || dimension.dungeon() == null
-            || dimension.dungeon()
+        if (pocket == null || dungeon == null
+            || dungeon.dungeon() == null
+            || dungeon.dungeon()
                 .isOpen()) {
             return;
         }

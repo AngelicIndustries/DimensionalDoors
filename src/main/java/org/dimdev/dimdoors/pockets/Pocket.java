@@ -6,6 +6,7 @@ import java.util.List;
 
 import org.dimdev.dimdoors.core.DimensionType;
 import org.dimdev.dimdoors.dungeon.DungeonData;
+import org.dimdev.dimdoors.dungeon.pack.DungeonPack;
 import org.dimdev.dimdoors.util.Point4D;
 
 /**
@@ -14,6 +15,7 @@ import org.dimdev.dimdoors.util.Point4D;
  */
 public final class Pocket {
 
+    private final PocketRegistry registry;
     private final int id;
     private final int dimension;
     private final DimensionType type;
@@ -30,10 +32,11 @@ public final class Pocket {
     private VirtualLocation virtualLocation;
 
     /** Made by PocketRegistry, which hands out the IDs (cell numbers). */
-    Pocket(int id, int dimension, DimensionType type, Pocket parent, int rootDimension) {
+    Pocket(PocketRegistry registry, int id, Pocket parent, int rootDimension) {
+        this.registry = registry;
         this.id = id;
-        this.dimension = dimension;
-        this.type = type;
+        this.dimension = registry.dimension();
+        this.type = registry.type();
         this.rootDimension = rootDimension;
         setParent(parent);
     }
@@ -77,10 +80,13 @@ public final class Pocket {
         this.parent = parent;
         if (parent != null) parent.children.add(this);
         updateDepth();
+        registry.markModified();
     }
 
     private void updateDepth() {
         depth = parent == null ? 1 : parent.depth + 1;
+        // Legacy kept a dungeon's place in its pack's chain in step with its parent
+        if (dungeon != null) packDepth = packDepthOf(parent, dungeon);
         for (Pocket child : children) child.updateDepth();
     }
 
@@ -90,6 +96,7 @@ public final class Pocket {
 
     public void setPackDepth(int packDepth) {
         this.packDepth = packDepth;
+        registry.markModified();
     }
 
     public int cellX() {
@@ -117,14 +124,29 @@ public final class Pocket {
     public void setOrigin(Point4D origin, int orientation) {
         this.origin = origin;
         this.orientation = orientation;
+        registry.markModified();
     }
 
     public DungeonData dungeon() {
         return dungeon;
     }
 
+    /**
+     * How deep a dungeon would be in its pack's chain under a parent pocket (null for a real dimension): one more than
+     * the parent's if both are dungeons of the same pack, otherwise 1.
+     */
+    public static int packDepthOf(Pocket parent, DungeonData dungeon) {
+        if (dungeon == null) throw new IllegalArgumentException("dungeon cannot be null.");
+        DungeonData predecessor = parent != null ? parent.dungeon : null;
+        if (predecessor == null) return 1;
+        DungeonPack owner = dungeon.dungeonType().Owner;
+        if (owner == null || predecessor.dungeonType().Owner != owner) return 1;
+        return parent.packDepth + 1;
+    }
+
     public void setDungeon(DungeonData dungeon) {
         this.dungeon = dungeon;
+        registry.markModified();
     }
 
     public boolean isBuilt() {
@@ -133,6 +155,7 @@ public final class Pocket {
 
     public void setBuilt(boolean built) {
         this.built = built;
+        registry.markModified();
     }
 
     /** The player a personal pocket belongs to, or null. */
@@ -142,6 +165,7 @@ public final class Pocket {
 
     public void setOwner(String owner) {
         this.owner = owner;
+        registry.markModified();
     }
 
     public VirtualLocation virtualLocation() {
@@ -150,6 +174,7 @@ public final class Pocket {
 
     public void setVirtualLocation(VirtualLocation virtualLocation) {
         this.virtualLocation = virtualLocation;
+        registry.markModified();
     }
 
     /**

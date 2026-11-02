@@ -16,6 +16,7 @@ import net.minecraftforge.client.IRenderHandler;
 import org.dimdev.dimdoors.CloudRenderBlank;
 import org.dimdev.dimdoors.DimDoors;
 import org.dimdev.dimdoors.config.DDProperties;
+import org.dimdev.dimdoors.pockets.SharedPockets;
 import org.dimdev.dimdoors.ticking.CustomLimboPopulator;
 import org.dimdev.dimdoors.util.Point4D;
 
@@ -187,9 +188,12 @@ public class LimboProvider extends WorldProvider {
     }
 
     public static Point4D getLimboSkySpawn(EntityPlayer player, DDProperties properties) {
-        int x = (int) (player.posX) + MathHelper
+        // From a pocket, where its virtual location puts the player in the real world
+        Point4D from = SharedPockets.toVirtual(
+            new Point4D((int) player.posX, (int) player.posY, (int) player.posZ, player.worldObj.provider.dimensionId));
+        int x = from.getX() + MathHelper
             .getRandomIntegerInRange(player.worldObj.rand, -properties.LimboEntryRange, properties.LimboEntryRange);
-        int z = (int) (player.posZ) + MathHelper
+        int z = from.getZ() + MathHelper
             .getRandomIntegerInRange(player.worldObj.rand, -properties.LimboEntryRange, properties.LimboEntryRange);
         return new Point4D(x, 700, z, properties.LimboDimensionID);
     }

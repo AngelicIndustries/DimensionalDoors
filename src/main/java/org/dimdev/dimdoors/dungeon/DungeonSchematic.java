@@ -23,6 +23,8 @@ import org.dimdev.dimdoors.core.DimLink;
 import org.dimdev.dimdoors.core.LinkType;
 import org.dimdev.dimdoors.core.NewDimData;
 import org.dimdev.dimdoors.core.PocketManager;
+import org.dimdev.dimdoors.pockets.Pocket;
+import org.dimdev.dimdoors.pockets.SharedPockets;
 import org.dimdev.dimdoors.schematic.BlockRotator;
 import org.dimdev.dimdoors.schematic.ChunkBlockSetter;
 import org.dimdev.dimdoors.schematic.CompoundFilter;
@@ -256,9 +258,9 @@ public class DungeonSchematic extends Schematic {
         // approach to check - if the dungeon is rooted in the Nether, then it SHOULD be a Nether dungeon.
         // This isn't necessarily true if someone uses dd-rift to spawn a dungeon, but it should work under
         // normal use of the mod.
-        if (dimension.root()
-            .id() == NETHER_DIMENSION_ID) {
-            writeDepthSign(world, pocketCenter, dimension.depth());
+        Pocket pocket = SharedPockets.pocketAt(world.provider.dimensionId, pocketCenter.getX(), pocketCenter.getZ());
+        if (pocket != null && pocket.rootDimension() == NETHER_DIMENSION_ID) {
+            writeDepthSign(world, pocketCenter, pocket.depth());
         }
     }
 
