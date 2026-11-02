@@ -14,4 +14,15 @@ public class MonolithPortalFX extends EntityPortalFX {
         this.particleGreen = brightness * 0.1F;
         this.particleBlue = brightness * 0.1F;
     }
+
+    /** Full block light rather than vanilla's growing sky light, so it glows at night and under shader packs. */
+    @Override
+    public int getBrightnessForRender(float partialTicks) {
+        return 0xF000F0;
+    }
+
+    @Override
+    public float getBrightness(float partialTicks) {
+        return 1.0F;
+    }
 }
