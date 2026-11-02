@@ -86,6 +86,7 @@ public class RenderMobObelisk extends RenderLiving {
             GL11.glTranslatef(0.0F, 24.0F * f6 - 0.0078125F, 0.0F);
 
             this.renderModel(par1EntityLivingBase, 0, 0, rotation, interpolatedYaw, pitch, f6);
+            this.renderGlowingEyes((MobMonolith) par1EntityLivingBase, rotation, interpolatedYaw, pitch, f6);
 
             OpenGlHelper.setActiveTexture(OpenGlHelper.lightmapTexUnit);
             GL11.glDisable(GL11.GL_TEXTURE_2D);
@@ -104,6 +105,28 @@ public class RenderMobObelisk extends RenderLiving {
         GL11.glDisable(GL11.GL_BLEND);
         GL11.glPopMatrix();
         MinecraftForge.EVENT_BUS.post(new RenderLivingEvent.Post(par1EntityLivingBase, this, x, y, z));
+    }
+
+    /**
+     * The model again with only its eyes, at full brightness and added on top, so a Monolith's red eyes glow even in
+     * Limbo's dark (as vanilla draws spider eyes). A calm Monolith has none.
+     */
+    private void renderGlowingEyes(MobMonolith monolith, float rotation, float yaw, float pitch, float scale) {
+        if (monolith.getTextureState() == 0) {
+            return;
+        }
+        this.bindTexture(MonolithEyesTexture.of(this.getEntityTexture(monolith)));
+        GL11.glBlendFunc(GL11.GL_ONE, GL11.GL_ONE);
+        // Without the lightmap, so nothing that darkens it (Dark Limbo, Darkerer) dims the eyes
+        OpenGlHelper.setActiveTexture(OpenGlHelper.lightmapTexUnit);
+        GL11.glDisable(GL11.GL_TEXTURE_2D);
+        OpenGlHelper.setActiveTexture(OpenGlHelper.defaultTexUnit);
+        GL11.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
+        this.mainModel.render(monolith, 0, 0, rotation, yaw, pitch, scale);
+        OpenGlHelper.setActiveTexture(OpenGlHelper.lightmapTexUnit);
+        GL11.glEnable(GL11.GL_TEXTURE_2D);
+        OpenGlHelper.setActiveTexture(OpenGlHelper.defaultTexUnit);
+        GL11.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
     }
 
     private static float interpolateRotation(float par1, float par2, float par3) {
