@@ -11,6 +11,7 @@ tile.blockDimWallPerm.name=Eternal Fabric
 tile.dimDoorWarp.name=Warp Door
 tile.rift.name=Rift
 tile.BlockLimbo.name=Unraveled Fabric
+tile.blockSolidStatic.name=Solid Static
 tile.chaosDoor.name=Unstable Door
 tile.dimDoor.name=Dimensional Door
 tile.dimHatch.name=Transdimensional Trapdoor

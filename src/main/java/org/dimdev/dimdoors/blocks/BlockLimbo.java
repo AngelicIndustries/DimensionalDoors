@@ -21,7 +21,7 @@ import cpw.mods.fml.relauncher.SideOnly;
 public class BlockLimbo extends Block {
 
     /** How much brighter than its file Unraveled Fabric is drawn under Dark Limbo. */
-    private static final float UNRAVELED_FABRIC_BRIGHTNESS = 2.0F;
+    static final float UNRAVELED_FABRIC_BRIGHTNESS = 2.0F;
 
     private final int limboDimensionID;
     private final LimboDecay decay;

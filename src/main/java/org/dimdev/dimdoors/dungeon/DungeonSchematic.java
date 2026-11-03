@@ -71,6 +71,7 @@ public class DungeonSchematic extends Schematic {
         modBlockFilterExceptions.add(DimDoors.transientDoor);
         modBlockFilterExceptions.add(DimDoors.personalDimDoor);
         modBlockFilterExceptions.add(DimDoors.blockLimbo);
+        modBlockFilterExceptions.add(DimDoors.blockSolidStatic);
     }
 
     public int getOrientation() {

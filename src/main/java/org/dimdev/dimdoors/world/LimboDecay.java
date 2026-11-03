@@ -16,7 +16,7 @@ import org.dimdev.dimdoors.config.DDProperties;
 
 /**
  * Provides methods for applying Limbo decay. Limbo decay refers to the effect that most blocks placed in Limbo
- * naturally change into stone, then cobble, then gravel, and finally Unraveled Fabric as time passes.
+ * naturally change into solid static, then cobble, then gravel, and finally Unraveled Fabric as time passes.
  */
 public class LimboDecay {
 
@@ -39,7 +39,8 @@ public class LimboDecay {
 
     public Block[] getDecaySequence() {
         if (decaySequence == null) {
-            decaySequence = new Block[] { DimDoors.blockLimbo, Blocks.gravel, Blocks.cobblestone, Blocks.stone };
+            decaySequence = new Block[] { DimDoors.blockLimbo, Blocks.gravel, Blocks.cobblestone,
+                DimDoors.blockSolidStatic };
         }
 
         return decaySequence;

@@ -8,7 +8,9 @@ import javax.imageio.ImageIO;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
+import net.minecraft.client.resources.IResource;
 import net.minecraft.client.resources.IResourceManager;
+import net.minecraft.client.resources.data.AnimationMetadataSection;
 import net.minecraft.util.ResourceLocation;
 
 import org.apache.logging.log4j.LogManager;
@@ -25,11 +27,18 @@ public class BrightenedSprite extends TextureAtlasSprite {
 
     private final ResourceLocation source;
     private final float factor;
+    private final int variant;
 
     public BrightenedSprite(String name, ResourceLocation source, float factor) {
+        this(name, source, factor, 0);
+    }
+
+    /** A turned, mirrored or time-shifted copy of the texture as well, see {@link SpriteFrames#variant}. */
+    public BrightenedSprite(String name, ResourceLocation source, float factor, int variant) {
         super(name);
         this.source = source;
         this.factor = factor;
+        this.variant = variant;
     }
 
     @Override
@@ -41,27 +50,20 @@ public class BrightenedSprite extends TextureAtlasSprite {
     @Override
     public boolean load(IResourceManager manager, ResourceLocation location) {
         BufferedImage image;
-        try (InputStream in = manager.getResource(source)
-            .getInputStream()) {
-            image = ImageIO.read(in);
+        AnimationMetadataSection animation = null;
+        try {
+            IResource resource = manager.getResource(source);
+            try (InputStream in = resource.getInputStream()) {
+                image = ImageIO.read(in);
+            }
+            animation = (AnimationMetadataSection) resource.getMetadata("animation");
         } catch (IOException | RuntimeException e) {
             LOG.warn("Couldn't read {} for {}", source, getIconName(), e);
             image = new BufferedImage(16, 16, BufferedImage.TYPE_INT_ARGB);
         }
-        int size = image.getWidth();
-        BufferedImage out = new BufferedImage(size, size, BufferedImage.TYPE_INT_ARGB);
-        for (int y = 0; y < size; y++) {
-            for (int x = 0; x < size; x++) {
-                int color = image.getRGB(x, y);
-                int r = Math.min(255, Math.round((color >> 16 & 255) * factor));
-                int g = Math.min(255, Math.round((color >> 8 & 255) * factor));
-                int b = Math.min(255, Math.round((color & 255) * factor));
-                out.setRGB(x, y, color & 0xFF000000 | r << 16 | g << 8 | b);
-            }
-        }
         BufferedImage[] images = new BufferedImage[1 + Minecraft.getMinecraft().gameSettings.mipmapLevels];
-        images[0] = out;
-        loadSprite(images, null, Minecraft.getMinecraft().gameSettings.anisotropicFiltering > 1);
+        images[0] = SpriteFrames.variant(image, factor, variant);
+        loadSprite(images, animation, Minecraft.getMinecraft().gameSettings.anisotropicFiltering > 1);
         return false;
     }
 }
