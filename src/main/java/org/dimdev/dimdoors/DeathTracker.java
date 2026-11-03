@@ -1,6 +1,7 @@
 package org.dimdev.dimdoors;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -45,6 +46,9 @@ public class DeathTracker {
 
     public void writeToFile() {
         try {
+            // A new world has no data folder until its first pocket
+            new File(filePath).getParentFile()
+                .mkdirs();
             PrintWriter writer = new PrintWriter(filePath);
             for (String username : usernameList) {
                 writer.println(username);
