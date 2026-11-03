@@ -158,3 +158,4 @@
 /schematics/ruins/SimpleHall_6x-VoidWhy_Open_100.schematic
 /schematics/ruins/SimpleHall_6x-VoidWhyless_Open_100.schematic
 /schematics/ruins/Maze_6x-WhiteFabricMaze_Closed_100.schematic
+/schematics/ruins/Trap_6x-RuinsSprikeTraps_Open_100.schematic
