@@ -1,11 +1,13 @@
 package org.dimdev.dimdoors.blocks;
 
+import java.util.ArrayList;
 import java.util.Random;
 
 import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
 import net.minecraft.client.renderer.texture.IIconRegister;
 import net.minecraft.client.renderer.texture.TextureMap;
+import net.minecraft.item.ItemStack;
 import net.minecraft.util.IIcon;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.IBlockAccess;
@@ -63,6 +65,22 @@ public class BlockLimbo extends Block {
     @Override
     public IIcon getIcon(int par1, int par2) {
         return this.blockIcon;
+    }
+
+    /**
+     * Frayed Filament instead of the fabric itself as in 6.x: one in ten, then a seventh, a quarter, always with
+     * Fortune.
+     */
+    @Override
+    public ArrayList<ItemStack> getDrops(World world, int x, int y, int z, int metadata, int fortune) {
+        final float[] filamentChance = { 0.1F, 1 / 7F, 0.25F, 1.0F };
+        ArrayList<ItemStack> drops = new ArrayList<ItemStack>();
+        if (world.rand.nextFloat() < filamentChance[Math.min(fortune, 3)]) {
+            drops.add(new ItemStack(DimDoors.itemFrayedFilament));
+        } else {
+            drops.add(new ItemStack(this));
+        }
+        return drops;
     }
 
     /**

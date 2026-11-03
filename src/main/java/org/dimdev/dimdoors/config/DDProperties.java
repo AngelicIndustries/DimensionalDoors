@@ -41,6 +41,7 @@ public class DDProperties {
     public final boolean CraftingTransTrapdoorAllowed;
     public final boolean CraftingStabilizedRiftSignatureAllowed;
     public final boolean CraftingRiftStabilizerAllowed;
+    public final boolean CraftingLimboMaterialsAllowed;
     public final boolean CraftingStableFabricAllowed;
     public final boolean CraftingGoldenDimensionalDoorAllowed;
     public final boolean CraftingGoldenDoorAllowed;
@@ -159,6 +160,13 @@ public class DDProperties {
         CraftingRiftRemoverAllowed = config.get(CATEGORY_CRAFTING, "Allow Crafting Rift Remover", true)
             .getBoolean(true);
         CraftingRiftStabilizerAllowed = config.get(CATEGORY_CRAFTING, "Allow Crafting Rift Stabilizer", true)
+            .getBoolean(true);
+        CraftingLimboMaterialsAllowed = config
+            .get(
+                CATEGORY_CRAFTING,
+                "Allow Crafting Limbo Materials",
+                true,
+                "Liminal Lint, Enduring Fibers, Fabric of Finality")
             .getBoolean(true);
         CraftingStabilizedRiftSignatureAllowed = config
             .get(

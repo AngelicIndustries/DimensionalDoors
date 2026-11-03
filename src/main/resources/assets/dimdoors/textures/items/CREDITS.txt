@@ -1,0 +1,2 @@
+itemFrayedFilament, itemLiminalLint, itemInfrangibleFiber, itemEnduringFibers and itemFabricOfFinality are the
+matching textures from Dimensional Doors 6.x (branch 1.21.1, GPL-3.0), textures/item.

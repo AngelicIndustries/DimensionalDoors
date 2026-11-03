@@ -3,6 +3,7 @@ package org.dimdev.dimdoors;
 import net.minecraft.block.BlockDispenser;
 import net.minecraft.init.Blocks;
 import net.minecraft.init.Items;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraftforge.oredict.ShapedOreRecipe;
 
@@ -136,6 +137,23 @@ public class CraftingManager {
                 Items.diamond,
                 'y',
                 DimDoors.itemStableFabric);
+        }
+        if (properties.CraftingLimboMaterialsAllowed) {
+            // 6.x weaves these on its loom; here they're plain recipes
+            GameRegistry
+                .addRecipe(new ItemStack(DimDoors.itemLiminalLint), "xx", "xx", 'x', DimDoors.itemFrayedFilament);
+            GameRegistry
+                .addRecipe(new ItemStack(DimDoors.itemEnduringFibers), "xx", "xx", 'x', DimDoors.itemInfrangibleFiber);
+            Item dragonBreath = GameRegistry.findItem("etfuturum", "dragon_breath");
+            if (dragonBreath != null) {
+                GameRegistry.addRecipe(
+                    new ItemStack(DimDoors.itemFabricOfFinality),
+                    "xyx",
+                    'x',
+                    DimDoors.itemEnduringFibers,
+                    'y',
+                    dragonBreath);
+            }
         }
         if (properties.CraftingRiftBladeAllowed) {
             GameRegistry.addRecipe(

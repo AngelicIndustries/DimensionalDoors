@@ -1,11 +1,13 @@
 package org.dimdev.dimdoors.blocks;
 
 import java.util.Arrays;
+import java.util.Random;
 
 import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
 import net.minecraft.client.renderer.texture.IIconRegister;
 import net.minecraft.client.renderer.texture.TextureMap;
+import net.minecraft.item.Item;
 import net.minecraft.util.IIcon;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.IBlockAccess;
@@ -33,6 +35,17 @@ public class BlockSolidStatic extends Block {
         setStepSound(soundTypeSand);
         setHarvestLevel("pickaxe", 2);
         setCreativeTab(DimDoors.dimDoorsCreativeTab);
+    }
+
+    /** Infrangible Fiber, more with Fortune the way ores give more; Silk Touch keeps the block. */
+    @Override
+    public Item getItemDropped(int meta, Random random, int fortune) {
+        return DimDoors.itemInfrangibleFiber;
+    }
+
+    @Override
+    public int quantityDroppedWithBonus(int fortune, Random random) {
+        return fortune > 0 ? Math.max(1, random.nextInt(fortune + 2)) : 1;
     }
 
     @Override

@@ -50,6 +50,7 @@ import org.dimdev.dimdoors.items.ItemDimensionalDoor;
 import org.dimdev.dimdoors.items.ItemFadebloom;
 import org.dimdev.dimdoors.items.ItemGoldDimDoor;
 import org.dimdev.dimdoors.items.ItemGoldDoor;
+import org.dimdev.dimdoors.items.ItemMaterial;
 import org.dimdev.dimdoors.items.ItemPersonalDoor;
 import org.dimdev.dimdoors.items.ItemQuartzDoor;
 import org.dimdev.dimdoors.items.ItemRiftBlade;
@@ -132,6 +133,12 @@ public class DimDoors {
     public static Item itemGoldenDimensionalDoor;
     public static Item itemGoldenDoor;
     public static Item itemWorldThread;
+    // Limbo materials, from 6.x, for other mods to use
+    public static Item itemFrayedFilament;
+    public static Item itemLiminalLint;
+    public static Item itemInfrangibleFiber;
+    public static Item itemEnduringFibers;
+    public static Item itemFabricOfFinality;
 
     public static Item itemRiftBlade;
     public static ItemDimensionalDoor itemDimensionalDoor;
@@ -269,6 +276,11 @@ public class DimDoors {
         itemRiftBlade = (new ItemRiftBlade(properties)).setUnlocalizedName("ItemRiftBlade");
         itemStabilizedRiftSignature = (new ItemStabilizedRiftSignature()).setUnlocalizedName("itemStabilizedRiftSig");
         itemWorldThread = (new ItemWorldThread()).setUnlocalizedName("itemWorldThread");
+        itemFrayedFilament = new ItemMaterial().setUnlocalizedName("itemFrayedFilament");
+        itemLiminalLint = new ItemMaterial().setUnlocalizedName("itemLiminalLint");
+        itemInfrangibleFiber = new ItemMaterial().setUnlocalizedName("itemInfrangibleFiber");
+        itemEnduringFibers = new ItemMaterial().setUnlocalizedName("itemEnduringFibers");
+        itemFabricOfFinality = new ItemMaterial().setUnlocalizedName("itemFabricOfFinality");
 
         // Check if other biomes have been registered with the same IDs we want. If so, crash Minecraft
         // to notify the user instead of letting it pass and conflicting with Biomes o' Plenty.
@@ -307,6 +319,11 @@ public class DimDoors {
         GameRegistry.registerItem(itemRiftBlade, "Rift Blade");
         GameRegistry.registerItem(itemStabilizedRiftSignature, "Stabilized Rift Signature");
         GameRegistry.registerItem(itemWorldThread, "World Thread");
+        GameRegistry.registerItem(itemFrayedFilament, "Frayed Filament");
+        GameRegistry.registerItem(itemLiminalLint, "Liminal Lint");
+        GameRegistry.registerItem(itemInfrangibleFiber, "Infrangible Fiber");
+        GameRegistry.registerItem(itemEnduringFibers, "Enduring Fibers");
+        GameRegistry.registerItem(itemFabricOfFinality, "Fabric of Finality");
 
         GameRegistry.registerBlock(blockDimWall, ItemBlockDimWall.class, "Fabric of Reality");
 
