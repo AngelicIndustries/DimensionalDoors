@@ -71,6 +71,11 @@ public class DDLoot {
         addWeighted(items, DimDoors.itemRiftSignature, properties.RiftSignatureLootWeight);
         addWeighted(items, DimDoors.itemStabilizedRiftSignature, properties.StabilizedRiftSignatureLootWeight);
         addWeighted(items, DimDoors.itemPersonalDoor, properties.PersonalDimDoorLootWeight);
+        // One of the three discs, the weight split between them
+        int discWeight = (properties.MusicDiscLootWeight + 2) / 3;
+        addWeighted(items, DimDoors.itemRecordCreepy, discWeight);
+        addWeighted(items, DimDoors.itemRecordTheyStareBack, discWeight);
+        addWeighted(items, DimDoors.itemRecordWhiteVoid, discWeight);
         if (properties.LootEnchantmentBookWeight > 0
             && (DimDoors.transcendent != null || DimDoors.trepidation != null)) {
             items.add(new EnchantmentBook(properties.LootEnchantmentBookWeight));

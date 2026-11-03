@@ -1,0 +1,2 @@
+they_stare_back.ogg (Firel) and white_void.ogg (Lachney) are the music discs of Dimensional Doors 6.x (branch 1.21.1,
+GPL-3.0); the Creepy disc (Stevenrs11) plays ../creepy.ogg, the same file as 6.x's.

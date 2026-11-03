@@ -51,6 +51,7 @@ import org.dimdev.dimdoors.helpers.ChunkLoaderHelper;
 import org.dimdev.dimdoors.helpers.DungeonHelper;
 import org.dimdev.dimdoors.items.ItemBlockDimWall;
 import org.dimdev.dimdoors.items.ItemDDKey;
+import org.dimdev.dimdoors.items.ItemDimRecord;
 import org.dimdev.dimdoors.items.ItemDimensionalDoor;
 import org.dimdev.dimdoors.items.ItemFadebloom;
 import org.dimdev.dimdoors.items.ItemGoldDimDoor;
@@ -146,6 +147,10 @@ public class DimDoors {
     public static Item itemInfrangibleFiber;
     public static Item itemEnduringFibers;
     public static Item itemFabricOfFinality;
+    // 6.x's music discs
+    public static Item itemRecordCreepy;
+    public static Item itemRecordTheyStareBack;
+    public static Item itemRecordWhiteVoid;
 
     public static Item itemRiftBlade;
     public static ItemDimensionalDoor itemDimensionalDoor;
@@ -288,6 +293,9 @@ public class DimDoors {
         itemInfrangibleFiber = new ItemMaterial().setUnlocalizedName("itemInfrangibleFiber");
         itemEnduringFibers = new ItemMaterial().setUnlocalizedName("itemEnduringFibers");
         itemFabricOfFinality = new ItemMaterial().setUnlocalizedName("itemFabricOfFinality");
+        itemRecordCreepy = new ItemDimRecord("creepy");
+        itemRecordTheyStareBack = new ItemDimRecord("they_stare_back");
+        itemRecordWhiteVoid = new ItemDimRecord("white_void");
 
         // Check if other biomes have been registered with the same IDs we want. If so, crash Minecraft
         // to notify the user instead of letting it pass and conflicting with Biomes o' Plenty.
@@ -331,6 +339,9 @@ public class DimDoors {
         GameRegistry.registerItem(itemInfrangibleFiber, "Infrangible Fiber");
         GameRegistry.registerItem(itemEnduringFibers, "Enduring Fibers");
         GameRegistry.registerItem(itemFabricOfFinality, "Fabric of Finality");
+        GameRegistry.registerItem(itemRecordCreepy, "Music Disc Creepy");
+        GameRegistry.registerItem(itemRecordTheyStareBack, "Music Disc They Stare Back");
+        GameRegistry.registerItem(itemRecordWhiteVoid, "Music Disc White Void");
 
         GameRegistry.registerBlock(blockDimWall, ItemBlockDimWall.class, "Fabric of Reality");
 

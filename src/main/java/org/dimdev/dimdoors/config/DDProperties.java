@@ -31,6 +31,7 @@ public class DDProperties {
     public final int TrepidationEnchantmentID;
     public final String[] TrepidationMobs;
     public final int LootEnchantmentBookWeight;
+    public final int MusicDiscLootWeight;
 
     /**
      * Crafting Flags
@@ -226,6 +227,7 @@ public class DDProperties {
         StabilizedRiftSignatureLootWeight = lootWeight(config, "Stabilized Rift Signature", 6);
         PersonalDimDoorLootWeight = lootWeight(config, "Personal Dimensional Door", 10);
         LootEnchantmentBookWeight = lootWeight(config, "Transcendent or Trepidation Book", 9);
+        MusicDiscLootWeight = lootWeight(config, "Music Disc", 9);
 
         RiftGriefingEnabled = config.get(
             Configuration.CATEGORY_GENERAL,

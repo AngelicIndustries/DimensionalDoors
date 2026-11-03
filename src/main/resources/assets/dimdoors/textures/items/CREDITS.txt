@@ -1,2 +1,4 @@
 itemFrayedFilament, itemLiminalLint, itemInfrangibleFiber, itemEnduringFibers and itemFabricOfFinality are the
 matching textures from Dimensional Doors 6.x (branch 1.21.1, GPL-3.0), textures/item.
+record_creepy, record_they_stare_back and record_white_void are 6.x's record_creepy, they_stare_back_record and
+white_void_record, from the same place.
