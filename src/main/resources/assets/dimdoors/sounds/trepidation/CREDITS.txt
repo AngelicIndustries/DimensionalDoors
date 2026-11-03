@@ -1,0 +1,2 @@
+in.ogg and out.ogg are heartbeatIn.ogg and heartbeatOut.ogg from Enhanced Visuals Legacy
+(github.com/AngelicIndustries/EnhancedVisualsLegacy, GPL-3.0), after Sonicjumper's Enhanced Visuals.

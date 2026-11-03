@@ -12,6 +12,8 @@
     "monolith.surge": {"category":"hostile", "sounds":[{"name":"monolith/surge", "stream":false}]},
     "limbo.ambience": {"category":"ambient", "sounds":[{"name":"limbo/ambience", "stream":false}]},
     "limbo.fabric": {"category":"ambient", "sounds":[{"name":"limbo/fabric1", "stream":false}, {"name":"limbo/fabric2", "stream":false}]},
+    "trepidation.in": {"category":"player", "sounds":[{"name":"trepidation/in", "stream":false}]},
+    "trepidation.out": {"category":"player", "sounds":[{"name":"trepidation/out", "stream":false}]},
     "rift": {"category":"master", "sounds":[{"name":"rift", "stream":false}]},
     "riftClose": {"category":"player", "sounds":[{"name":"riftClose", "stream":false}]},
     "riftDoor": {"category":"player", "sounds":[{"name":"riftDoor", "stream":false}]},

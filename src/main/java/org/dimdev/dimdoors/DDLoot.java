@@ -2,9 +2,11 @@ package org.dimdev.dimdoors;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 import java.util.Random;
 
 import net.minecraft.enchantment.Enchantment;
+import net.minecraft.enchantment.EnchantmentData;
 import net.minecraft.init.Items;
 import net.minecraft.inventory.IInventory;
 import net.minecraft.item.Item;
@@ -69,6 +71,10 @@ public class DDLoot {
         addWeighted(items, DimDoors.itemRiftSignature, properties.RiftSignatureLootWeight);
         addWeighted(items, DimDoors.itemStabilizedRiftSignature, properties.StabilizedRiftSignatureLootWeight);
         addWeighted(items, DimDoors.itemPersonalDoor, properties.PersonalDimDoorLootWeight);
+        if (properties.LootEnchantmentBookWeight > 0
+            && (DimDoors.transcendent != null || DimDoors.trepidation != null)) {
+            items.add(new EnchantmentBook(properties.LootEnchantmentBookWeight));
+        }
 
         // Add all the items to our dungeon chest
         addItemsToContainer(DungeonChestInfo, items);
@@ -130,6 +136,11 @@ public class DDLoot {
         for (int k = 0; k < count; k++) {
             WeightedRandomChestContent selection = (WeightedRandomChestContent) WeightedRandom
                 .getRandomItem(random, content);
+
+            if (selection instanceof EnchantmentBook) {
+                allStacks.add(((EnchantmentBook) selection).roll(random));
+                continue;
+            }
 
             // Call getChestGenBase() to make sure we generate a different enchantment for books.
             // Don't just use a condition to check if the item is an instance of ItemEnchantedBook because
@@ -297,5 +308,31 @@ public class DDLoot {
         skull.stackTagCompound = new NBTTagCompound();
         skull.stackTagCompound.setString("SkullOwner", skullOwner);
         stacks.add(skull);
+    }
+
+    /** A book with Transcendent or Trepidation, which come only from these chests. */
+    private static final class EnchantmentBook extends WeightedRandomChestContent {
+
+        EnchantmentBook(int weight) {
+            // A plain book: Forge turns entries that hold an enchanted book into a random one
+            super(Items.book, 0, 1, 1, weight);
+        }
+
+        ItemStack roll(Random random) {
+            List<Enchantment> pool = new ArrayList<Enchantment>();
+            if (DimDoors.transcendent != null) pool.add(DimDoors.transcendent);
+            if (DimDoors.trepidation != null) pool.add(DimDoors.trepidation);
+            Enchantment enchantment = pool.get(random.nextInt(pool.size()));
+            ItemStack book = new ItemStack(Items.enchanted_book);
+            Items.enchanted_book
+                .addEnchantment(book, new EnchantmentData(enchantment, 1 + random.nextInt(enchantment.getMaxLevel())));
+            return book;
+        }
+
+        /** For other mods filling our chests the vanilla way. */
+        @Override
+        protected ItemStack[] generateChestContent(Random random, IInventory inventory) {
+            return new ItemStack[] { roll(random) };
+        }
     }
 }

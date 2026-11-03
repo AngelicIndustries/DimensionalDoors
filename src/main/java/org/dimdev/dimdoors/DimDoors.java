@@ -6,6 +6,7 @@ import java.util.List;
 import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
 import net.minecraft.creativetab.CreativeTabs;
+import net.minecraft.enchantment.Enchantment;
 import net.minecraft.entity.EntityList;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.Item;
@@ -42,6 +43,10 @@ import org.dimdev.dimdoors.commands.CommandTeleportPlayer;
 import org.dimdev.dimdoors.config.DDProperties;
 import org.dimdev.dimdoors.config.DDWorldProperties;
 import org.dimdev.dimdoors.core.PocketManager;
+import org.dimdev.dimdoors.enchantment.EnchantmentTranscendent;
+import org.dimdev.dimdoors.enchantment.EnchantmentTrepidation;
+import org.dimdev.dimdoors.enchantment.Transcendent;
+import org.dimdev.dimdoors.enchantment.TrepidationMobs;
 import org.dimdev.dimdoors.helpers.ChunkLoaderHelper;
 import org.dimdev.dimdoors.helpers.DungeonHelper;
 import org.dimdev.dimdoors.items.ItemBlockDimWall;
@@ -133,6 +138,8 @@ public class DimDoors {
     public static Item itemGoldenDimensionalDoor;
     public static Item itemGoldenDoor;
     public static Item itemWorldThread;
+    public static Enchantment transcendent;
+    public static Enchantment trepidation;
     // Limbo materials, from 6.x, for other mods to use
     public static Item itemFrayedFilament;
     public static Item itemLiminalLint;
@@ -359,6 +366,13 @@ public class DimDoors {
         EntityList.entityEggs
             .put(properties.MonolithEntityID, new EntityList.EntityEggInfo(properties.MonolithEntityID, 0, 0xffffff));
 
+        int id = properties.TranscendentEnchantmentID;
+        transcendent = freeEnchantmentID(id, "Transcendent") ? new EnchantmentTranscendent(id) : null;
+        id = properties.TrepidationEnchantmentID;
+        trepidation = freeEnchantmentID(id, "Trepidation") ? new EnchantmentTrepidation(id) : null;
+        TrepidationMobs.configure(properties.TrepidationMobs);
+        MinecraftForge.EVENT_BUS.register(new Transcendent());
+
         CraftingManager.registerRecipes(properties);
         CraftingManager.registerDispenserBehaviors();
         FMLCommonHandler.instance()
@@ -385,6 +399,19 @@ public class DimDoors {
                 list.add(line);
             } else break;
         }
+    }
+
+    /** Whether an enchantment can take this ID, saying why not if it can't. -1 turns it off. */
+    private static boolean freeEnchantmentID(int id, String name) {
+        if (id < 0) return false;
+        Enchantment[] list = Enchantment.enchantmentsList;
+        if (id < list.length && list[id] == null) return true;
+        System.err.println(
+            "Dimensional Doors leaves " + name
+                + " out: enchantment ID "
+                + id
+                + (id < list.length ? " is taken by " + list[id].getName() : " is out of range"));
+        return false;
     }
 
     @EventHandler

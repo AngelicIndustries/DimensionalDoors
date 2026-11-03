@@ -27,6 +27,10 @@ public class DDProperties {
     public final int PersonalPocketProviderID;
     public final int DoorRenderEntityID;
     public final int MonolithEntityID;
+    public final int TranscendentEnchantmentID;
+    public final int TrepidationEnchantmentID;
+    public final String[] TrepidationMobs;
+    public final int LootEnchantmentBookWeight;
 
     /**
      * Crafting Flags
@@ -122,6 +126,7 @@ public class DDProperties {
     private final String CATEGORY_BIOME = "biome";
     private final String CATEGORY_LOOT = "loot";
     private final String CATEGORY_DOOR_VARIANTS = "door_variants";
+    private final String CATEGORY_ENCHANTMENTS = "enchantments";
 
     private int lootWeight(Configuration config, String item, int weight) {
         return config
@@ -220,6 +225,7 @@ public class DDProperties {
         RiftSignatureLootWeight = lootWeight(config, "Rift Signature", 20);
         StabilizedRiftSignatureLootWeight = lootWeight(config, "Stabilized Rift Signature", 6);
         PersonalDimDoorLootWeight = lootWeight(config, "Personal Dimensional Door", 10);
+        LootEnchantmentBookWeight = lootWeight(config, "Transcendent or Trepidation Book", 9);
 
         RiftGriefingEnabled = config.get(
             Configuration.CATEGORY_GENERAL,
@@ -431,6 +437,25 @@ public class DDProperties {
             .getInt();
         MonolithEntityID = config.get(CATEGORY_ENTITY, "Monolith Entity ID", 125)
             .getInt();
+
+        config.setCategoryComment(
+            CATEGORY_ENCHANTMENTS,
+            "Transcendent (bows: arrows hit Endermen instead of them teleporting away) and Trepidation (chestplates: a "
+                + "heartbeat when a hostile mob is within 5, 10 or 15 blocks). Both come only as books in dungeon chests.");
+        TranscendentEnchantmentID = config
+            .get(CATEGORY_ENCHANTMENTS, "Transcendent ID", 170, "Enchantment ID; -1 leaves Transcendent out.")
+            .getInt();
+        TrepidationEnchantmentID = config
+            .get(CATEGORY_ENCHANTMENTS, "Trepidation ID", 171, "Enchantment ID; -1 leaves Trepidation out.")
+            .getInt();
+        TrepidationMobs = config
+            .get(
+                CATEGORY_ENCHANTMENTS,
+                "Trepidation Mobs",
+                new String[] { "*" },
+                "Mobs Trepidation senses, by entity name: * is every mob the game counts as hostile, a name adds one "
+                    + "and -name takes one out.")
+            .getStringList();
 
         LimboDimensionID = config.get(CATEGORY_DIMENSION, "Limbo Dimension ID", -23)
             .getInt();
