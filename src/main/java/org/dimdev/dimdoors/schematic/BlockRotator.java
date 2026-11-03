@@ -1,13 +1,24 @@
 package org.dimdev.dimdoors.schematic;
 
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 import net.minecraft.block.Block;
+import net.minecraft.block.BlockBed;
+import net.minecraft.block.BlockButton;
+import net.minecraft.block.BlockDirectional;
 import net.minecraft.block.BlockDoor;
+import net.minecraft.block.BlockLever;
 import net.minecraft.block.BlockRedstoneComparator;
 import net.minecraft.block.BlockRedstoneRepeater;
+import net.minecraft.block.BlockRotatedPillar;
+import net.minecraft.block.BlockSign;
 import net.minecraft.block.BlockStairs;
+import net.minecraft.block.BlockTorch;
+import net.minecraft.block.BlockTrapDoor;
 import net.minecraft.init.Blocks;
 
 import org.dimdev.dimdoors.DimDoors;
@@ -22,6 +33,10 @@ public class BlockRotator {
 
     // Provides a fast lookup table for whether blocks have orientations
     private final static Map<Block, Boolean> hasOrientations = new HashMap<Block, Boolean>();
+
+    // Et Futurum blocks that face any of the six directions the way pistons do
+    private final static Set<String> sixWayBlocks = new HashSet<String>(
+        Arrays.asList("etfuturum:observer", "etfuturum:barrel", "etfuturum:end_rod"));
 
     public static void setupOrientations() {
         hasOrientations.put(Blocks.dispenser, true);
@@ -86,7 +101,7 @@ public class BlockRotator {
         turns += 1 << 16;
         turns %= 4;
 
-        if (hasOrientations.containsKey(block) && hasOrientations.get(block)) {
+        if (hasOrientation(block)) {
             while (turns > 0) {
                 metadata = rotateMetadataBy90(metadata, block);
                 turns--;
@@ -95,9 +110,90 @@ public class BlockRotator {
         return metadata;
     }
 
+    private static boolean hasOrientation(Block block) {
+        Boolean known = hasOrientations.get(block);
+        if (known == null) {
+            // Modded blocks built on vanilla ones turn like them
+            String name = Block.blockRegistry.getNameForObject(block);
+            known = block instanceof BlockStairs || block instanceof BlockDoor
+                || block instanceof BlockTrapDoor
+                || block instanceof BlockDirectional
+                || block instanceof BlockRotatedPillar
+                || block instanceof BlockSign
+                || block instanceof BlockTorch
+                || block instanceof BlockButton
+                || block instanceof BlockLever
+                || sixWayBlocks.contains(name)
+                || "etfuturum:chain".equals(name)
+                || "etfuturum:banner".equals(name);
+            hasOrientations.put(block, known);
+        }
+        return known;
+    }
+
     private static int rotateMetadataBy90(int metadata, Block block) {
         // TODO: Replace this horrible function with something prettier. We promise we will for the next version,
         // after switching to MC 1.6. PADRE, PLEASE FORGIVE OUR SINS.
+
+        String name = Block.blockRegistry.getNameForObject(block);
+        if (block instanceof BlockDoor && (metadata & 8) != 0) {
+            // A door's top half only holds its hinge side
+            return metadata;
+        }
+        if (block instanceof BlockBed || block instanceof BlockDirectional && !(block instanceof BlockRedstoneRepeater)
+            && !(block instanceof BlockRedstoneComparator)
+            && block != Blocks.tripwire_hook) {
+            // Fence gates, pumpkins, end portal frames, beds: the low bits count clockwise from south
+            return (metadata & ~3) | ((metadata + 1) & 3);
+        }
+        if (block instanceof BlockTrapDoor) {
+            // North, south, west, east
+            final int[] clockwise = { 3, 2, 0, 1 };
+            return (metadata & ~3) | clockwise[metadata & 3];
+        }
+        if (block instanceof BlockLever) {
+            // Floor and ceiling levers only know which axis they lie along
+            switch (metadata & 7) {
+                case 5:
+                    return metadata + 1;
+                case 6:
+                    return metadata - 1;
+                case 7:
+                    return metadata & 8;
+                case 0:
+                    return metadata | 7;
+            }
+        }
+        if (block == Blocks.anvil) {
+            return (metadata & ~3) | ((metadata + 1) & 3);
+        }
+        if (block instanceof BlockRotatedPillar && block != Blocks.log && block != Blocks.log2) {
+            if ((metadata & 12) == 4 || (metadata & 12) == 8) {
+                metadata ^= 12;
+            }
+            return metadata;
+        }
+        if ("etfuturum:chain".equals(name)) {
+            return metadata == 1 ? 2 : metadata == 2 ? 1 : metadata;
+        }
+        if (block == Blocks.skull || "etfuturum:banner".equals(name)
+            || block instanceof BlockSign && block != Blocks.standing_sign && name.contains("wall_sign")) {
+            // On a wall, like wall signs. Skulls on the floor turn in their tile entity.
+            switch (metadata) {
+                case 2:
+                    return 5;
+                case 3:
+                    return 4;
+                case 4:
+                    return 2;
+                case 5:
+                    return 3;
+            }
+            return metadata;
+        }
+        if (block instanceof BlockSign && block != Blocks.wall_sign) {
+            return (metadata + 4) & 15;
+        }
 
         if (block == Blocks.log || block == Blocks.log2) {
             if (metadata >= 4 && metadata < 12) {
@@ -168,33 +264,6 @@ public class BlockRotator {
                     break;
                 case 7:
                     metadata = 8;
-                    break;
-            }
-        } else if (block == Blocks.bed) {
-            switch (metadata) {
-                case 2:
-                    metadata = 1;
-                    break;
-                case 1:
-                    metadata = 0;
-                    break;
-                case 0:
-                    metadata = 3;
-                    break;
-                case 3:
-                    metadata = 2;
-                    break;
-                case 10:
-                    metadata = 9;
-                    break;
-                case 9:
-                    metadata = 8;
-                    break;
-                case 8:
-                    metadata = 11;
-                    break;
-                case 11:
-                    metadata = 10;
                     break;
             }
         } else if (block instanceof BlockStairs) {
@@ -353,121 +422,118 @@ public class BlockRotator {
                         metadata = 3;
                         break;
                 }
-            } else if (block == Blocks.lever || block == Blocks.stone_button
-                || block == Blocks.wooden_button
-                || block == Blocks.torch
-                || block == Blocks.unlit_redstone_torch
-                || block == Blocks.redstone_torch) {
+            } else if (block instanceof BlockLever || block instanceof BlockButton || block instanceof BlockTorch) {
+                switch (metadata) {
+                    case 12:
+                        metadata = 9;
+                        break;
+                    case 11:
+                        metadata = 10;
+                        break;
+                    case 10:
+                        metadata = 12;
+                        break;
+                    case 9:
+                        metadata = 11;
+                        break;
+                    case 2:
+                        metadata = 4;
+                        break;
+                    case 3:
+                        metadata = 2;
+                        break;
+                    case 1:
+                        metadata = 3;
+                        break;
+                    case 4:
+                        metadata = 1;
+                        break;
+                }
+            } else if (block == Blocks.piston || block == Blocks.piston_head
+                || block == Blocks.sticky_piston
+                || block == Blocks.dispenser
+                || block == Blocks.dropper
+                || sixWayBlocks.contains(name)) {
                     switch (metadata) {
-                        case 12:
-                            metadata = 9;
-                            break;
-                        case 11:
-                            metadata = 10;
-                            break;
-                        case 10:
-                            metadata = 12;
-                            break;
-                        case 9:
-                            metadata = 11;
-                            break;
-                        case 2:
-                            metadata = 4;
-                            break;
-                        case 3:
+                        case 4:
                             metadata = 2;
                             break;
-                        case 1:
+                        case 5:
                             metadata = 3;
                             break;
-                        case 4:
-                            metadata = 1;
+                        case 13:
+                            metadata = 11;
+                            break;
+                        case 12:
+                            metadata = 10;
+                            break;
+                        case 3:
+                            metadata = 4;
+                            break;
+                        case 2:
+                            metadata = 5;
+                            break;
+                        case 11:
+                            metadata = 12;
+                            break;
+                        case 10:
+                            metadata = 13;
                             break;
                     }
-                } else if (block == Blocks.piston || block == Blocks.piston_head
-                    || block == Blocks.sticky_piston
-                    || block == Blocks.dispenser
-                    || block == Blocks.dropper) {
+                } else if (block instanceof BlockRedstoneRepeater || block instanceof BlockDoor
+                    || block == Blocks.tripwire_hook
+                    || block instanceof BlockRedstoneComparator) {
                         switch (metadata) {
-                            case 4:
+                            case 0:
+                                metadata = 1;
+                                break;
+                            case 1:
                                 metadata = 2;
                                 break;
-                            case 5:
+                            case 2:
                                 metadata = 3;
                                 break;
-                            case 13:
-                                metadata = 11;
-                                break;
-                            case 12:
-                                metadata = 10;
-                                break;
                             case 3:
-                                metadata = 4;
+                                metadata = 0;
                                 break;
-                            case 2:
+                            case 4:
                                 metadata = 5;
                                 break;
-                            case 11:
-                                metadata = 12;
+                            case 5:
+                                metadata = 6;
+                                break;
+                            case 6:
+                                metadata = 7;
+                                break;
+                            case 7:
+                                metadata = 4;
+                                break;
+                            case 8:
+                                metadata = 9;
+                                break;
+                            case 9:
+                                metadata = 10;
                                 break;
                             case 10:
+                                metadata = 11;
+                                break;
+                            case 11:
+                                metadata = 8;
+                                break;
+                            case 12:
                                 metadata = 13;
                                 break;
+                            case 13:
+                                metadata = 14;
+                                break;
+                            case 14:
+                                metadata = 15;
+                                break;
+                            case 15:
+                                metadata = 12;
+                                break;
                         }
-                    } else if (block instanceof BlockRedstoneRepeater || block instanceof BlockDoor
-                        || block == Blocks.tripwire_hook
-                        || block instanceof BlockRedstoneComparator) {
-                            switch (metadata) {
-                                case 0:
-                                    metadata = 1;
-                                    break;
-                                case 1:
-                                    metadata = 2;
-                                    break;
-                                case 2:
-                                    metadata = 3;
-                                    break;
-                                case 3:
-                                    metadata = 0;
-                                    break;
-                                case 4:
-                                    metadata = 5;
-                                    break;
-                                case 5:
-                                    metadata = 6;
-                                    break;
-                                case 6:
-                                    metadata = 7;
-                                    break;
-                                case 7:
-                                    metadata = 4;
-                                    break;
-                                case 8:
-                                    metadata = 9;
-                                    break;
-                                case 9:
-                                    metadata = 10;
-                                    break;
-                                case 10:
-                                    metadata = 11;
-                                    break;
-                                case 11:
-                                    metadata = 8;
-                                    break;
-                                case 12:
-                                    metadata = 13;
-                                    break;
-                                case 13:
-                                    metadata = 14;
-                                    break;
-                                case 14:
-                                    metadata = 15;
-                                    break;
-                                case 15:
-                                    metadata = 12;
-                                    break;
-                            }
-                        }
+                    }
         return metadata;
     }
 
