@@ -1,0 +1,4 @@
+The *_6x-* rooms are converted from Dimensional Doors 6.x (branch 1.21.1, GPL-3.0),
+resourcepacks/default/data/dimdoors/pockets/schematic/dungeon. Changes for 1.7.10: modern blocks became vanilla or
+Et Futurum ones, door rifts became warp, dimensional and personal doors, and a few blocks moved where 1.7.10 would
+drop them (dust on TNT, torches on iron bars, a repeater on glowstone, tripwire lines over mixed ground).
