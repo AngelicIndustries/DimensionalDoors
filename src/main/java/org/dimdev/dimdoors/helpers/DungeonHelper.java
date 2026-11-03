@@ -15,8 +15,13 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
 import java.util.Random;
+import java.util.Set;
+import java.util.TreeSet;
 import java.util.regex.Pattern;
 
+import net.minecraft.block.Block;
+import net.minecraft.nbt.CompressedStreamTools;
+import net.minecraft.nbt.NBTTagList;
 import net.minecraft.util.WeightedRandom;
 import net.minecraft.world.World;
 
@@ -36,8 +41,6 @@ import org.dimdev.dimdoors.items.ItemDimensionalDoor;
 import org.dimdev.dimdoors.pockets.Pocket;
 import org.dimdev.dimdoors.util.FileFilters;
 import org.dimdev.dimdoors.util.WeightedContainer;
-
-import cpw.mods.fml.common.Loader;
 
 public class DungeonHelper {
 
@@ -402,17 +405,26 @@ public class DungeonHelper {
         try {
             // Read the list of schematics that come with a bundled pack
             BufferedReader listReader = new BufferedReader(new InputStreamReader(listStream));
-            // Each line is a schematic path, then the ids of any mods it needs
-            String line = listReader.readLine();
-            while (line != null) {
-                String[] parts = line.trim()
-                    .split("\\s+");
-                if (!parts[0].isEmpty() && modsLoaded(parts)) {
-                    schematics.add(parts[0]);
+            // Dungeons built with blocks that aren't here (an absent mod, a block turned off) are left out
+            Set<String> missing = new TreeSet<String>();
+            int leftOut = 0;
+            String schematicPath = listReader.readLine();
+            while (schematicPath != null) {
+                schematicPath = schematicPath.trim();
+                if (!schematicPath.isEmpty()) {
+                    List<String> absent = missingBlocks(schematicPath);
+                    if (absent.isEmpty()) schematics.add(schematicPath);
+                    else {
+                        missing.addAll(absent);
+                        leftOut++;
+                    }
                 }
-                line = listReader.readLine();
+                schematicPath = listReader.readLine();
             }
             listReader.close();
+            if (leftOut > 0) {
+                System.out.println("Left out " + leftOut + " " + name + " dungeons for missing blocks: " + missing);
+            }
         } catch (IOException e) {
             throw new RuntimeException(
                 "An unexpected error occured while trying to read the list of schematics for the " + name
@@ -430,11 +442,22 @@ public class DungeonHelper {
         return pack;
     }
 
-    private static boolean modsLoaded(String[] listLine) {
-        for (int k = 1; k < listLine.length; k++) {
-            if (!Loader.isModLoaded(listLine[k])) return false;
+    /** The blocks a bundled schematic names that aren't registered. */
+    private static List<String> missingBlocks(String schematicPath) throws IOException {
+        List<String> missing = new ArrayList<String>();
+        InputStream in = DungeonHelper.class.getResourceAsStream(schematicPath);
+        if (in == null) return missing;
+        try {
+            NBTTagList palette = CompressedStreamTools.readCompressed(in)
+                .getTagList("Palette", 8);
+            for (int k = 0; k < palette.tagCount(); k++) {
+                String block = palette.getStringTagAt(k);
+                if (!Block.blockRegistry.containsKey(block)) missing.add(block);
+            }
+        } finally {
+            in.close();
         }
-        return true;
+        return missing;
     }
 
     public boolean exportDungeon(World world, int centerX, int centerY, int centerZ, String exportPath) {

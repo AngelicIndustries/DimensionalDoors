@@ -93,43 +93,43 @@
 /schematics/ruins/trap_wallFallcomboPistonHall_closed_200.schematic
 /schematics/ruins/Trap_6x-BreakBlockBoom_Open_100.schematic
 /schematics/ruins/DeadEnd_6x-CageMonolithless_Open_100.schematic
-/schematics/ruins/SimpleHall_6x-ChainCrossing_Open_100.schematic etfuturum
-/schematics/ruins/ComplexHall_6x-ChainT_Closed_100.schematic etfuturum
-/schematics/ruins/SimpleHall_6x-DecayingChainTunnel_Closed_100.schematic etfuturum
-/schematics/ruins/ComplexHall_6x-Eidolo_Open_100.schematic etfuturum
-/schematics/ruins/Hub_6x-Fantasmapolis_Open_100.schematic etfuturum
-/schematics/ruins/DeadEnd_6x-FreeroamGraveyard_Closed_100.schematic etfuturum
-/schematics/ruins/SimpleHall_6x-GapHallway_Open_100.schematic etfuturum
-/schematics/ruins/ComplexHall_6x-HoneyParkour_Open_100.schematic etfuturum
-/schematics/ruins/ComplexHall_6x-Kept_Open_100.schematic etfuturum
-/schematics/ruins/DeadEnd_6x-Krevatokamara_Closed_100.schematic etfuturum
-/schematics/ruins/ComplexHall_6x-Lantredom_Open_35.schematic etfuturum
-/schematics/ruins/ComplexHall_6x-LantredomEnd_Open_35.schematic etfuturum
+/schematics/ruins/SimpleHall_6x-ChainCrossing_Open_100.schematic
+/schematics/ruins/ComplexHall_6x-ChainT_Closed_100.schematic
+/schematics/ruins/SimpleHall_6x-DecayingChainTunnel_Closed_100.schematic
+/schematics/ruins/ComplexHall_6x-Eidolo_Open_100.schematic
+/schematics/ruins/Hub_6x-Fantasmapolis_Open_100.schematic
+/schematics/ruins/DeadEnd_6x-FreeroamGraveyard_Closed_100.schematic
+/schematics/ruins/SimpleHall_6x-GapHallway_Open_100.schematic
+/schematics/ruins/ComplexHall_6x-HoneyParkour_Open_100.schematic
+/schematics/ruins/ComplexHall_6x-Kept_Open_100.schematic
+/schematics/ruins/DeadEnd_6x-Krevatokamara_Closed_100.schematic
+/schematics/ruins/ComplexHall_6x-Lantredom_Open_35.schematic
+/schematics/ruins/ComplexHall_6x-LantredomEnd_Open_35.schematic
 /schematics/ruins/ComplexHall_6x-LantredomRed_Open_35.schematic
 /schematics/ruins/DeadEnd_6x-LavaTrap_Open_100.schematic
-/schematics/ruins/SimpleHall_6x-LineWalker_Open_100.schematic etfuturum
-/schematics/ruins/Hub_6x-MazeOfDoors_Closed_100.schematic etfuturum
-/schematics/ruins/ComplexHall_6x-Missingno_Open_100.schematic etfuturum
-/schematics/ruins/ComplexHall_6x-MobPrison_Open_100.schematic etfuturum
+/schematics/ruins/SimpleHall_6x-LineWalker_Open_100.schematic
+/schematics/ruins/Hub_6x-MazeOfDoors_Closed_100.schematic
+/schematics/ruins/ComplexHall_6x-Missingno_Open_100.schematic
+/schematics/ruins/ComplexHall_6x-MobPrison_Open_100.schematic
 /schematics/ruins/DeadEnd_6x-MysteryEgg_Closed_100.schematic
 /schematics/ruins/SimpleHall_6x-Null_Closed_100.schematic
-/schematics/ruins/Trap_6x-RandomArrowChance_Open_100.schematic etfuturum
+/schematics/ruins/Trap_6x-RandomArrowChance_Open_100.schematic
 /schematics/ruins/SimpleHall_6x-ReturningEye_Open_100.schematic
-/schematics/ruins/DeadEnd_6x-RisingHand_Open_100.schematic etfuturum
-/schematics/ruins/Hub_6x-RuinsCagedWarps_Open_100.schematic etfuturum
+/schematics/ruins/DeadEnd_6x-RisingHand_Open_100.schematic
+/schematics/ruins/Hub_6x-RuinsCagedWarps_Open_100.schematic
 /schematics/ruins/ComplexHall_6x-RuinsCorruptedDesertPyramid_Closed_100.schematic
 /schematics/ruins/DeadEnd_6x-RuinsCorruptedEndportal_Closed_100.schematic
-/schematics/ruins/Hub_6x-RuinsDeepslateHub_Closed_100.schematic etfuturum
-/schematics/ruins/DeadEnd_6x-RuinsDiamondTntTrapA_Open_100.schematic etfuturum
-/schematics/ruins/DeadEnd_6x-RuinsDiamondTntTrapB_Open_100.schematic etfuturum
-/schematics/ruins/Trap_6x-RuinsElevatorTntTrap_Open_100.schematic etfuturum
-/schematics/ruins/Trap_6x-RuinsFireChargeTiming_Open_100.schematic etfuturum
-/schematics/ruins/Trap_6x-RuinsItems4life_Open_100.schematic etfuturum
+/schematics/ruins/Hub_6x-RuinsDeepslateHub_Closed_100.schematic
+/schematics/ruins/DeadEnd_6x-RuinsDiamondTntTrapA_Open_100.schematic
+/schematics/ruins/DeadEnd_6x-RuinsDiamondTntTrapB_Open_100.schematic
+/schematics/ruins/Trap_6x-RuinsElevatorTntTrap_Open_100.schematic
+/schematics/ruins/Trap_6x-RuinsFireChargeTiming_Open_100.schematic
+/schematics/ruins/Trap_6x-RuinsItems4life_Open_100.schematic
 /schematics/ruins/DeadEnd_6x-RuinsLavaTrap_Open_100.schematic
-/schematics/ruins/SimpleHall_6x-RuinsLongStairwellDown_Closed_100.schematic etfuturum
-/schematics/ruins/ComplexHall_6x-RuinsMansionCombinationPuzzle_Open_100.schematic etfuturum
-/schematics/ruins/Hub_6x-RuinsMultipleWarppoints_Closed_100.schematic etfuturum
-/schematics/ruins/Trap_6x-RuinsPressurePlateRiddle_Open_100.schematic etfuturum
+/schematics/ruins/SimpleHall_6x-RuinsLongStairwellDown_Closed_100.schematic
+/schematics/ruins/ComplexHall_6x-RuinsMansionCombinationPuzzle_Open_100.schematic
+/schematics/ruins/Hub_6x-RuinsMultipleWarppoints_Closed_100.schematic
+/schematics/ruins/Trap_6x-RuinsPressurePlateRiddle_Open_100.schematic
 /schematics/ruins/DeadEnd_6x-RuinsPushIntoVoidTrap_Open_100.schematic
 /schematics/ruins/SimpleHall_6x-RuinsSimpleDoor_Closed_100.schematic
 /schematics/ruins/Trap_6x-RuinsSimpleDoorTrap_Open_100.schematic
@@ -137,24 +137,24 @@
 /schematics/ruins/Maze_6x-RuinsSmallPressurePlateMaze_Open_100.schematic
 /schematics/ruins/Hub_6x-RuinsStairsUpDownWarp_Closed_100.schematic
 /schematics/ruins/SimpleHall_6x-RuinsStairwellUp_Closed_100.schematic
-/schematics/ruins/Trap_6x-RuinsTargetPractise_Open_100.schematic etfuturum
-/schematics/ruins/ComplexHall_6x-Schopophobia_Open_100.schematic etfuturum
-/schematics/ruins/Trap_6x-SilverfishBridge_Open_100.schematic etfuturum
-/schematics/ruins/SimpleHall_6x-SmallDeepslatebricksHallway_Closed_100.schematic etfuturum
-/schematics/ruins/SimpleHall_6x-SmallEndbrickHallway_Closed_100.schematic etfuturum
+/schematics/ruins/Trap_6x-RuinsTargetPractise_Open_100.schematic
+/schematics/ruins/ComplexHall_6x-Schopophobia_Open_100.schematic
+/schematics/ruins/Trap_6x-SilverfishBridge_Open_100.schematic
+/schematics/ruins/SimpleHall_6x-SmallDeepslatebricksHallway_Closed_100.schematic
+/schematics/ruins/SimpleHall_6x-SmallEndbrickHallway_Closed_100.schematic
 /schematics/ruins/SimpleHall_6x-SmallIceHallway_Closed_100.schematic
-/schematics/ruins/SimpleHall_6x-SmallNetherbricksHallway_Closed_100.schematic etfuturum
-/schematics/ruins/SimpleHall_6x-SmallPrismarineHallway_Closed_100.schematic etfuturum
-/schematics/ruins/SimpleHall_6x-SmallPurpurbricksHallway_Closed_100.schematic etfuturum
-/schematics/ruins/SimpleHall_6x-SmallRedSandstoneHallway_Closed_100.schematic etfuturum
+/schematics/ruins/SimpleHall_6x-SmallNetherbricksHallway_Closed_100.schematic
+/schematics/ruins/SimpleHall_6x-SmallPrismarineHallway_Closed_100.schematic
+/schematics/ruins/SimpleHall_6x-SmallPurpurbricksHallway_Closed_100.schematic
+/schematics/ruins/SimpleHall_6x-SmallRedSandstoneHallway_Closed_100.schematic
 /schematics/ruins/SimpleHall_6x-SmallRiver_Closed_100.schematic
-/schematics/ruins/SimpleHall_6x-SmallSandstoneHallway_Closed_100.schematic etfuturum
-/schematics/ruins/SimpleHall_6x-StoneBrickBridge_Open_100.schematic etfuturum
+/schematics/ruins/SimpleHall_6x-SmallSandstoneHallway_Closed_100.schematic
+/schematics/ruins/SimpleHall_6x-StoneBrickBridge_Open_100.schematic
 /schematics/ruins/Trap_6x-StringField_Open_100.schematic
 /schematics/ruins/Trap_6x-TrapRibTunnel_Open_100.schematic
 /schematics/ruins/SimpleHall_6x-UpwardsPillars_Open_100.schematic
-/schematics/ruins/ComplexHall_6x-UpwardsTTreasure_Open_100.schematic etfuturum
-/schematics/ruins/SimpleHall_6x-VoidPathOfFear_Open_100.schematic etfuturum
-/schematics/ruins/SimpleHall_6x-VoidWhy_Open_100.schematic etfuturum
-/schematics/ruins/SimpleHall_6x-VoidWhyless_Open_100.schematic etfuturum
+/schematics/ruins/ComplexHall_6x-UpwardsTTreasure_Open_100.schematic
+/schematics/ruins/SimpleHall_6x-VoidPathOfFear_Open_100.schematic
+/schematics/ruins/SimpleHall_6x-VoidWhy_Open_100.schematic
+/schematics/ruins/SimpleHall_6x-VoidWhyless_Open_100.schematic
 /schematics/ruins/Maze_6x-WhiteFabricMaze_Closed_100.schematic
