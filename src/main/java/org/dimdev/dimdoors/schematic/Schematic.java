@@ -31,6 +31,8 @@ public class Schematic {
     protected Block[] blocks;
     protected byte[] metadata;
     protected NBTTagList tileEntities;
+    // Entity positions are relative to the schematic's corner
+    protected NBTTagList entities = new NBTTagList();
 
     protected Schematic(short width, short height, short length, String[] blockPalette, short[] blockIds,
         byte[] metadata, NBTTagList tileEntities) {
@@ -62,6 +64,7 @@ public class Schematic {
         this.blocks = source.blocks;
         this.metadata = source.metadata;
         this.tileEntities = source.tileEntities;
+        this.entities = source.entities;
     }
 
     private void loadBlockList(String[] blockPalette, short[] blockIds) {
@@ -139,6 +142,21 @@ public class Schematic {
     }
 
     public static Schematic readFromStream(InputStream schematicStream) throws InvalidSchematicException {
+        return readFromNBT(readCompressed(schematicStream));
+    }
+
+    protected static NBTTagCompound readCompressed(InputStream schematicStream) throws InvalidSchematicException {
+        try {
+            NBTTagCompound schematicTag = CompressedStreamTools.readCompressed(schematicStream);
+            schematicStream.close(); // readCompressed() probably closes the stream anyway, but close again to be sure.
+            return schematicTag;
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            throw new InvalidSchematicException("The schematic could not be decoded.");
+        }
+    }
+
+    public static Schematic readFromNBT(NBTTagCompound schematicTag) throws InvalidSchematicException {
         short width;
         short height;
         short length;
@@ -151,20 +169,9 @@ public class Schematic {
         short[] blockIds = null; // list of combined block IDs
         String[] blockPalette = null;
         NBTTagList tileEntities = null; // storage for tile entities in NBT form
-        NBTTagCompound schematicTag; // the NBT data extracted from the schematic file
         boolean hasExtendedBlockIDs; // indicates whether the schematic contains extended block IDs
 
         try {
-            try {
-                schematicTag = CompressedStreamTools.readCompressed(schematicStream);
-                schematicStream.close(); // readCompressed() probably closes the stream anyway, but close again to be
-                                         // sure.
-            } catch (Exception ex) {
-                ex.printStackTrace();
-                throw new InvalidSchematicException("The schematic could not be decoded.");
-
-            }
-
             // load size of schematic to generate
             width = schematicTag.getShort("Width");
             height = schematicTag.getShort("Height");
@@ -230,6 +237,7 @@ public class Schematic {
             tileEntities = schematicTag.getTagList("TileEntities", 10);
 
             Schematic result = new Schematic(width, height, length, blockPalette, blockIds, metadata, tileEntities);
+            result.entities = schematicTag.getTagList("Entities", 10);
             return result;
         } catch (InvalidSchematicException ex) {
             // Throw the exception again to pass it to the caller.

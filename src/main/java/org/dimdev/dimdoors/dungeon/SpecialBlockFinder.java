@@ -1,6 +1,8 @@
 package org.dimdev.dimdoors.dungeon;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Set;
 
 import net.minecraft.block.Block;
 
@@ -20,9 +22,17 @@ public class SpecialBlockFinder extends SchematicFilter {
     private final ArrayList<Point3D> exitDoorLocations;
     private final ArrayList<Point3D> dimensionalDoorLocations;
     private final ArrayList<Point3D> monolithSpawnLocations;
+    private final Set<Point3D> claimedDoors;
 
     public SpecialBlockFinder(Block warpDoor, Block dimensionalDoor, Block monolithSpawn, Block exitDoor) {
+        this(warpDoor, dimensionalDoor, monolithSpawn, exitDoor, Collections.<Point3D>emptySet());
+    }
+
+    /** Doors at claimedDoors (their top halves) get their links some other way and are left alone. */
+    public SpecialBlockFinder(Block warpDoor, Block dimensionalDoor, Block monolithSpawn, Block exitDoor,
+        Set<Point3D> claimedDoors) {
         super("SpecialBlockFinder");
+        this.claimedDoors = claimedDoors;
         this.warpDoor = warpDoor;
         this.dimensionalDoor = dimensionalDoor;
         this.monolithSpawnMarker = monolithSpawn;
@@ -66,9 +76,14 @@ public class SpecialBlockFinder extends SchematicFilter {
         int indexBelow;
         int indexDoubleBelow;
 
-        if (blocks[index] == monolithSpawnMarker) {
+        // Frames with an eye in them are decoration
+        if (blocks[index] == monolithSpawnMarker && (metadata[index] & 4) == 0) {
             monolithSpawnLocations.add(schematic.calculatePoint(index));
             return true;
+        }
+        if ((blocks[index] == dimensionalDoor || blocks[index] == warpDoor)
+            && claimedDoors.contains(schematic.calculatePoint(index))) {
+            return false;
         }
         if (blocks[index] == dimensionalDoor) {
             indexBelow = schematic.calculateIndexBelow(index);

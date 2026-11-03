@@ -35,9 +35,10 @@ public class FillContainersOperation extends WorldOperation {
         if (block instanceof BlockContainer) {
             TileEntity tileEntity = world.getTileEntity(x, y, z);
 
-            // Fill chests
-            if (tileEntity instanceof TileEntityChest) {
-                TileEntityChest chest = (TileEntityChest) tileEntity;
+            // Fill chests, and Et Futurum's barrels like them
+            if (tileEntity instanceof TileEntityChest
+                || "etfuturum:barrel".equals(Block.blockRegistry.getNameForObject(block))) {
+                IInventory chest = (IInventory) tileEntity;
                 if (isInventoryEmpty(chest)) {
                     // Randomly choose whether this will be a regular dungeon chest or a grave chest
                     if (random.nextInt(MAX_GRAVE_CHEST_CHANCE) < GRAVE_CHEST_CHANCE) {

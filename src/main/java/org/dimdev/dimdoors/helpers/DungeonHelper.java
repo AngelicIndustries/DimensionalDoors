@@ -37,6 +37,8 @@ import org.dimdev.dimdoors.pockets.Pocket;
 import org.dimdev.dimdoors.util.FileFilters;
 import org.dimdev.dimdoors.util.WeightedContainer;
 
+import cpw.mods.fml.common.Loader;
+
 public class DungeonHelper {
 
     private static DungeonHelper instance = null;
@@ -400,13 +402,15 @@ public class DungeonHelper {
         try {
             // Read the list of schematics that come with a bundled pack
             BufferedReader listReader = new BufferedReader(new InputStreamReader(listStream));
-            String schematicPath = listReader.readLine();
-            while (schematicPath != null) {
-                schematicPath = schematicPath.trim();
-                if (!schematicPath.isEmpty()) {
-                    schematics.add(schematicPath);
+            // Each line is a schematic path, then the ids of any mods it needs
+            String line = listReader.readLine();
+            while (line != null) {
+                String[] parts = line.trim()
+                    .split("\\s+");
+                if (!parts[0].isEmpty() && modsLoaded(parts)) {
+                    schematics.add(parts[0]);
                 }
-                schematicPath = listReader.readLine();
+                line = listReader.readLine();
             }
             listReader.close();
         } catch (IOException e) {
@@ -424,6 +428,13 @@ public class DungeonHelper {
                     + " bundled dungeon pack. This would inevitably cause Dimensional Doors to crash during runtime.");
         }
         return pack;
+    }
+
+    private static boolean modsLoaded(String[] listLine) {
+        for (int k = 1; k < listLine.length; k++) {
+            if (!Loader.isModLoaded(listLine[k])) return false;
+        }
+        return true;
     }
 
     public boolean exportDungeon(World world, int centerX, int centerY, int centerZ, String exportPath) {

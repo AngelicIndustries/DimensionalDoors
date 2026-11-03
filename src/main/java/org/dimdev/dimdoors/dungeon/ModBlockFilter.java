@@ -9,12 +9,16 @@ import org.dimdev.dimdoors.schematic.SchematicFilter;
 public class ModBlockFilter extends SchematicFilter {
 
     private final List<Block> exceptions;
+    private final List<String> allowedMods;
     private final Block replacementBlock;
     private final byte replacementMetadata;
 
-    public ModBlockFilter(List<Block> exceptions, Block replacementBlock, byte replacementMetadata) {
+    /** Keeps vanilla blocks, the exceptions and every block of the allowed mods; the rest are replaced. */
+    public ModBlockFilter(List<Block> exceptions, List<String> allowedMods, Block replacementBlock,
+        byte replacementMetadata) {
         super("ModBlockFilter");
         this.exceptions = exceptions;
+        this.allowedMods = allowedMods;
         this.replacementBlock = replacementBlock;
         this.replacementMetadata = replacementMetadata;
     }
@@ -23,8 +27,8 @@ public class ModBlockFilter extends SchematicFilter {
     protected boolean applyToBlock(int index, Block[] blocks, byte[] metadata) {
         int k;
         Block current = blocks[index];
-        if (!Block.blockRegistry.getNameForObject(current)
-            .startsWith("minecraft:")) {
+        String name = Block.blockRegistry.getNameForObject(current);
+        if (!name.startsWith("minecraft:") && !allowedMods.contains(name.substring(0, name.indexOf(':')))) {
             // This might be a mod block. Check if an exception exists.
             for (k = 0; k < exceptions.size(); k++) {
                 if (current == exceptions.get(k)) {

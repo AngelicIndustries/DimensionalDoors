@@ -5,12 +5,22 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Random;
+import java.util.Set;
 
 import net.minecraft.block.Block;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityList;
 import net.minecraft.init.Blocks;
+import net.minecraft.item.Item;
+import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.NBTTagDouble;
+import net.minecraft.nbt.NBTTagFloat;
+import net.minecraft.nbt.NBTTagList;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.tileentity.TileEntitySign;
 import net.minecraft.world.World;
@@ -39,6 +49,8 @@ import org.dimdev.dimdoors.util.Point4D;
 public class DungeonSchematic extends Schematic {
 
     private static final int NETHER_DIMENSION_ID = -1;
+    // Mods whose blocks dungeons may use, besides vanilla and our own
+    private static final List<String> ALLOWED_MODS = Arrays.asList("etfuturum");
 
     private int orientation;
     private Point3D entranceDoorLocation;
@@ -46,6 +58,8 @@ public class DungeonSchematic extends Schematic {
     private ArrayList<Point3D> dimensionalDoorLocations;
     private ArrayList<Point3D> monolithSpawnLocations;
     private ArrayList<Block> modBlockFilterExceptions;
+    // Doors that lead somewhere other than a dungeon: "pocket", "personal", or a "pair" leading to each other
+    private NBTTagList links = new NBTTagList();
 
     private DungeonSchematic(Schematic source) {
         super(source);
@@ -55,6 +69,8 @@ public class DungeonSchematic extends Schematic {
         modBlockFilterExceptions.add(DimDoors.warpDoor);
         modBlockFilterExceptions.add(DimDoors.dimensionalDoor);
         modBlockFilterExceptions.add(DimDoors.transientDoor);
+        modBlockFilterExceptions.add(DimDoors.personalDimDoor);
+        modBlockFilterExceptions.add(DimDoors.blockLimbo);
     }
 
     public int getOrientation() {
@@ -89,16 +105,27 @@ public class DungeonSchematic extends Schematic {
     }
 
     public static DungeonSchematic readFromStream(InputStream schematicStream) throws InvalidSchematicException {
-        return new DungeonSchematic(Schematic.readFromStream(schematicStream));
+        NBTTagCompound schematicTag = readCompressed(schematicStream);
+        DungeonSchematic dungeon = new DungeonSchematic(Schematic.readFromNBT(schematicTag));
+        dungeon.links = schematicTag.getTagList("DimDoorsLinks", 10);
+        return dungeon;
     }
 
     public void applyImportFilters(DDProperties properties) {
+        Set<Point3D> linkedDoors = new HashSet<Point3D>();
+        for (int k = 0; k < links.tagCount(); k++) {
+            NBTTagCompound link = links.getCompoundTagAt(k);
+            linkedDoors.add(pointOf(link, "Pos"));
+            if (link.hasKey("Other")) linkedDoors.add(pointOf(link, "Other"));
+        }
+
         // Search for special blocks (warp doors, dim doors, and end portal frames that mark Monolith spawn points)
         SpecialBlockFinder finder = new SpecialBlockFinder(
             DimDoors.warpDoor,
             DimDoors.dimensionalDoor,
             Blocks.end_portal_frame,
-            Blocks.sandstone);
+            Blocks.sandstone,
+            linkedDoors);
         applyFilter(finder);
 
         // Flip the entrance's orientation to get the dungeon's orientation
@@ -111,7 +138,8 @@ public class DungeonSchematic extends Schematic {
 
         // Filter out mod blocks except some of our own
         CompoundFilter standardizer = new CompoundFilter();
-        standardizer.addFilter(new ModBlockFilter(modBlockFilterExceptions, DimDoors.blockDimWall, (byte) 0));
+        standardizer
+            .addFilter(new ModBlockFilter(modBlockFilterExceptions, ALLOWED_MODS, DimDoors.blockDimWall, (byte) 0));
 
         // Also convert standard DD block IDs to local versions
         applyFilter(standardizer);
@@ -124,7 +152,8 @@ public class DungeonSchematic extends Schematic {
 
         // Filter out mod blocks except some of our own
         // This comes after ID standardization because the mod block filter relies on standardized IDs
-        standardizer.addFilter(new ModBlockFilter(modBlockFilterExceptions, DimDoors.blockDimWall, (byte) 0));
+        standardizer
+            .addFilter(new ModBlockFilter(modBlockFilterExceptions, ALLOWED_MODS, DimDoors.blockDimWall, (byte) 0));
 
         applyFilter(standardizer);
     }
@@ -204,12 +233,26 @@ public class DungeonSchematic extends Schematic {
             tileTag.setInteger("x", pocketPoint.getX());
             tileTag.setInteger("y", pocketPoint.getY());
             tileTag.setInteger("z", pocketPoint.getZ());
+            resolveItemNames(tileTag);
+            if (tileTag.hasKey("Rot")) {
+                // A skull on the floor keeps its facing in the tile entity
+                tileTag.setByte("Rot", (byte) ((tileTag.getByte("Rot") + 4 * turnAngle) & 15));
+            }
             // Load the tile entity and put it in the world
             world.setTileEntity(
                 pocketPoint.getX(),
                 pocketPoint.getY(),
                 pocketPoint.getZ(),
                 TileEntity.createAndLoadEntity(tileTag));
+        }
+
+        for (index = 0; index < entities.tagCount(); index++) {
+            spawnEntity(
+                world,
+                (NBTTagCompound) entities.getCompoundTagAt(index)
+                    .copy(),
+                turnAngle,
+                pocketCenter);
         }
 
         setUpDungeon(
@@ -239,7 +282,49 @@ public class DungeonSchematic extends Schematic {
 
         // Set up link data for dimensional doors
         for (Point3D location : dimensionalDoorLocations) {
-            createDimensionalDoorLink(world, dimension, location, entranceDoorLocation, turnAngle, pocketCenter);
+            createDoorLink(world, dimension, location, entranceDoorLocation, turnAngle, pocketCenter, LinkType.DUNGEON);
+        }
+        for (int k = 0; k < links.tagCount(); k++) {
+            NBTTagCompound tag = links.getCompoundTagAt(k);
+            String type = tag.getString("Type");
+            Point3D location = pointOf(tag, "Pos");
+            if (type.equals("pocket") || type.equals("personal")) {
+                LinkType linkType = type.equals("pocket") ? LinkType.POCKET : LinkType.PERSONAL;
+                createDoorLink(world, dimension, location, entranceDoorLocation, turnAngle, pocketCenter, linkType);
+            } else if (type.equals("pair")) {
+                DimLink one = createDoorLink(
+                    world,
+                    dimension,
+                    location,
+                    entranceDoorLocation,
+                    turnAngle,
+                    pocketCenter,
+                    LinkType.NORMAL);
+                DimLink other = createDoorLink(
+                    world,
+                    dimension,
+                    pointOf(tag, "Other"),
+                    entranceDoorLocation,
+                    turnAngle,
+                    pocketCenter,
+                    LinkType.NORMAL);
+                dimension.setLinkDestination(
+                    one,
+                    other.source()
+                        .getX(),
+                    other.source()
+                        .getY(),
+                    other.source()
+                        .getZ());
+                dimension.setLinkDestination(
+                    other,
+                    one.source()
+                        .getX(),
+                    one.source()
+                        .getY(),
+                    one.source()
+                        .getZ());
+            }
         }
 
         // Set up link data for exit door
@@ -316,15 +401,94 @@ public class DungeonSchematic extends Schematic {
         initDoorTileEntity(world, location);
     }
 
-    private static void createDimensionalDoorLink(World world, NewDimData dimension, Point3D point, Point3D entrance,
-        int rotation, Point3D pocketCenter) {
+    private static DimLink createDoorLink(World world, NewDimData dimension, Point3D point, Point3D entrance,
+        int rotation, Point3D pocketCenter, LinkType type) {
         // Transform the door's location to the pocket coordinate system
         Point3D location = point.clone();
         BlockRotator.transformPoint(location, entrance, rotation, pocketCenter);
         int orientation = world.getBlockMetadata(location.getX(), location.getY() - 1, location.getZ());
 
-        dimension.createLink(location.getX(), location.getY(), location.getZ(), LinkType.DUNGEON, orientation);
+        DimLink link = dimension.createLink(location.getX(), location.getY(), location.getZ(), type, orientation);
         initDoorTileEntity(world, location);
+        return link;
+    }
+
+    private static Point3D pointOf(NBTTagCompound tag, String key) {
+        int[] position = tag.getIntArray(key);
+        return new Point3D(position[0], position[1], position[2]);
+    }
+
+    private void spawnEntity(World world, NBTTagCompound tag, int turnAngle, Point3D pocketCenter) {
+        int turns = turnAngle & 3;
+        resolveItemNames(tag);
+
+        // Turn about the middle of the entrance block, the way blocks turn
+        NBTTagList pos = tag.getTagList("Pos", 6);
+        double dx = pos.func_150309_d(0) - (entranceDoorLocation.getX() + 0.5);
+        double dz = pos.func_150309_d(2) - (entranceDoorLocation.getZ() + 0.5);
+        for (int k = 0; k < turns; k++) {
+            double t = dx;
+            dx = -dz;
+            dz = t;
+        }
+        NBTTagList turned = new NBTTagList();
+        turned.appendTag(new NBTTagDouble(pocketCenter.getX() + 0.5 + dx));
+        turned.appendTag(new NBTTagDouble(pos.func_150309_d(1) - entranceDoorLocation.getY() + pocketCenter.getY()));
+        turned.appendTag(new NBTTagDouble(pocketCenter.getZ() + 0.5 + dz));
+        tag.setTag("Pos", turned);
+
+        NBTTagList rotation = tag.getTagList("Rotation", 5);
+        if (rotation.tagCount() == 2) {
+            NBTTagList yawPitch = new NBTTagList();
+            yawPitch.appendTag(new NBTTagFloat(rotation.func_150308_e(0) + 90 * turns));
+            yawPitch.appendTag(new NBTTagFloat(rotation.func_150308_e(1)));
+            tag.setTag("Rotation", yawPitch);
+        }
+
+        if (tag.hasKey("TileX")) {
+            // A hanging entity sits on the face of a block
+            Point3D tile = new Point3D(tag.getInteger("TileX"), tag.getInteger("TileY"), tag.getInteger("TileZ"));
+            BlockRotator.transformPoint(tile, entranceDoorLocation, turnAngle, pocketCenter);
+            tag.setInteger("TileX", tile.getX());
+            tag.setInteger("TileY", tile.getY());
+            tag.setInteger("TileZ", tile.getZ());
+            tag.setByte("Direction", (byte) ((tag.getByte("Direction") + turns) & 3));
+        }
+
+        Entity entity = EntityList.createEntityFromNBT(tag, world);
+        if (entity != null) {
+            world.spawnEntityInWorld(entity);
+        }
+    }
+
+    /**
+     * Bundled schematics name the items in their containers and frames, since item ids differ between worlds. This
+     * swaps the names for ids, dropping items that don't exist here. Returns false if the tag itself is such an item.
+     */
+    private static boolean resolveItemNames(NBTTagCompound tag) {
+        if (tag.hasKey("id", 8) && tag.hasKey("Count")) {
+            Item item = (Item) Item.itemRegistry.getObject(tag.getString("id"));
+            if (item == null) return false;
+            tag.setShort("id", (short) Item.getIdFromItem(item));
+        }
+        if (tag.hasKey("Item", 8)) {
+            // Flower pots hold their plant as a bare id
+            Item item = (Item) Item.itemRegistry.getObject(tag.getString("Item"));
+            if (item == null) tag.removeTag("Item");
+            else tag.setInteger("Item", Item.getIdFromItem(item));
+        }
+        for (Object key : new ArrayList<Object>(tag.func_150296_c())) {
+            NBTBase child = tag.getTag((String) key);
+            if (child instanceof NBTTagCompound) {
+                if (!resolveItemNames((NBTTagCompound) child)) tag.removeTag((String) key);
+            } else if (child instanceof NBTTagList && ((NBTTagList) child).func_150303_d() == 10) {
+                NBTTagList list = (NBTTagList) child;
+                for (int k = list.tagCount() - 1; k >= 0; k--) {
+                    if (!resolveItemNames(list.getCompoundTagAt(k))) list.removeTag(k);
+                }
+            }
+        }
+        return true;
     }
 
     private static void spawnMonolith(World world, Point3D point, Point3D entrance, int rotation, Point3D pocketCenter,
