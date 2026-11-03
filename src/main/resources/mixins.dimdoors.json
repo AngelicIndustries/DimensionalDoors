@@ -6,6 +6,7 @@
   "target": "@env(DEFAULT)",
   "compatibilityLevel": "JAVA_8",
   "mixins": [
+    "AccessorEntityFallingBlock",
     "MixinEntityEndermanTranscendent",
     "MixinMapGenNetherBridgeStart",
     "MixinNetherBridgeThrone"

@@ -27,6 +27,7 @@ public class DDProperties {
     public final int PersonalPocketProviderID;
     public final int DoorRenderEntityID;
     public final int MonolithEntityID;
+    public final int FallingDripstoneEntityID;
     public final int TranscendentEnchantmentID;
     public final int TrepidationEnchantmentID;
     public final String[] TrepidationMobs;
@@ -438,6 +439,8 @@ public class DDProperties {
         DoorRenderEntityID = config.get(CATEGORY_ENTITY, "Door Render Entity ID", 89)
             .getInt();
         MonolithEntityID = config.get(CATEGORY_ENTITY, "Monolith Entity ID", 125)
+            .getInt();
+        FallingDripstoneEntityID = config.get(CATEGORY_ENTITY, "Falling Dripstone Entity ID", 126)
             .getInt();
 
         config.setCategoryComment(

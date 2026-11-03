@@ -71,6 +71,7 @@ import org.dimdev.dimdoors.items.itemRiftRemover;
 import org.dimdev.dimdoors.network.DimDoorsNetwork;
 import org.dimdev.dimdoors.schematic.BlockRotator;
 import org.dimdev.dimdoors.ticking.CustomLimboPopulator;
+import org.dimdev.dimdoors.ticking.EntityFallingDripstone;
 import org.dimdev.dimdoors.ticking.LimboArrivals;
 import org.dimdev.dimdoors.ticking.LimboDecayScheduler;
 import org.dimdev.dimdoors.ticking.LimboHunger;
@@ -84,6 +85,7 @@ import org.dimdev.dimdoors.tileentities.TileEntityTransTrapdoor;
 import org.dimdev.dimdoors.world.BiomeGenLimbo;
 import org.dimdev.dimdoors.world.BiomeGenPocket;
 import org.dimdev.dimdoors.world.DDBiomeGenBase;
+import org.dimdev.dimdoors.world.FallingDripstone;
 import org.dimdev.dimdoors.world.LimboDecay;
 import org.dimdev.dimdoors.world.LimboProvider;
 import org.dimdev.dimdoors.world.PersonalPocketProvider;
@@ -373,6 +375,15 @@ public class DimDoors {
         GameRegistry.registerTileEntity(TileEntityDimDoorGold.class, "TileEntityDimDoorGold");
 
         EntityRegistry.registerModEntity(MobMonolith.class, "Monolith", properties.MonolithEntityID, this, 70, 1, true);
+        EntityRegistry.registerModEntity(
+            EntityFallingDripstone.class,
+            "FallingDripstone",
+            properties.FallingDripstoneEntityID,
+            this,
+            160,
+            20,
+            true);
+        MinecraftForge.EVENT_BUS.register(new FallingDripstone());
         EntityList.IDtoClassMapping.put(properties.MonolithEntityID, MobMonolith.class);
         EntityList.entityEggs
             .put(properties.MonolithEntityID, new EntityList.EntityEggInfo(properties.MonolithEntityID, 0, 0xffffff));

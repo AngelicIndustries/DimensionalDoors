@@ -13,6 +13,7 @@ import org.dimdev.dimdoors.blocks.BlockFadebloom;
 import org.dimdev.dimdoors.config.DDProperties;
 import org.dimdev.dimdoors.core.DimLink;
 import org.dimdev.dimdoors.core.PocketManager;
+import org.dimdev.dimdoors.ticking.EntityFallingDripstone;
 import org.dimdev.dimdoors.ticking.MobMonolith;
 import org.dimdev.dimdoors.tileentities.TileEntityDimDoor;
 import org.dimdev.dimdoors.tileentities.TileEntityTransTrapdoor;
@@ -32,6 +33,7 @@ public class ClientProxy extends CommonProxy {
 
         // MinecraftForgeClient.preloadTexture(RIFT2_PNG);
         RenderingRegistry.registerEntityRenderingHandler(MobMonolith.class, new RenderMobObelisk(.5F));
+        RenderingRegistry.registerEntityRenderingHandler(EntityFallingDripstone.class, new RenderFallingDripstone());
         RenderingRegistry.registerBlockHandler(new PrivatePocketRender(RenderingRegistry.getNextAvailableRenderId()));
         if (DimDoors.fadebloom != null) {
             BlockFadebloom.renderType = RenderingRegistry.getNextAvailableRenderId();
