@@ -538,7 +538,9 @@ public class PocketBuilder {
         int localZ = (z % 16) < 0 ? (z % 16) + 16 : (z % 16);
         ExtendedBlockStorage extBlockStorage;
 
-        chunk = world.getChunkFromChunkCoords(cX, cZ);
+        // Load it: with some mods an unloaded chunk comes back as an empty stand-in, and writes to it are lost
+        chunk = world.getChunkProvider()
+            .loadChunk(cX, cZ);
         extBlockStorage = chunk.getBlockStorageArray()[cY];
         if (extBlockStorage == null) {
             extBlockStorage = new ExtendedBlockStorage(cY << 4, !world.provider.hasNoSky);
