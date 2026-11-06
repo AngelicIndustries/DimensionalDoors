@@ -1,4 +1,6 @@
 The *_6x-* rooms are converted from Dimensional Doors 6.x (branch 1.21.1, GPL-3.0),
 resourcepacks/default/data/dimdoors/pockets/schematic/dungeon. Changes for 1.7.10: modern blocks became vanilla or
 Et Futurum ones, door rifts became warp, dimensional and personal doors, and a few blocks moved where 1.7.10 would
-drop them (dust on TNT, torches on iron bars, a repeater on glowstone, tripwire lines over mixed ground).
+drop them (dust on TNT, torches on iron bars, a repeater on glowstone, tripwire lines over mixed ground). The two
+traps that shoot arrows through fire into TNT minecarts shoot fire charges instead, since 1.7.10 arrows don't catch
+fire, unless a mod such as AdventuraArcanaCore sends an "arrowsCatchFire" message.

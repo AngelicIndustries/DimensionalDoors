@@ -467,6 +467,11 @@ public class DungeonSchematic extends Schematic {
      * swaps the names for ids, dropping items that don't exist here. Returns false if the tag itself is such an item.
      */
     private static boolean resolveItemNames(NBTTagCompound tag) {
+        if (tag.hasKey("WithoutBurningArrows", 8)) {
+            // A trap that shoots arrows through fire names a stand-in for when arrows don't catch fire there
+            if (!DimDoors.arrowsCatchFire) tag.setString("id", tag.getString("WithoutBurningArrows"));
+            tag.removeTag("WithoutBurningArrows");
+        }
         if (tag.hasKey("id", 8) && tag.hasKey("Count")) {
             Item item = (Item) Item.itemRegistry.getObject(tag.getString("id"));
             if (item == null) return false;

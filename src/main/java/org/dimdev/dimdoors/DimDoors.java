@@ -98,6 +98,7 @@ import cpw.mods.fml.common.Mod.EventHandler;
 import cpw.mods.fml.common.Mod.Instance;
 import cpw.mods.fml.common.SidedProxy;
 import cpw.mods.fml.common.event.FMLInitializationEvent;
+import cpw.mods.fml.common.event.FMLInterModComms;
 import cpw.mods.fml.common.event.FMLPostInitializationEvent;
 import cpw.mods.fml.common.event.FMLPreInitializationEvent;
 import cpw.mods.fml.common.event.FMLServerAboutToStartEvent;
@@ -177,6 +178,8 @@ public class DimDoors {
     public static RiftRegenerator riftRegenerator;
     public static GatewayGenerator gatewayGenerator;
     public static DeathTracker deathTracker;
+    /** Set by an "arrowsCatchFire" message from a mod that lights arrows flying through fire, as modern versions do. */
+    public static boolean arrowsCatchFire;
     private static ServerTickHandler serverTickHandler;
     private static LimboDecayScheduler limboDecayScheduler;
     private static LimboDecay limboDecay;
@@ -434,6 +437,13 @@ public class DimDoors {
                 + id
                 + (id < list.length ? " is taken by " + list[id].getName() : " is out of range"));
         return false;
+    }
+
+    @EventHandler
+    public void onMessages(FMLInterModComms.IMCEvent event) {
+        for (FMLInterModComms.IMCMessage message : event.getMessages()) {
+            if (message.key.equals("arrowsCatchFire")) arrowsCatchFire = true;
+        }
     }
 
     @EventHandler
