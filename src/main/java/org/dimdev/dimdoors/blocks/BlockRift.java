@@ -285,10 +285,12 @@ public class BlockRift extends Block implements ITileEntityProvider {
 
     public void randomDisplayTick(World world, int x, int y, int z, Random rand) {
 
-        TileEntityRift tile = (TileEntityRift) world.getTileEntity(x, y, z);
-        if (tile == null) {
+        // Another mod's tile entity can sit here for a moment, such as Realistic Torches' moving light
+        TileEntity entity = world.getTileEntity(x, y, z);
+        if (!(entity instanceof TileEntityRift)) {
             return;
         }
+        TileEntityRift tile = (TileEntityRift) entity;
 
         // renders an extra little blob on top of the actual rift location so its easier to find. Eventually will only
         // render if the player has the goggles. A stabilized rift's particles fade sooner, as on 6.x.

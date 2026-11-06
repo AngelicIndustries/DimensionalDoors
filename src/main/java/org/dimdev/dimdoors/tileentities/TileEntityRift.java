@@ -10,6 +10,7 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.network.NetworkManager;
 import net.minecraft.network.Packet;
 import net.minecraft.network.play.server.S35PacketUpdateTileEntity;
+import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.AxisAlignedBB;
 
 import org.dimdev.dimdoors.DimDoors;
@@ -213,9 +214,10 @@ public class TileEntityRift extends DDTileEntityBase {
         if (size < CLOSING_PERIOD / 2) {
             for (DimLink riftLink : dimension.findRiftsInRange(worldObj, 6, xCoord, yCoord, zCoord)) {
                 Point4D location = riftLink.source();
-                TileEntityRift rift = (TileEntityRift) worldObj
-                    .getTileEntity(location.getX(), location.getY(), location.getZ());
-                if (rift != null && !rift.shouldClose) {
+                TileEntity entity = worldObj.getTileEntity(location.getX(), location.getY(), location.getZ());
+                if (!(entity instanceof TileEntityRift)) continue;
+                TileEntityRift rift = (TileEntityRift) entity;
+                if (!rift.shouldClose) {
                     rift.shouldClose = true;
                     rift.markDirty();
                 }
