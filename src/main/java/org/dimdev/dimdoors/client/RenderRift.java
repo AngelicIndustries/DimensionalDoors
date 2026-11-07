@@ -23,6 +23,8 @@ public class RenderRift extends TileEntitySpecialRenderer {
     private static final ResourceLocation TESSERACT = new ResourceLocation(
         DimDoors.modid,
         "textures/other/tesseract.png");
+    /** How far a core shakes, in blocks. */
+    private static final double CORE_SHAKE = 0.05;
     /** Until when (system milliseconds) every rift shows its core. */
     public static long showCoresUntil;
 
@@ -57,7 +59,14 @@ public class RenderRift extends TileEntitySpecialRenderer {
         glDisable(GL_LIGHTING);
         glDisable(GL_CULL_FACE);
         bindTexture(TESSERACT);
-        glTranslated(x + 0.5, y + 0.5, z + 0.5);
+        // A small shake, like the crack's at its quickest, from the position so cores don't shake in step
+        double time = (Minecraft.getSystemTime() + (long) (0xF1234568L * (x + y * (2L << 21) + z * (2L << 42))))
+            % 2000000;
+        double shake = CORE_SHAKE * DimDoors.properties.RiftCoreJitter, pace = 8 * 0.014;
+        glTranslated(
+            x + 0.5 + shake * Math.sin(1.1 * time * pace) * Math.sin(0.8 * time * 0.014),
+            y + 0.5 + shake * Math.sin(1.2 * time * pace) * Math.sin(0.9 * time * 0.014),
+            z + 0.5 + shake * Math.sin(1.3 * time * pace) * Math.sin(0.7 * time * 0.014));
         glScaled(0.25, 0.25, 0.25);
         Tesseract.draw(1, 0.5F, 1, 1, Math.toRadians(rift.renderAngle));
         glEnable(GL_CULL_FACE);

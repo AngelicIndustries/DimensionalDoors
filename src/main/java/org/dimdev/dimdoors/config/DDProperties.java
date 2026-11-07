@@ -86,6 +86,7 @@ public class DDProperties {
     public final int HighlightRiftCoreFor;
     public final double RiftSize;
     public final double RiftJitter;
+    public final double RiftCoreJitter;
     public final float LimboAmbientLight;
     public final boolean FadebloomsEnabled;
     public final int FadebloomLight;
@@ -352,6 +353,15 @@ public class DDProperties {
             "How much the cracks of open rifts shake, in step with their size; 1 is a few percent of it, 0 keeps them still.",
             0.0,
             10.0)
+            .getDouble(1.0);
+        RiftCoreJitter = config
+            .get(
+                Configuration.CATEGORY_GENERAL,
+                "Rift Core Shaking",
+                1.0,
+                "How much the spinning cores of open rifts shake; 1 is a little, 0 keeps them still.",
+                0.0,
+                10.0)
             .getDouble(1.0);
         LimboAmbientLight = (float) config.get(
             Configuration.CATEGORY_GENERAL,
