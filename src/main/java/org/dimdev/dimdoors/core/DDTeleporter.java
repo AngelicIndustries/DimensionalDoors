@@ -429,6 +429,11 @@ public class DDTeleporter {
         }
     }
 
+    /** A player, or something a player rides. */
+    public static boolean isPlayer(Entity entity) {
+        return entity instanceof EntityPlayer || entity.riddenByEntity instanceof EntityPlayer;
+    }
+
     private static boolean initializeDestination(DimLink link, DDProperties properties, Entity entity, Block door) {
         if (link.hasDestination() && link.linkType() != LinkType.PERSONAL) {
             if (PocketManager.isLostDestination(link.destination())) {
@@ -441,6 +446,12 @@ public class DDTeleporter {
             } else {
                 return true;
             }
+        }
+
+        // Only a player opens a new pocket, dungeon or exit; a mob or item wandering into a fresh door can't
+        LinkType type = link.linkType();
+        if (type != LinkType.NORMAL && type != LinkType.REVERSE && type != LinkType.RANDOM && !isPlayer(entity)) {
+            return false;
         }
 
         // Check the destination type and respond accordingly

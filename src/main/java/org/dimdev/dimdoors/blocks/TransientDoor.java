@@ -40,7 +40,8 @@ public class TransientDoor extends BaseDimDoor {
             if (canUse) {
                 // Teleport the entity through the link, if it exists
                 DimLink link = PocketManager.getLink(x, y, z, world.provider.dimensionId);
-                if (link != null) {
+                // Only a player opens the dungeon behind a gateway; a mob walking in leaves the door as it is
+                if (link != null && (link.hasDestination() || DDTeleporter.isPlayer(entity))) {
                     if (link.linkType() != LinkType.PERSONAL || entity instanceof EntityPlayer) {
                         DDTeleporter.traverseDimDoor(world, link, entity, this);
                         // Turn the door into a rift AFTER teleporting the player.
