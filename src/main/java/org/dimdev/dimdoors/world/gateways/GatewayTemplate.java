@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import net.minecraft.block.Block;
+import net.minecraft.block.BlockBush;
 import net.minecraft.block.material.Material;
 import net.minecraft.init.Blocks;
 import net.minecraft.nbt.CompressedStreamTools;
@@ -198,6 +199,26 @@ public final class GatewayTemplate {
                         : materials.meta(role);
                     world.setBlock(wx, wy, wz, block, meta, 2);
                     if (ty == 0) prop(world, wx, wy - 1, wz, materials, underwater);
+                }
+            }
+        }
+    }
+
+    /**
+     * Quietly removes plants, petals, leaf litter and other decorations around the gateway that can no longer stand
+     * where they are, now that it covers their ground. Left there, the next block update pops them off as items.
+     */
+    public void tidy(World world, int x, int groundY, int z) {
+        int reach = Math.max(width, length);
+        for (int dx = -reach; dx <= reach; dx++) {
+            for (int dz = -reach; dz <= reach; dz++) {
+                for (int y = groundY; y <= groundY + height + 2; y++) {
+                    Block block = world.getBlock(x + dx, y, z + dz);
+                    Material material = block.getMaterial();
+                    if ((material == Material.plants || material == Material.vine || block instanceof BlockBush)
+                        && !block.canBlockStay(world, x + dx, y, z + dz)) {
+                        world.setBlock(x + dx, y, z + dz, Blocks.air, 0, 2);
+                    }
                 }
             }
         }

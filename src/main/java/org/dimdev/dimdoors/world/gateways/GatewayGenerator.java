@@ -20,6 +20,8 @@ import org.dimdev.dimdoors.world.LimboProvider;
 import org.dimdev.dimdoors.world.PocketProvider;
 
 import cpw.mods.fml.common.IWorldGenerator;
+import cpw.mods.fml.common.eventhandler.SubscribeEvent;
+import cpw.mods.fml.common.gameevent.TickEvent;
 
 public class GatewayGenerator implements IWorldGenerator {
 
@@ -71,7 +73,6 @@ public class GatewayGenerator implements IWorldGenerator {
         }
 
         int x, y, z;
-        int attempts;
         DimLink link;
         NewDimData dimension;
 
@@ -116,30 +117,48 @@ public class GatewayGenerator implements IWorldGenerator {
         // This only happens if a rift cluster was NOT generated.
         else if (DimDoors.worldProperties.RiftGatewayDimensions.isAccepted(dimensionID)
             && random.nextInt(MAX_GATEWAY_GENERATION_CHANCE) < properties.GatewayGenerationChance) {
-                // Check locations for the gateway until one is built or we run out of attempts.
-                for (attempts = 0; attempts < MAX_GATEWAY_GENERATION_ATTEMPTS; attempts++) {
-                    // Pick a random point on the surface of the chunk and check its materials. Like vanilla's
-                    // decorations, the point is offset by half a chunk so the gateway stays in generated chunks.
-                    x = chunkX * CHUNK_LENGTH + CHUNK_LENGTH / 2 + random.nextInt(CHUNK_LENGTH);
-                    z = chunkZ * CHUNK_LENGTH + CHUNK_LENGTH / 2 + random.nextInt(CHUNK_LENGTH);
-                    y = world.getHeightValue(x, z);
-
-                    if (world.provider instanceof LimboProvider) {
-                        if (checkGatewayLocation(world, x, y, z) && limboGateway.generate(world, x, y - 1, z)) {
-                            break;
-                        }
-                    } else if (isSeaSurface(world, x, y, z)) {
-                        // 6.x builds its prismarine gateway on the sea floor, at any depth
-                        int floor = GatewayTemplate.groundAt(world, x, z, true);
-                        if (floor >= MIN_RIFT_Y && StyledGateways.generate(world, random, x, floor, z, true)) {
-                            break;
-                        }
-                    } else if (checkGatewayLocation(world, x, y, z)
-                        && StyledGateways.generate(world, random, x, y - 1, z, false)) {
-                            break;
-                        }
-                }
+                // Built once the chunks around have their trees and other decorations (see PendingGateways)
+                PendingGateways.get(world)
+                    .add(chunkX, chunkZ);
             }
+    }
+
+    /** Builds a waiting gateway when the land around it is finished, if any world has one ready. */
+    @SubscribeEvent
+    public void onWorldTick(TickEvent.WorldTickEvent event) {
+        if (event.phase != TickEvent.Phase.END || event.world.isRemote
+            || !DimDoors.worldProperties.RiftGatewayDimensions.isAccepted(event.world.provider.dimensionId)) return;
+        PendingGateways.get(event.world)
+            .build(event.world, this);
+    }
+
+    /** Tries a few spots on the surface of a chunk that rolled a gateway, building at the first that suits. */
+    void buildGateway(World world, int chunkX, int chunkZ) {
+        Random random = new Random(world.getSeed() ^ chunkX * 341873128712L ^ chunkZ * 132897987541L);
+        int x, y, z;
+        // Check locations for the gateway until one is built or we run out of attempts.
+        for (int attempts = 0; attempts < MAX_GATEWAY_GENERATION_ATTEMPTS; attempts++) {
+            // Pick a random point on the surface of the chunk and check its materials. Like vanilla's
+            // decorations, the point is offset by half a chunk so the gateway stays in generated chunks.
+            x = chunkX * CHUNK_LENGTH + CHUNK_LENGTH / 2 + random.nextInt(CHUNK_LENGTH);
+            z = chunkZ * CHUNK_LENGTH + CHUNK_LENGTH / 2 + random.nextInt(CHUNK_LENGTH);
+            y = world.getHeightValue(x, z);
+
+            if (world.provider instanceof LimboProvider) {
+                if (checkGatewayLocation(world, x, y, z) && limboGateway.generate(world, x, y - 1, z)) {
+                    break;
+                }
+            } else if (isSeaSurface(world, x, y, z)) {
+                // 6.x builds its prismarine gateway on the sea floor, at any depth
+                int floor = GatewayTemplate.groundAt(world, x, z, true);
+                if (floor >= MIN_RIFT_Y && StyledGateways.generate(world, random, x, floor, z, true)) {
+                    break;
+                }
+            } else if (checkGatewayLocation(world, x, y, z)
+                && StyledGateways.generate(world, random, x, y - 1, z, false)) {
+                    break;
+                }
+        }
     }
 
     /** Water at the surface of an ocean biome. */

@@ -48,6 +48,7 @@ public final class StyledGateways {
             patchGround(world, x, groundY, z);
         }
         template.place(world, x, groundY, z, turns, materials, underwater);
+        template.tidy(world, x, groundY, z);
 
         // The door and its dungeon link, as Legacy's gateways have
         int doorY = template.doorY(groundY);
@@ -137,10 +138,11 @@ public final class StyledGateways {
                 if (!world.isBlockNormalCubeDefault(x + dx, y - 1, z + dz, false)) continue;
                 // Less likely the farther from the gateway
                 int distance = Math.abs(dx) + Math.abs(dz);
+                // Without block updates, so plants on it don't pop off as items (tidy clears them)
                 if (distance < world.rand.nextInt(2) + 3) {
-                    world.setBlock(x + dx, y, z + dz, Blocks.stonebrick, 0, 3);
+                    world.setBlock(x + dx, y, z + dz, Blocks.stonebrick, 0, 2);
                 } else if (distance < world.rand.nextInt(3) + 3) {
-                    world.setBlock(x + dx, y, z + dz, Blocks.stonebrick, 2, 3);
+                    world.setBlock(x + dx, y, z + dz, Blocks.stonebrick, 2, 2);
                 }
             }
         }

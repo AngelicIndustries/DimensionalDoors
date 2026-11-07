@@ -407,6 +407,9 @@ public class DimDoors {
         DungeonHelper.initialize();
         gatewayGenerator = new GatewayGenerator(properties);
         GameRegistry.registerWorldGenerator(DimDoors.gatewayGenerator, 0);
+        FMLCommonHandler.instance()
+            .bus()
+            .register(gatewayGenerator);
 
         // Register loot chests
         DDLoot.registerInfo(properties);
