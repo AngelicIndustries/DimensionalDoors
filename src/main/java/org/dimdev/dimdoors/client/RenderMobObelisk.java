@@ -109,7 +109,8 @@ public class RenderMobObelisk extends RenderLiving {
 
     /**
      * The model again with only its eyes, at full brightness and added on top, so a Monolith's red eyes glow even in
-     * Limbo's dark (as vanilla draws spider eyes). A calm Monolith has none.
+     * Limbo's dark (as vanilla draws spider eyes; with a shader pack, through its glowing eyes program). A calm
+     * Monolith has none.
      */
     private void renderGlowingEyes(MobMonolith monolith, float rotation, float yaw, float pitch, float scale) {
         if (monolith.getTextureState() == 0) {
@@ -122,7 +123,12 @@ public class RenderMobObelisk extends RenderLiving {
         GL11.glDisable(GL11.GL_TEXTURE_2D);
         OpenGlHelper.setActiveTexture(OpenGlHelper.defaultTexUnit);
         GL11.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
-        this.mainModel.render(monolith, 0, 0, rotation, yaw, pitch, scale);
+        boolean eyePass = ShaderEyePass.begin();
+        try {
+            this.mainModel.render(monolith, 0, 0, rotation, yaw, pitch, scale);
+        } finally {
+            if (eyePass) ShaderEyePass.end();
+        }
         OpenGlHelper.setActiveTexture(OpenGlHelper.lightmapTexUnit);
         GL11.glEnable(GL11.GL_TEXTURE_2D);
         OpenGlHelper.setActiveTexture(OpenGlHelper.defaultTexUnit);

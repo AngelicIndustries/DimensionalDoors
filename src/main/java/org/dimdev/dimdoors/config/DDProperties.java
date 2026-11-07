@@ -95,6 +95,7 @@ public class DDProperties {
     public final int FadebloomPatches;
     public final boolean RebuildDoorsAtRifts;
     public final int MonolithAggroRange;
+    public final int MonolithNoticeRange;
     public final boolean LimboReturnsInventoryEnabled;
     public final boolean DoorRenderingEnabled;
     public final boolean TNFREAKINGT_Enabled;
@@ -551,9 +552,19 @@ public class DDProperties {
                 CATEGORY_ENTITY,
                 "Monolith Aggro Range",
                 35,
-                "How close, in blocks, a player has to be for a Monolith to notice them.",
+                "How far, in blocks, a Monolith that has opened its eye keeps watching a player before letting go; its "
+                    + "sounds reach about as far.",
                 8,
                 128)
+            .getInt();
+        MonolithNoticeRange = config.get(
+            CATEGORY_ENTITY,
+            "Monolith Notice Range",
+            12,
+            "How close, in blocks, a player in sight has to come for a Monolith to open its eye. Once its eye is open "
+                + "it follows them out to the Monolith Aggro Range.",
+            2,
+            128)
             .getInt();
         MonolithSpawningChance = config
             .get(

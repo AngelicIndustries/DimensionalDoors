@@ -23,7 +23,13 @@ import org.dimdev.dimdoors.world.PocketProvider;
 public class MobMonolith extends EntityFlying implements IMob {
 
     private static final short MAX_AGGRO = 250;
-    private static final short MAX_AGGRO_CAP = 100;
+    /** The eye is fully open at this aggro; the aggro proper (sounds, particles, the pull) starts just before. */
+    private static final short EYE_OPEN = 100;
+    private static final short AGGRO_START = 90;
+    /** How fast the eye opens on a player in sight, per tick. */
+    private static final short OPENING_RATE = 4;
+    // An unseen player nearby opens the eye this far at most, never into the aggro
+    private static final short MAX_AGGRO_CAP = 60;
     private static final short MIN_AGGRO_CAP = 25;
     private static final int MAX_TEXTURE_STATE = 18;
     private static final int MAX_SOUND_COOLDOWN = 200;
@@ -97,6 +103,13 @@ public class MobMonolith extends EntityFlying implements IMob {
         return false;
     }
 
+    /**
+     * Monoliths never move. Vanilla pushed one off any player or mob inside its box, and since it passes through blocks
+     * it slid into the ground, where its eye can't be seen.
+     */
+    @Override
+    public void moveEntity(double x, double y, double z) {}
+
     @Override
     public float getEyeHeight() {
         return EYE_HEIGHT;
@@ -129,7 +142,7 @@ public class MobMonolith extends EntityFlying implements IMob {
         // Check for players and update aggro levels even if there are no players in range
         EntityPlayer player = this.worldObj.getClosestPlayerToEntity(this, DDProperties.instance().MonolithAggroRange);
         boolean visibility = player != null && player.canEntityBeSeen(this);
-        this.updateAggroLevel(player, visibility);
+        this.updateAggroLevel(player, visibility, player != null ? this.getDistanceToEntity(player) : Float.MAX_VALUE);
 
         // Change orientation and face a player if one is in range
         if (player != null) {
@@ -145,7 +158,7 @@ public class MobMonolith extends EntityFlying implements IMob {
 
             if (visibility) {
                 // Only spawn particles on the client side and outside Limbo
-                if (this.worldObj.isRemote && isDangerous()) {
+                if (this.worldObj.isRemote && isDangerous() && isAggroed()) {
                     this.spawnParticles(player);
                 }
 
@@ -163,20 +176,25 @@ public class MobMonolith extends EntityFlying implements IMob {
         }
     }
 
-    private void updateAggroLevel(EntityPlayer player, boolean visibility) {
+    private void updateAggroLevel(EntityPlayer player, boolean visibility, float distance) {
         // If we're working on the server side, adjust aggro level
         // If we're working on the client side, retrieve aggro level from dataWatcher
         if (!this.worldObj.isRemote) {
             // Server side...
-            // Rapidly increase the aggro level if this Monolith can see the player
-            if (visibility) {
-                if (this.worldObj.provider.dimensionId == properties.LimboDimensionID) {
+            // A player in sight close by opens the eye, quickly; once it's aggroed it follows them out to the aggro
+            // range
+            if (visibility && (isAggroed() || distance <= properties.MonolithNoticeRange)) {
+                if (aggro < EYE_OPEN) {
+                    aggro += isDangerous() ? OPENING_RATE : 36;
+                } else if (this.worldObj.provider.dimensionId == properties.LimboDimensionID) {
                     if (isDangerous()) aggro++;
                     else aggro += 36;
                 } else {
                     // Aggro increases faster outside of Limbo
                     aggro += 3;
                 }
+            } else if (visibility) {
+                // In sight but not near enough yet: the eye stays as it is
             } else {
                 if (isDangerous()) {
                     if (aggro > aggroCap) {
@@ -199,8 +217,13 @@ public class MobMonolith extends EntityFlying implements IMob {
     }
 
     public int getTextureState() {
-        // Determine texture state from aggro progress
-        return MathHelper.clamp_int(MAX_TEXTURE_STATE * aggro / MAX_AGGRO, 0, MAX_TEXTURE_STATE);
+        // The eye opens over the first part of the aggro
+        return MathHelper.clamp_int(MAX_TEXTURE_STATE * aggro / EYE_OPEN, 0, MAX_TEXTURE_STATE);
+    }
+
+    /** Whether the eye is (almost) open and the aggro proper has started. */
+    public boolean isAggroed() {
+        return aggro >= AGGRO_START;
     }
 
     /**

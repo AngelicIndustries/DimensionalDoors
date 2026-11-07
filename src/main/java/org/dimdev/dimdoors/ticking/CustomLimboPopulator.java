@@ -3,10 +3,9 @@ package org.dimdev.dimdoors.ticking;
 import java.util.Random;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
-import net.minecraft.block.Block;
 import net.minecraft.entity.Entity;
-import net.minecraft.init.Blocks;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.util.MathHelper;
 import net.minecraft.world.GameRules;
 import net.minecraft.world.World;
 import net.minecraftforge.common.DimensionManager;
@@ -24,6 +23,10 @@ public class CustomLimboPopulator implements IRegularTickReceiver {
     public static final int MAX_MONOLITH_SPAWNING_CHANCE = 100;
     private static final String MOB_SPAWNING_RULE = "doMobSpawning";
     private static final int MAX_MONOLITH_SPAWN_Y = 245;
+    /** A standing player's eye height. */
+    private static final double EYE_LEVEL = 1.62;
+    /** The percentage of Limbo's Monoliths that hover low. */
+    private static final int LOW_MONOLITH_CHANCE = 40;
     private static final int CHUNK_SIZE = 16;
     private static final int MONOLITH_SPAWNING_INTERVAL = 1;
 
@@ -98,7 +101,6 @@ public class CustomLimboPopulator implements IRegularTickReceiver {
         }
 
         int sanity = 0;
-        Block block = Blocks.air;
         boolean didSpawn = false;
 
         // The following initialization code is based on code from ChunkProviderGenerate.
@@ -108,44 +110,34 @@ public class CustomLimboPopulator implements IRegularTickReceiver {
         long factorB = random.nextLong() / 2L * 2L + 1L;
         random.setSeed(chunkX * factorA + chunkZ * factorB ^ pocket.getSeed());
 
-        // The following code really, really needs to be rewritten... "sanity" is not a proper variable name.
-        // ~SenseiKiwi
-        int x, y, z;
+        int x, z;
         do {
             // Select a random column within the chunk
             x = chunkX * CHUNK_SIZE + random.nextInt(CHUNK_SIZE);
             z = chunkZ * CHUNK_SIZE + random.nextInt(CHUNK_SIZE);
-            y = MAX_MONOLITH_SPAWN_Y;
-            block = pocket.getBlock(x, y, z);
-
-            while (block.isAir(pocket, x, y, z) && y > 0) {
-                y--;
-                block = pocket.getBlock(x, y, z);
-
-            }
-            while ((block == DimDoors.blockDimWall || block == DimDoors.blockDimWallPerm) && y > 0) {
-                y--;
-                block = pocket.getBlock(x, y, z);
-            }
-            while (block.isAir(pocket, x, y, z) && y > 0) {
-                y--;
-                block = pocket.getBlock(x, y, z);
-            }
-            if (y > 0) {
-                int jumpSanity = 0;
-                int jumpHeight = 0;
-                do {
-                    jumpHeight = y + random.nextInt(10);
-                    jumpSanity++;
-                } while (!pocket.isAirBlock(x, jumpHeight + 6, z) && jumpSanity < 20);
-
+            int floor = roomFloor(pocket, x, z);
+            if (floor > 0) {
                 MobMonolith monolith = new MobMonolith(pocket);
-                monolith.setLocationAndAngles(x, jumpHeight - (5 - monolith.getRenderSizeModifier() * 5), z, 1, 1);
+                monolith.setLocationAndAngles(x + 0.5, floor + 1 + EYE_LEVEL - monolith.getEyeHeight(), z + 0.5, 1, 1);
                 pocket.spawnEntityInWorld(monolith);
                 didSpawn = true;
             }
             sanity++;
         } while (sanity < 5 && !didSpawn);
+    }
+
+    /**
+     * The floor of the first room down a column: under its roof, with headroom for a player. Legacy took the first
+     * floor it reached past the Fabric of Reality shell its rooms have, which in 6.x's rooms, built without one, was
+     * their roof.
+     */
+    private static int roomFloor(World pocket, int x, int z) {
+        int y = MAX_MONOLITH_SPAWN_Y;
+        while (y > 0 && pocket.isAirBlock(x, y, z)) y--;
+        while (y > 0 && !pocket.isAirBlock(x, y, z)) y--;
+        int top = y;
+        while (y > 0 && pocket.isAirBlock(x, y, z)) y--;
+        return y > 0 && top - y >= 2 ? y : -1;
     }
 
     private void placeMonolithsInLimbo(World limbo, int chunkX, int chunkZ) {
@@ -182,7 +174,13 @@ public class CustomLimboPopulator implements IRegularTickReceiver {
                 } while (!limbo.isAirBlock(x, jumpHeight + 6, z) && jumpSanity < 20);
 
                 Entity monolith = new MobMonolith(limbo);
-                monolith.setLocationAndAngles(x, jumpHeight, z, 1, 1);
+                // Some hover low, their eye at a player's eye level, to open in your face out of the fog. y is above
+                // the two air blocks getFirstUncovered found, so one stands two lower.
+                double posY = random.nextInt(100) < LOW_MONOLITH_CHANCE ? y - 2 + EYE_LEVEL - monolith.getEyeHeight()
+                    : jumpHeight;
+                // An eye inside a block is never seen, so it can't aggro
+                if (!limbo.isAirBlock(x, MathHelper.floor_double(posY + monolith.getEyeHeight()), z)) continue;
+                monolith.setLocationAndAngles(x + 0.5, posY, z + 0.5, 1, 1);
                 limbo.spawnEntityInWorld(monolith);
             } while (yTest > y);
         }
