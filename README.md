@@ -1,4 +1,4 @@
-# Dimensional Doors
+# Dimensional Doors: Adventura Arcana Edition
 
 A fork of [Dimensional Doors](https://github.com/DimensionalDevelopment/DimDoors) 2.2.6 for Minecraft 1.7.10.
 
