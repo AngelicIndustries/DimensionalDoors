@@ -33,11 +33,12 @@ public final class Tesseract {
 
     private Tesseract() {}
 
-    /** Draws it around the origin, turned by angle (radians), with the texture that's bound. */
+    /** Draws it around the origin, turned by angle (radians), at full brightness, with the texture that's bound. */
     public static void draw(float red, float green, float blue, float alpha, double angle) {
         double cos = Math.cos(angle), sin = Math.sin(angle);
         Tessellator tessellator = Tessellator.instance;
         tessellator.startDrawingQuads();
+        tessellator.setBrightness(240 | 240 << 16);
         tessellator.setColorRGBA_F(red, green, blue, alpha);
         for (float[][] face : CORNERS) {
             for (int c = 0; c < 4; c++) {

@@ -68,7 +68,17 @@ public class RenderRift extends TileEntitySpecialRenderer {
             y + 0.5 + shake * Math.sin(1.2 * time * pace) * Math.sin(0.9 * time * 0.014),
             z + 0.5 + shake * Math.sin(1.3 * time * pace) * Math.sin(0.7 * time * 0.014));
         glScaled(0.25, 0.25, 0.25);
-        Tesseract.draw(1, 0.5F, 1, 1, Math.toRadians(rift.renderAngle));
+        double angle = Math.toRadians(rift.renderAngle);
+        Tesseract.draw(1, 0.5F, 1, 1, angle);
+        // It glows: a faint copy a little bigger, added onto whatever is behind it
+        glEnable(GL_BLEND);
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+        glDepthMask(false);
+        glScaled(1.2, 1.2, 1.2);
+        Tesseract.draw(1, 0.5F, 1, 0.35F, angle);
+        glDepthMask(true);
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+        glDisable(GL_BLEND);
         glEnable(GL_CULL_FACE);
         glEnable(GL_LIGHTING);
         glPopMatrix();
