@@ -12,6 +12,7 @@ import net.minecraft.network.Packet;
 import net.minecraft.network.play.server.S35PacketUpdateTileEntity;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.AxisAlignedBB;
+import net.minecraft.util.MathHelper;
 
 import org.dimdev.dimdoors.DimDoors;
 import org.dimdev.dimdoors.config.DDProperties;
@@ -35,7 +36,7 @@ public class TileEntityRift extends DDTileEntityBase {
     private static final int UPDATE_PERIOD = 200;
     private static final int CLOSING_PERIOD = 40;
     // Growth follows the 1.12 rewrite: the size grows like the square root of the time the rift has been loaded, and
-    // it unravels a block within size / 400 blocks with a chance of size / 500000 each tick
+    // it unravels a block within size / 400 blocks with a chance of size / 500000 each tick (see unravel for where)
     private static final float SIZE_PER_BLOCK = 400;
     private static final float MAX_UNRAVEL_CHANCE = 500000;
     // Single rifts spawn Endermen once they unravel this far (about an hour loaded at the default speed)
@@ -135,16 +136,26 @@ public class TileEntityRift extends DDTileEntityBase {
         }
     }
 
-    /** Unravels one block at a random spot within the radius, at least a block away, as the 1.12 rewrite does. */
+    /**
+     * Unravels the nearest block in a random direction within the radius (at least the blocks next to it), so a rift
+     * eats out a hollow around itself that widens as it grows. Spread evenly through the radius instead, as in the 1.12
+     * rewrite, most attempts land in air and the damage thins out as the rift grows. A block the rift can't unravel,
+     * such as a liquid or an immune block, shields what lies behind it.
+     */
     private void unravel() {
-        float radius = radius();
-        DimDoors.blockRift
-            .unravel(worldObj, xCoord + offset(radius), yCoord + offset(radius), zCoord + offset(radius), random);
-    }
-
-    private static int offset(float radius) {
-        double offset = (random.nextDouble() * 2 - 1) * radius;
-        return (int) (offset > 0 ? Math.ceil(offset) : Math.floor(offset));
+        double dy = random.nextDouble() * 2 - 1;
+        double angle = random.nextDouble() * Math.PI * 2;
+        double flat = Math.sqrt(1 - dy * dy);
+        double dx = flat * Math.cos(angle), dz = flat * Math.sin(angle);
+        float reach = Math.max(1.5F, radius());
+        for (double d = 1; d <= reach; d += 0.5) {
+            int x = MathHelper.floor_double(xCoord + 0.5 + dx * d);
+            int y = MathHelper.floor_double(yCoord + 0.5 + dy * d);
+            int z = MathHelper.floor_double(zCoord + 0.5 + dz * d);
+            if (x == xCoord && y == yCoord && z == zCoord || worldObj.isAirBlock(x, y, z)) continue;
+            DimDoors.blockRift.unravel(worldObj, x, y, z, random);
+            return;
+        }
     }
 
     /** Clients grow their copy too; this corrects it each time the radius passes another block. */
