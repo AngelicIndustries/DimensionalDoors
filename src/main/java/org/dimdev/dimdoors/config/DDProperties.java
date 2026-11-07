@@ -98,6 +98,7 @@ public class DDProperties {
     public final boolean RebuildDoorsAtRifts;
     public final int MonolithAggroRange;
     public final int MonolithNoticeRange;
+    public final double MonolithAggroScreenEffect;
     public final double LimboFogDensity;
     public static final String LIMBO_SHADER_FOG = "Limbo Shader Fog";
     /** Limbo's fog strength under each shader pack, by pack name; /limbofog adds to it. */
@@ -616,6 +617,15 @@ public class DDProperties {
             2,
             128)
             .getInt();
+        MonolithAggroScreenEffect = config.get(
+            CATEGORY_ENTITY,
+            "Monolith Aggro Screen Effect",
+            1.0,
+            "How strongly the screen of a player a Monolith is about to take pulses red at the edges and breaks up in "
+                + "red glitches, from 0 (not at all) to 1. It worsens the longer the Monolith has them. Client only.",
+            0.0,
+            1.0)
+            .getDouble();
         MonolithSpawningChance = config
             .get(
                 Configuration.CATEGORY_GENERAL,

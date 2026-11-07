@@ -12,9 +12,11 @@
     "MixinNetherBridgeThrone"
   ],
   "client": [
+    "AccessorShaderGroup",
     "MixinCommonUniformsLimboDarkness",
     "MixinEntityRendererLimboFog",
-    "MixinEntityRendererLimboLight"
+    "MixinEntityRendererLimboLight",
+    "MixinEntityRendererMonolithAggro"
   ],
   "server": [],
   "injectors": {

@@ -275,6 +275,11 @@ public class MobMonolith extends EntityFlying implements IMob {
         return ((float) aggro) / MAX_AGGRO;
     }
 
+    /** How far the aggro has gone: 0 when it starts (the red particles) to 1 when the Monolith takes the player. */
+    public float getAggroDepth() {
+        return MathHelper.clamp_float((float) (aggro - AGGRO_START) / (MAX_AGGRO - AGGRO_START), 0, 1);
+    }
+
     private void facePlayer(EntityPlayer player) {
         double d0 = player.posX - this.posX;
         double d1 = player.posZ - this.posZ;
