@@ -611,7 +611,7 @@ public class DDProperties {
         MonolithNoticeRange = config.get(
             CATEGORY_ENTITY,
             "Monolith Notice Range",
-            12,
+            8,
             "How close, in blocks, a player in sight has to come for a Monolith to open its eye. Once its eye is open "
                 + "it follows them out to the Monolith Aggro Range.",
             2,

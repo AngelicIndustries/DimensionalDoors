@@ -31,8 +31,9 @@ import industries.angelic.angellib.util.sound.ICustomSourceRadiusSound;
 /**
  * The Monoliths as the player hears them, played on the client from what it knows of them, each from where its
  * Monolith stands. A Monolith that hasn't noticed the player drones (the nearest few within hearing). One whose eye
- * starts to open on the player lets out a sub rush. While an aggroed one can see the player and its red particles
- * gather, a bass sweep loops, after a surge one time in three, and fades out slowly once it can't.
+ * opens on the player falls silent while it opens, and lets out a sub rush once it is open and its aggro starts. While
+ * an aggroed one can see the player and its red particles gather, a bass sweep loops, after a surge one time in three,
+ * and fades out slowly once it can't.
  */
 public final class MonolithSounds {
 
@@ -89,9 +90,10 @@ public final class MonolithSounds {
             int id = monolith.getEntityId();
             present.add(id);
             double distance = monolith.getDistanceToEntity(player);
-            // The sub rush as its eye starts to open; it drones until then
+            // It drones until its eye starts to open, is silent while it opens, and lets out the sub rush as the aggro
+            // starts
             if (monolith.isDangerous() && distance <= range && monolith.getTextureState() > 0) {
-                if (noticed.add(id)) mc.getSoundHandler()
+                if (monolith.isAggroed() && noticed.add(id)) mc.getSoundHandler()
                     .playSound(new Follower(NOTICE, monolith, false, NOTICE_RANGE, 1, 1));
                 // As the Monolith decides to spawn its particles; the nearest aggroed one that sees the player is heard
                 if (monolith.isAggroed() && player.canEntityBeSeen(monolith)

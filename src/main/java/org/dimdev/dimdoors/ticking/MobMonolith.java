@@ -25,12 +25,10 @@ public class MobMonolith extends EntityFlying implements IMob {
     private static final short MAX_AGGRO = 250;
     /** The eye is fully open at this aggro; the aggro proper (sounds, particles, the pull) starts just before. */
     private static final short EYE_OPEN = 100;
-    private static final short AGGRO_START = 90;
+    private static final short AGGRO_START = EYE_OPEN;
     /** How fast the eye opens on a player in sight, per tick. */
-    private static final short OPENING_RATE = 4;
+    private static final short OPENING_RATE = 8;
     // An unseen player nearby opens the eye this far at most, never into the aggro
-    private static final short MAX_AGGRO_CAP = 60;
-    private static final short MIN_AGGRO_CAP = 25;
     private static final int MAX_TEXTURE_STATE = 18;
     private static final int MAX_SOUND_COOLDOWN = 200;
     private static final int AGGRO_WATCHER_INDEX = 16;
@@ -42,7 +40,6 @@ public class MobMonolith extends EntityFlying implements IMob {
     public float pitchLevel;
     private short aggro = 0;
     private int soundTime = 0;
-    private final short aggroCap;
 
     private static DDProperties properties = null;
 
@@ -50,7 +47,6 @@ public class MobMonolith extends EntityFlying implements IMob {
         super(world);
         this.setSize(WIDTH, HEIGHT);
         this.noClip = true;
-        this.aggroCap = (short) MathHelper.getRandomIntegerInRange(this.rand, MIN_AGGRO_CAP, MAX_AGGRO_CAP);
         if (properties == null) properties = DDProperties.instance();
     }
 
@@ -193,18 +189,12 @@ public class MobMonolith extends EntityFlying implements IMob {
                     // Aggro increases faster outside of Limbo
                     aggro += 3;
                 }
-            } else if (visibility) {
-                // In sight but not near enough yet: the eye stays as it is
+            } else if (isDangerous()) {
+                // Otherwise the eye closes, slowly. Until a player comes near in sight it stays shut, not even half
+                // open, so it opens all at once.
+                aggro--;
             } else {
-                if (isDangerous()) {
-                    if (aggro > aggroCap) {
-                        // Decrease aggro over time
-                        aggro--;
-                    } else if (player != null && (aggro < aggroCap)) {
-                        // Increase aggro if a player is within range and aggro < aggroCap
-                        aggro++;
-                    }
-                } else aggro -= 3;
+                aggro -= 3;
             }
             // Clamp the aggro level
             int maxAggro = isDangerous() ? MAX_AGGRO : 180;
