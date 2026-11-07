@@ -52,6 +52,8 @@ public final class StyledGateways {
         // The door and its dungeon link, as Legacy's gateways have
         int doorY = template.doorY(groundY);
         int orientation = template.doorOrientation(turns);
+        // The ring's door faces its wide open side, with the arch and its steps behind; 6.x faced the arch
+        if (enclosed) orientation = (orientation + 2) & 3;
         PocketManager.createDimensionData(world)
             .createLink(x, doorY + 1, z, LinkType.DUNGEON, orientation);
         ItemDoor.placeDoorBlock(world, x, doorY, z, orientation, DimDoors.transientDoor);

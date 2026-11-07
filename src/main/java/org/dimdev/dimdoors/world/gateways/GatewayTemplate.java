@@ -22,7 +22,7 @@ public final class GatewayTemplate {
     static final int VOID = 0, AIR = 1, BASE = 2, COLUMN = 3, ACCENT = 4, STAIRS = 5, MUD = 6, LIGHT = 7;
 
     /** How far the ground under a template may stray from the door's ground, up or down. */
-    private static final int MAX_UNEVENNESS = 2;
+    private static final int MAX_UNEVENNESS = 1;
     /** How far a template's floor is propped up where the ground falls away under it. */
     private static final int MAX_FILL = 8;
 
@@ -124,10 +124,22 @@ public final class GatewayTemplate {
     }
 
     /**
-     * Whether the ground is even enough: under the template's blocks within a couple of blocks of the door's ground,
-     * dry on land and under water for an underwater gateway; where it only clears air, not much higher than that.
+     * Whether the ground is even enough: under the template's blocks within a block of the door's ground, dry on land
+     * and under water for an underwater gateway; where it only clears air, not much higher than that. And no tree
+     * trunk stands where it builds or clears.
      */
     public boolean fits(World world, int x, int groundY, int z, int turns, boolean underwater) {
+        int baseY = baseY(groundY);
+        for (int ty = 0; ty < height; ty++) {
+            for (int tz = 0; tz < length; tz++) {
+                for (int tx = 0; tx < width; tx++) {
+                    if (role(tx, ty, tz) == VOID) continue;
+                    int wx = worldX(x, tx, tz, turns), wy = baseY + ty, wz = worldZ(z, tx, tz, turns);
+                    if (world.getBlock(wx, wy, wz)
+                        .isWood(world, wx, wy, wz)) return false;
+                }
+            }
+        }
         for (int tx = 0; tx < width; tx++) {
             for (int tz = 0; tz < length; tz++) {
                 int column = columns[tz * width + tx];
@@ -175,8 +187,9 @@ public final class GatewayTemplate {
                     if (role == VOID) continue;
                     int wx = worldX(x, tx, tz, turns), wy = baseY + ty, wz = worldZ(z, tx, tz, turns);
                     if (role == AIR) {
-                        // Under water the gateway fills with water, as on 6.x
-                        if (!underwater) world.setBlock(wx, wy, wz, Blocks.air, 0, 2);
+                        // Under water the gateway fills with water, as on 6.x; leaves overhead stay
+                        if (!underwater && !world.getBlock(wx, wy, wz)
+                            .isLeaves(world, wx, wy, wz)) world.setBlock(wx, wy, wz, Blocks.air, 0, 2);
                         continue;
                     }
                     Block block = materials.block(role);
