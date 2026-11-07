@@ -78,6 +78,13 @@ public class PocketProvider extends WorldProvider {
         return false;
     }
 
+    /** No weather in pockets: they share the Overworld's, which a shader pack would light and fog them by. */
+    @Override
+    public void updateWeather() {
+        worldObj.prevRainingStrength = worldObj.rainingStrength = 0;
+        worldObj.prevThunderingStrength = worldObj.thunderingStrength = 0;
+    }
+
     @Override
     public boolean canBlockFreeze(int x, int y, int z, boolean byWater) {
         return false;

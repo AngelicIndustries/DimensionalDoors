@@ -15,6 +15,7 @@ import net.minecraftforge.client.IRenderHandler;
 
 import org.dimdev.dimdoors.CloudRenderBlank;
 import org.dimdev.dimdoors.DimDoors;
+import org.dimdev.dimdoors.client.LimboFog;
 import org.dimdev.dimdoors.config.DDProperties;
 import org.dimdev.dimdoors.pockets.SharedPockets;
 import org.dimdev.dimdoors.ticking.CustomLimboPopulator;
@@ -81,6 +82,16 @@ public class LimboProvider extends WorldProvider {
     @Override
     public boolean canSnowAt(int x, int y, int z, boolean checkLight) {
         return false;
+    }
+
+    /**
+     * No weather in Limbo. It shares the Overworld's, and though no rain falls here, a shader pack seeing rain draws
+     * its rain sky and fog over Limbo's dark (Complementary does).
+     */
+    @Override
+    public void updateWeather() {
+        worldObj.prevRainingStrength = worldObj.rainingStrength = 0;
+        worldObj.prevThunderingStrength = worldObj.thunderingStrength = 0;
     }
 
     @Override
@@ -167,7 +178,9 @@ public class LimboProvider extends WorldProvider {
     @SideOnly(Side.CLIENT)
     @Override
     public Vec3 getFogColor(float par1, float par2) {
-        return Vec3.createVectorHelper(.2, .2, .2);
+        // Black under the thick fog (LimboFog), the old grey without it
+        double grey = LimboFog.density() > 0 ? 0 : .2;
+        return Vec3.createVectorHelper(grey, grey, grey);
 
     }
 

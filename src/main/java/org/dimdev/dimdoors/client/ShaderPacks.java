@@ -7,6 +7,9 @@ import cpw.mods.fml.common.Loader;
 /** Whether a shader pack draws the world, through the Iris API that Angelica includes. False without Angelica. */
 public final class ShaderPacks {
 
+    private static final String UNKNOWN = "?";
+    private static Method packName;
+
     private static Object api;
     private static Method inUse;
     private static boolean looked;
@@ -33,6 +36,18 @@ public final class ShaderPacks {
         } catch (ReflectiveOperationException e) {
             api = null;
             return false;
+        }
+    }
+
+    /** The name of the pack in use, as Angelica lists it. */
+    public static String name() {
+        try {
+            if (packName == null) packName = Class.forName("net.coderbot.iris.Iris")
+                .getMethod("getCurrentPackName");
+            Object name = packName.invoke(null);
+            return name != null ? name.toString() : UNKNOWN;
+        } catch (ReflectiveOperationException | LinkageError e) {
+            return UNKNOWN;
         }
     }
 }

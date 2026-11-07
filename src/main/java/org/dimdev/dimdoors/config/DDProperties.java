@@ -1,6 +1,8 @@
 package org.dimdev.dimdoors.config;
 
 import java.io.File;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 import net.minecraftforge.common.config.Configuration;
 
@@ -96,6 +98,15 @@ public class DDProperties {
     public final boolean RebuildDoorsAtRifts;
     public final int MonolithAggroRange;
     public final int MonolithNoticeRange;
+    public final double LimboFogDensity;
+    public static final String LIMBO_SHADER_FOG = "Limbo Shader Fog";
+    /** Limbo's fog strength under each shader pack, by pack name; /limbofog adds to it. */
+    public final Map<String, Double> LimboShaderFog = new LinkedHashMap<String, Double>();
+    public static final String LIMBO_SHADER_LIGHT = "Limbo Shader Light";
+    /** Limbo's even light under each shader pack, by pack name; /limbofog adds to it. */
+    public final Map<String, Double> LimboShaderLight = new LinkedHashMap<String, Double>();
+    /** These settings as loaded, comments and all, for the in-game tuners that save to them. */
+    public final Configuration Config;
     public final boolean LimboReturnsInventoryEnabled;
     public final boolean DoorRenderingEnabled;
     public final boolean TNFREAKINGT_Enabled;
@@ -136,6 +147,20 @@ public class DDProperties {
     private final String CATEGORY_DOOR_VARIANTS = "door_variants";
     private final String CATEGORY_ENCHANTMENTS = "enchantments";
 
+    /** Reads a list of pack name=value lines into values, leaving out lines that aren't. */
+    private static void readPackValues(Configuration config, String key, String comment, Map<String, Double> values) {
+        for (String entry : config.get(Configuration.CATEGORY_GENERAL, key, new String[0], comment)
+            .getStringList()) {
+            int split = entry.lastIndexOf('=');
+            if (split <= 0) continue;
+            try {
+                values.put(entry.substring(0, split), Double.parseDouble(entry.substring(split + 1)));
+            } catch (NumberFormatException e) {
+                // Left out
+            }
+        }
+    }
+
     private int lootWeight(Configuration config, String item, int weight) {
         return config
             .get(
@@ -157,6 +182,7 @@ public class DDProperties {
 
         CustomSchematicDirectory = configFile.getParent() + CUSTOM_SCHEMATIC_SUBDIRECTORY;
         Configuration config = new Configuration(configFile);
+        Config = config;
         config.load();
 
         CraftingDimensionalDoorAllowed = config.get(CATEGORY_CRAFTING, "Allow Crafting Dimensional Door", true)
@@ -373,6 +399,30 @@ public class DDProperties {
             0.0,
             1.0)
             .getDouble();
+        LimboFogDensity = config.get(
+            Configuration.CATEGORY_GENERAL,
+            "Limbo Fog Density",
+            0.1,
+            "How thick Limbo's black fog is: at 0.1 everything past 30 blocks is black, at 0.2 past 15. 0 for the old light fog.",
+            0.0,
+            1.0)
+            .getDouble();
+        readPackValues(
+            config,
+            LIMBO_SHADER_FOG,
+            "How strong Limbo's fog is under each shader pack, as pack name=strength (/limbofog sets it), since packs "
+                + "draw their own fog. At 1 the sky turns black and the fog closes at about 20 blocks in Complementary "
+                + "and 15 in BSL; up to 2 it gets thicker, below 1 the sky shows through, 0 is the pack's own Limbo. "
+                + "A name can be the start of the pack's, with more of it after a +: ComplementaryUnbound+EuphoriaPatches. "
+                + "Packs not listed get 1.6.",
+            LimboShaderFog);
+        readPackValues(
+            config,
+            LIMBO_SHADER_LIGHT,
+            "How much even light Limbo gets under each shader pack, as pack name=light (/limbofog sets it): the shader "
+                + "side of Limbo Ambient Light, given to the pack as faint night vision. 0 to 1; packs not listed get "
+                + "0.3. Names as for Limbo Shader Fog.",
+            LimboShaderLight);
         FadebloomsEnabled = config.get(
             Configuration.CATEGORY_GENERAL,
             "Enable Fadeblooms",

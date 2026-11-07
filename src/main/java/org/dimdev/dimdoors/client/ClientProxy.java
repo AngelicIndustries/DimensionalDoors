@@ -22,6 +22,7 @@ import org.dimdev.dimdoors.tileentities.TileEntityTransTrapdoor;
 import cpw.mods.fml.client.registry.ClientRegistry;
 import cpw.mods.fml.client.registry.RenderingRegistry;
 import cpw.mods.fml.common.FMLCommonHandler;
+import cpw.mods.fml.common.Loader;
 import cpw.mods.fml.common.network.simpleimpl.MessageContext;
 
 public class ClientProxy extends CommonProxy {
@@ -99,6 +100,10 @@ public class ClientProxy extends CommonProxy {
     public void registerSidedHooks(DDProperties properties) {
         ClientOnlyHooks hooks = new ClientOnlyHooks(properties);
         MinecraftForge.EVENT_BUS.register(hooks);
+        LimboFogCommand.register();
+        if (Loader.isModLoaded("distanthorizons")) FMLCommonHandler.instance()
+            .bus()
+            .register(new DistantHorizonsInLimbo());
         MinecraftForge.TERRAIN_GEN_BUS.register(hooks);
         PocketManager.getDimwatcher()
             .registerReceiver(new PocketManager.ClientDimWatcher());
