@@ -82,6 +82,10 @@ public class DDProperties {
     public final boolean SeamlessLimboDeath;
     public final boolean HungerInLimbo;
     public final boolean DarkLimbo;
+    public final boolean ShowRiftCore;
+    public final int HighlightRiftCoreFor;
+    public final double RiftSize;
+    public final double RiftJitter;
     public final float LimboAmbientLight;
     public final boolean FadebloomsEnabled;
     public final int FadebloomLight;
@@ -317,6 +321,38 @@ public class DDProperties {
             "Sets whether Limbo is dark: a midnight without stars where unlit places are black and the Eternal Fabric "
                 + "glows. Off: Limbo is evenly bright, as Dimensional Doors always had it.")
             .getBoolean(true);
+        ShowRiftCore = config.get(
+            Configuration.CATEGORY_GENERAL,
+            "Show Rift Cores",
+            false,
+            "Sets whether open rifts always show their spinning core. Off: they show it for a while after a Rift Remover "
+                + "or Rift Stabilizer misses, to help find them.")
+            .getBoolean(false);
+        HighlightRiftCoreFor = config
+            .get(
+                Configuration.CATEGORY_GENERAL,
+                "Highlight Rift Cores For",
+                15000,
+                "How long open rifts show their core after a rift tool misses, in milliseconds.",
+                0,
+                600000)
+            .getInt(15000);
+        RiftSize = config.get(
+            Configuration.CATEGORY_GENERAL,
+            "Rift Crack Size",
+            1.0,
+            "How big the black cracks of open rifts are drawn; 1 reaches a block past the hollow a rift eats, 0 draws none.",
+            0.0,
+            10.0)
+            .getDouble(1.0);
+        RiftJitter = config.get(
+            Configuration.CATEGORY_GENERAL,
+            "Rift Crack Shaking",
+            1.0,
+            "How much the cracks of open rifts shake, in step with their size; 1 is a few percent of it, 0 keeps them still.",
+            0.0,
+            10.0)
+            .getDouble(1.0);
         LimboAmbientLight = (float) config.get(
             Configuration.CATEGORY_GENERAL,
             "Limbo Ambient Light",

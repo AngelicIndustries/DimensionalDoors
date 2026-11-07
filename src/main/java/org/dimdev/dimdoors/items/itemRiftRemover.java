@@ -62,8 +62,10 @@ public class itemRiftRemover extends Item {
                 FMLClientHandler.instance()
                     .getClient().playerController
                         .onPlayerRightClick(player, world, stack, hx, hy, hz, hit.sideHit, hit.hitVec);
+                return stack;
             }
         }
+        DimDoors.proxy.highlightRiftCores();
         return stack;
     }
 

@@ -16,6 +16,7 @@ import org.dimdev.dimdoors.core.PocketManager;
 import org.dimdev.dimdoors.ticking.EntityFallingDripstone;
 import org.dimdev.dimdoors.ticking.MobMonolith;
 import org.dimdev.dimdoors.tileentities.TileEntityDimDoor;
+import org.dimdev.dimdoors.tileentities.TileEntityRift;
 import org.dimdev.dimdoors.tileentities.TileEntityTransTrapdoor;
 
 import cpw.mods.fml.client.registry.ClientRegistry;
@@ -30,6 +31,9 @@ public class ClientProxy extends CommonProxy {
         // MinecraftForgeClient.preloadTexture(BLOCK_PNG);
         ClientRegistry.bindTileEntitySpecialRenderer(TileEntityDimDoor.class, new RenderDimDoor());
         ClientRegistry.bindTileEntitySpecialRenderer(TileEntityTransTrapdoor.class, new RenderTransTrapdoor());
+        ClientRegistry.bindTileEntitySpecialRenderer(TileEntityRift.class, new RenderRift());
+        // Build the crack shapes now rather than on the first rift in sight
+        RiftCurves.get(0);
 
         // MinecraftForgeClient.preloadTexture(RIFT2_PNG);
         RenderingRegistry.registerEntityRenderingHandler(MobMonolith.class, new RenderMobObelisk(.5F));
@@ -85,6 +89,11 @@ public class ClientProxy extends CommonProxy {
 
     @Override
     public void printStringClient(String string) {}
+
+    @Override
+    public void highlightRiftCores() {
+        RenderRift.showCoresUntil = System.currentTimeMillis() + DimDoors.properties.HighlightRiftCoreFor;
+    }
 
     @Override
     public void registerSidedHooks(DDProperties properties) {

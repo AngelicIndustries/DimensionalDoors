@@ -144,6 +144,9 @@ public class CommonProxy implements IGuiHandler {
         }
     }
 
+    /** Shows every rift's core for a while, after a rift tool misses (client only). */
+    public void highlightRiftCores() {}
+
     public void registerSidedHooks(DDProperties properties) {
         new ServerPacketHandler();
     }

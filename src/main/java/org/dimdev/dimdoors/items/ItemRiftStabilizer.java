@@ -61,6 +61,8 @@ public class ItemRiftStabilizer extends Item {
                     hit.blockZ,
                     hit.sideHit,
                     hit.hitVec);
+        } else {
+            DimDoors.proxy.highlightRiftCores();
         }
         return stack;
     }

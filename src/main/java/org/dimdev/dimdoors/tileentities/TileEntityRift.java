@@ -22,6 +22,9 @@ import org.dimdev.dimdoors.core.PocketManager;
 import org.dimdev.dimdoors.util.Point4D;
 import org.dimdev.dimdoors.watcher.ClientLinkData;
 
+import cpw.mods.fml.relauncher.Side;
+import cpw.mods.fml.relauncher.SideOnly;
+
 public class TileEntityRift extends DDTileEntityBase {
 
     private static final int RIFT_INTERACTION_RANGE = 5;
@@ -41,6 +44,10 @@ public class TileEntityRift extends DDTileEntityBase {
     private static final float MAX_UNRAVEL_CHANCE = 500000;
     // Single rifts spawn Endermen once they unravel this far (about an hour loaded at the default speed)
     private static final float ENDERMAN_RADIUS = 3;
+    /**
+     * How far a crack shakes, as a share of its width. 1.12 used the cube of the width, up to 100 blocks on old rifts.
+     */
+    public static final double CRACK_SHAKE = 0.03;
 
     private static final Random random = new Random();
 
@@ -55,6 +62,10 @@ public class TileEntityRift extends DDTileEntityBase {
 
     public int riftRotation = random.nextInt(360);
     public float size = 0;
+    /** Which crack shape this rift draws; the client takes it modulo the number of shapes. */
+    public int curveId = random.nextInt(1 << 16);
+    /** The core's spin, client only. */
+    public float renderAngle;
     private boolean stabilized = false;
     private int syncedRadius;
 
@@ -107,6 +118,14 @@ public class TileEntityRift extends DDTileEntityBase {
             spread(properties);
         }
         updateTimer++;
+    }
+
+    /**
+     * How wide this rift's crack is drawn, in blocks: a block past the hollow it eats. 1.12 drew it a third bigger than
+     * that, which got huge on old rifts.
+     */
+    public double crackSize() {
+        return DimDoors.properties.RiftSize * (2 * radius() + 2);
     }
 
     /** How far around it this rift unravels blocks. */
@@ -324,6 +343,8 @@ public class TileEntityRift extends DDTileEntityBase {
         this.spawnedEndermenID = nbt.getInteger("spawnedEndermenID");
         this.riftRotation = nbt.getInteger("riftRotation");
         this.size = nbt.getFloat("size");
+        // Rifts saved before cracks were drawn pick a shape from where they are
+        this.curveId = nbt.hasKey("curveId") ? nbt.getInteger("curveId") : xCoord * 31 + yCoord * 17 + zCoord;
         this.stabilized = nbt.getBoolean("stabilized");
 
     }
@@ -339,8 +360,31 @@ public class TileEntityRift extends DDTileEntityBase {
         nbt.setInteger("spawnedEndermenID", this.spawnedEndermenID);
         nbt.setInteger("riftRotation", this.riftRotation);
         nbt.setFloat("size", this.size);
+        nbt.setInteger("curveId", this.curveId);
         nbt.setBoolean("stabilized", this.stabilized);
 
+    }
+
+    /** Big cracks reach far past the rift block, so they mustn't be culled with it. */
+    @Override
+    @SideOnly(Side.CLIENT)
+    public AxisAlignedBB getRenderBoundingBox() {
+        double crack = crackSize();
+        double reach = 1 + crack / 2 + DimDoors.properties.RiftJitter * CRACK_SHAKE * crack;
+        return AxisAlignedBB.getBoundingBox(
+            xCoord + 0.5 - reach,
+            yCoord + 0.5 - reach,
+            zCoord + 0.5 - reach,
+            xCoord + 0.5 + reach,
+            yCoord + 0.5 + reach,
+            zCoord + 0.5 + reach);
+    }
+
+    @Override
+    @SideOnly(Side.CLIENT)
+    public double getMaxRenderDistanceSquared() {
+        double distance = 64 + crackSize() / 2;
+        return distance * distance;
     }
 
     @Override
