@@ -3,7 +3,6 @@ package org.dimdev.dimdoors.world;
 import java.util.Random;
 
 import net.minecraft.block.Block;
-import net.minecraft.block.BlockContainer;
 import net.minecraft.init.Blocks;
 import net.minecraft.world.ChunkCoordIntPair;
 import net.minecraft.world.World;
@@ -165,6 +164,8 @@ public class LimboDecay {
             }
         }
 
-        return (block == null || !(block instanceof BlockContainer));
+        // Anything with a tile entity, not only vanilla's containers: many mods' chests and machines don't extend
+        // BlockContainer, and decaying one would lose what it holds
+        return !block.hasTileEntity(world.getBlockMetadata(x, y, z));
     }
 }
