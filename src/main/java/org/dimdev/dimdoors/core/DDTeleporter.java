@@ -471,9 +471,9 @@ public class DDTeleporter {
             case PERSONAL:
                 return setupPersonalLink(link, properties, entity, door);
             case SAFE_EXIT:
-                return generateSafeExit(link, properties);
+                return generateSafeExit(link, properties, door);
             case DUNGEON_EXIT:
-                return generateDungeonExit(link, properties);
+                return generateDungeonExit(link, properties, door);
             case UNSAFE_EXIT:
                 return generateUnsafeExit(link);
             case LIMBO:
@@ -662,8 +662,8 @@ public class DDTeleporter {
         }
     }
 
-    private static boolean generateSafeExit(DimLink link, DDProperties properties) {
-        return generateSafeExit(rootOf(link), link, properties);
+    private static boolean generateSafeExit(DimLink link, DDProperties properties, Block door) {
+        return generateSafeExit(rootOf(link), link, properties, door);
     }
 
     /** The real dimension the pocket a link is in hangs from, or the link's own dimension outside pockets. */
@@ -671,7 +671,7 @@ public class DDTeleporter {
         return PocketManager.createDimensionDataDangerously(SharedPockets.rootDimensionOf(link.source()));
     }
 
-    private static boolean generateDungeonExit(DimLink link, DDProperties properties) {
+    private static boolean generateDungeonExit(DimLink link, DDProperties properties, Block door) {
         // A dungeon exit acts the same as a safe exit, but has the chance of
         // taking the user to any non-pocket dimension, excluding Limbo and The End.
         // There is a chance of choosing the Nether first before other root dimensions
@@ -690,24 +690,26 @@ public class DDTeleporter {
                 return generateSafeExit(
                     PocketManager.createDimensionDataDangerously(OVERWORLD_DIMENSION_ID),
                     link,
-                    properties);
+                    properties,
+                    door);
             }
             if (root.id() != NETHER_DIMENSION_ID && random.nextInt(MAX_NETHER_EXIT_CHANCE) < NETHER_EXIT_CHANCE) {
                 return generateSafeExit(
                     PocketManager.createDimensionDataDangerously(NETHER_DIMENSION_ID),
                     link,
-                    properties);
+                    properties,
+                    door);
             }
             for (int attempts = 0; attempts < 10; attempts++) {
                 NewDimData selection = roots.get(random.nextInt(roots.size()));
                 if (selection != root && isValidForDungeonExit(selection, properties)) {
-                    return generateSafeExit(selection, link, properties);
+                    return generateSafeExit(selection, link, properties, door);
                 }
             }
         }
 
         // Yes, this could lead you back into Limbo. That's intentional.
-        return generateSafeExit(root, link, properties);
+        return generateSafeExit(root, link, properties, door);
     }
 
     private static boolean isValidForDungeonExit(NewDimData destination, DDProperties properties) {
@@ -721,7 +723,8 @@ public class DDTeleporter {
         return (world != null && !SPIRIT_WORLD_NAME.equals(world.provider.getDimensionName()));
     }
 
-    private static boolean generateSafeExit(NewDimData destinationDim, DimLink link, DDProperties properties) {
+    private static boolean generateSafeExit(NewDimData destinationDim, DimLink link, DDProperties properties,
+        Block door) {
         // A safe exit attempts to place a Warp Door in a dimension with
         // some precautions to protect the player. The X and Z coordinates
         // are fixed to match the source (mostly - may be shifted a little),
@@ -729,6 +732,8 @@ public class DDTeleporter {
         // a safe location to place the door.
 
         Point4D source = link.source();
+        // The traversed door builds the far end, so another mod's door can place its own kind
+        IDimDoor exitDoor = door instanceof IDimDoor ? (IDimDoor) door : (IDimDoor) DimDoors.warpDoor;
         World world = PocketManager.loadDimension(destinationDim.id());
         if (world == null) {
             return false;
@@ -751,7 +756,7 @@ public class DDTeleporter {
                     // checking for a replaceable block, because we only allow
                     // exits intersecting blocks on those two surfaces.
                     if (!world.isBlockNormalCubeDefault(x + dx, y, z + dz, false)) {
-                        world.setBlock(x + dx, y, z + dz, DimDoors.blockDimWall, 0, 2);
+                        exitDoor.placeExitPlatformBlock(world, x + dx, y, z + dz, source);
                     }
                 }
             }
@@ -778,7 +783,7 @@ public class DDTeleporter {
 
             // Set up the warp door at the destination
             orientation = BlockRotator.transformMetadata(orientation, 2, DimDoors.warpDoor);
-            ItemDoor.placeDoorBlock(world, x, y + 1, z, orientation, DimDoors.warpDoor);
+            exitDoor.placeExitDoor(world, x, y + 1, z, orientation, source);
 
             // Complete the link to the destination
             // This comes last so the destination isn't set unless everything else works first

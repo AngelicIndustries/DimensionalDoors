@@ -40,8 +40,12 @@ When Dimensional Doors is about to turn a player's death into a trip to Limbo, i
 `org.dimdev.dimdoors.api.event.LimboDeathEvent` on `MinecraftForge.EVENT_BUS`, before it touches the inventory.
 Cancel it to postpone Limbo, for example to offer a resurrection: the death then happens as an ordinary one, and the
 player goes to Limbo when they respawn. A respawn of such a player fires the cancellable `LimboRespawnEvent`; cancel
-it to keep them out of Limbo, for example because the respawn is a resurrection. Depend on the `dev` jar with
-`compileOnly`.
+it to keep them out of Limbo, for example because the respawn is a resurrection.
+
+Another mod can add its own door by extending `org.dimdev.dimdoors.blocks.BaseDimDoor`. Any such door is immune to
+rift regeneration. Through `IDimDoor.placeExitDoor` and `IDimDoor.placeExitPlatformBlock` it can build its own kind of
+door and platform at the far end of a safe exit. `org.dimdev.dimdoors.api.DimDoorsLinks` tells what link starts at a
+block and closes a link without leaving a rift. Depend on the `dev` jar with `compileOnly`.
 
 ## Building
 

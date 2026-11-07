@@ -347,17 +347,17 @@ public class BlockRift extends Block implements ITileEntityProvider {
 
             return (block.blockResistance >= MIN_IMMUNE_RESISTANCE || modBlocksImmuneToRift.contains(block)
                 || blocksImmuneToRift.contains(block)
-                || block instanceof DoorVariantBlock);
+                || block instanceof IDimDoor);
         }
         return false;
     }
 
     public boolean isModBlockImmune(World world, int x, int y, int z) {
         // Check whether the block at the specified location is one of the
-        // rift-resistant blocks from DD.
+        // rift-resistant blocks from DD, or any mod's Dimensional Doors door.
         Block block = world.getBlock(x, y, z);
         if (block != null) {
-            return modBlocksImmuneToRift.contains(block) || block instanceof DoorVariantBlock;
+            return modBlocksImmuneToRift.contains(block) || block instanceof IDimDoor;
         }
         return false;
     }
