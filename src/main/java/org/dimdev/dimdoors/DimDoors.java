@@ -228,6 +228,9 @@ public class DimDoors {
         FMLCommonHandler.instance()
             .bus()
             .register(limboArrivals);
+        FMLCommonHandler.instance()
+            .bus()
+            .register(new PostponedLimbo(properties));
 
         // Initialize LimboDecay instance: required for BlockLimbo
         limboDecay = new LimboDecay(properties);

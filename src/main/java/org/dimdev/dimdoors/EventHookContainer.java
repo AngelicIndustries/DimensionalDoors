@@ -114,6 +114,9 @@ public class EventHookContainer {
             && isValidSourceForLimbo(entity.worldObj.provider)) {
             if (entity.worldObj.provider instanceof PocketProvider) {
                 EntityPlayer player = (EntityPlayer) entity;
+                if (PostponedLimbo.postpone(player, event.source)) {
+                    return false;
+                }
                 DimDoors.deathTracker.addUsername(
                     player.getGameProfile()
                         .getName());
@@ -122,6 +125,9 @@ public class EventHookContainer {
                 return false;
             } else if (entity.worldObj.provider instanceof LimboProvider && event.source == DamageSource.outOfWorld) {
                 EntityPlayer player = (EntityPlayer) entity;
+                if (PostponedLimbo.postpone(player, event.source)) {
+                    return false;
+                }
                 revivePlayerInLimbo(player);
                 DimDoors
                     .sendChat(player, "Search for the dark red pools which accumulate in the lower reaches of Limbo");
@@ -133,6 +139,9 @@ public class EventHookContainer {
         if (properties.LimboEnabled && properties.LimboReturnsInventoryEnabled
             && entity instanceof EntityPlayer
             && isSeamlessLimboDeath(entity.worldObj.provider)) {
+            if (PostponedLimbo.postpone((EntityPlayer) entity, event.source)) {
+                return false;
+            }
             revivePlayerInLimbo((EntityPlayer) entity);
             event.setCanceled(true);
             return false;
@@ -156,7 +165,8 @@ public class EventHookContainer {
                 player.getGameProfile()
                     .getName());
 
-            if (properties.LimboEnabled && !properties.LimboReturnsInventoryEnabled) {
+            if (properties.LimboEnabled && !properties.LimboReturnsInventoryEnabled
+                && !PostponedLimbo.postpone(player, event.source)) {
                 leaveInventory(player, event.source);
                 revivePlayerInLimbo(player);
                 event.setCanceled(true);
@@ -166,6 +176,9 @@ public class EventHookContainer {
         if (entity instanceof EntityPlayer && properties.LimboEnabled
             && !properties.LimboReturnsInventoryEnabled
             && isSeamlessLimboDeath(entity.worldObj.provider)) {
+            if (PostponedLimbo.postpone((EntityPlayer) entity, event.source)) {
+                return false;
+            }
             leaveInventory((EntityPlayer) entity, event.source);
             revivePlayerInLimbo((EntityPlayer) entity);
             event.setCanceled(true);

@@ -34,6 +34,15 @@ A 1.7.10 fork of [Dimensional Doors](https://github.com/DimensionalDevelopment/D
 * [UniMixins](https://modrinth.com/mod/unimixins) [![curse](images/icons/curse.png)](https://www.curseforge.com/minecraft/mc-mods/unimixins) [![modrinth](images/icons/modrinth.png)](https://modrinth.com/mod/unimixins/versions) [![git](images/icons/git.png)](https://github.com/LegacyModdingMC/UniMixins/releases)
 * Optional: [Et Futurum Requiem](https://modrinth.com/mod/etfuturum) [![curse](images/icons/curse.png)](https://www.curseforge.com/minecraft/mc-mods/et-futurum-requiem) [![modrinth](images/icons/modrinth.png)](https://modrinth.com/mod/etfuturum/versions) [![git](images/icons/git.png)](https://github.com/Roadhog360/Et-Futurum-Requiem/releases). Without it, the 6.x rooms that need its blocks are left out.
 
+## For other mods
+
+When Dimensional Doors is about to turn a player's death into a trip to Limbo, it fires the cancellable
+`org.dimdev.dimdoors.api.event.LimboDeathEvent` on `MinecraftForge.EVENT_BUS`, before it touches the inventory.
+Cancel it to postpone Limbo, for example to offer a resurrection: the death then happens as an ordinary one, and the
+player goes to Limbo when they respawn. A respawn of such a player fires the cancellable `LimboRespawnEvent`; cancel
+it to keep them out of Limbo, for example because the respawn is a resurrection. Depend on the `dev` jar with
+`compileOnly`.
+
 ## Building
 
 `./gradlew build`.
