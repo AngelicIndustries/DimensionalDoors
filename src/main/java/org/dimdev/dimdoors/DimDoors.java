@@ -33,7 +33,6 @@ import org.dimdev.dimdoors.blocks.TransientDoor;
 import org.dimdev.dimdoors.blocks.UnstableDoor;
 import org.dimdev.dimdoors.blocks.WarpDoor;
 import org.dimdev.dimdoors.commands.CommandCreateAgedRift;
-import org.dimdev.dimdoors.commands.CommandCreateDungeonRift;
 import org.dimdev.dimdoors.commands.CommandCreatePocket;
 import org.dimdev.dimdoors.commands.CommandCreateRandomRift;
 import org.dimdev.dimdoors.commands.CommandDeleteRifts;
@@ -509,7 +508,7 @@ public class DimDoors {
     public void onServerStarting(FMLServerStartingEvent event) {
         // Register commands with the server
         event.registerServerCommand(CommandResetDungeons.instance());
-        event.registerServerCommand(CommandCreateDungeonRift.instance());
+        // CommandCreateAgedRift answers /dd-rift for both
         event.registerServerCommand(CommandListDungeons.instance());
         event.registerServerCommand(CommandCreateRandomRift.instance());
         event.registerServerCommand(CommandDeleteRifts.instance());

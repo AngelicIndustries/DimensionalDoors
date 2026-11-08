@@ -14,8 +14,9 @@ import org.dimdev.dimdoors.core.PocketManager;
 import org.dimdev.dimdoors.tileentities.TileEntityRift;
 
 /**
- * Debug: opens a rift a few blocks in front of the player, grown as if it had been loaded for the given time (like 90s,
- * 15m, 1h30m; a bare number is minutes), leading to a random dungeon.
+ * /dd-rift: with an age (like 90s, 15m, 1h30m; a bare number is minutes), a debug rift a few blocks in front of the
+ * player, grown as if it had been loaded that long, leading to a random dungeon. With anything else, the original
+ * command: a rift to the dungeon of that name (CommandCreateDungeonRift, which this one takes the name from).
  */
 public class CommandCreateAgedRift extends DDCommandBase {
 
@@ -23,7 +24,7 @@ public class CommandCreateAgedRift extends DDCommandBase {
     private static CommandCreateAgedRift instance = null;
 
     private CommandCreateAgedRift() {
-        super("dd-rift", "<age, like 90s, 15m or 1h30m>");
+        super("dd-rift", "<dungeon name, or an age like 90s, 15m or 1h30m>");
     }
 
     public static CommandCreateAgedRift instance() {
@@ -34,9 +35,9 @@ public class CommandCreateAgedRift extends DDCommandBase {
     @Override
     protected DDCommandResult processCommand(EntityPlayer sender, String[] command) {
         if (command.length < 1) return DDCommandResult.TOO_FEW_ARGUMENTS;
-        if (command.length > 1) return DDCommandResult.TOO_MANY_ARGUMENTS;
-        long ticks = ticks(command[0]);
-        if (ticks < 0) return DDCommandResult.INVALID_ARGUMENTS;
+        long ticks = command.length == 1 ? ticks(command[0]) : -1;
+        if (ticks < 0) return CommandCreateDungeonRift.instance()
+            .processCommand(sender, command);
 
         Vec3 look = sender.getLookVec();
         int x = MathHelper.floor_double(sender.posX + look.xCoord * 3);

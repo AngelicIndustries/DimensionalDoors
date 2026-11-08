@@ -74,6 +74,13 @@ public class DungeonSchematic extends Schematic {
         modBlockFilterExceptions.add(DimDoors.blockSolidStatic);
     }
 
+    /** The block at a spot of the schematic, air outside it. */
+    Block blockAt(int x, int y, int z) {
+        if (x < 0 || y < 0 || z < 0 || x >= width || y >= height || z >= length) return Blocks.air;
+        Block block = blocks[calculateIndex(x, y, z)];
+        return block != null ? block : Blocks.air;
+    }
+
     public int getOrientation() {
         return orientation;
     }
@@ -214,10 +221,13 @@ public class DungeonSchematic extends Schematic {
                     block = blocks[index];
                     BlockRotator.transformPoint(pocketPoint, entranceDoorLocation, turnAngle, pocketCenter);
                     blockMeta = BlockRotator.transformMetadata(metadata[index], turnAngle, block);
+                    block = TorchSwaps.replacement(this, dx, dy, dz, block, metadata[index]);
 
                     // In the future, we might want to make this more efficient by building whole chunks at a time
                     blockSetter
                         .setBlock(world, pocketPoint.getX(), pocketPoint.getY(), pocketPoint.getZ(), block, blockMeta);
+                    TorchSwaps
+                        .light(world, pocketPoint.getX(), pocketPoint.getY(), pocketPoint.getZ(), block, blockMeta);
                     index++;
                 }
             }
