@@ -1,0 +1,5 @@
+hum_*.ogg are Loopable hum by Patrick_Corra, CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/), from Freesound
+(https://freesound.org/s/466451/), made mono, run through a glitch (slices stuttered and pitch-jumped, then bitcrushed
+and downsampled; _og is the setting picked, _s<seed> the same setting with another seed), brought to matched loudness
+and looped (the last 0.75 s crossfaded into the start).
+hum_muffled_*.ogg are the same, low-passed, for a shut door.

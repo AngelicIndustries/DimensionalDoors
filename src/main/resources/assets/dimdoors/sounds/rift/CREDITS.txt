@@ -1,0 +1,10 @@
+Rift sounds from Freesound, made mono, run through a glitch (slices stuttered, reversed, pitch-jumped or cut out, then
+bitcrushed and downsampled; _og is the setting picked, _s<seed> the same setting with another seed) and brought to
+matched loudness. The loops have their last moments crossfaded into their start.
+
+small_*.ogg        Portal_Continuous_Rumble.wav by zimbot, CC BY 4.0             https://freesound.org/s/122972/
+big_*.ogg          Drone_C_Simple_Tonal [loop] by cabled_mess, CC0               https://freesound.org/s/370117/
+close_small_*.ogg  Spooky Sucking Air by hykenfreak, CC BY 4.0                   https://freesound.org/s/331620/
+close_big_*.ogg    BRAAM-HIT by vykroft, CC0                                     https://freesound.org/s/431316/
+
+CC BY 4.0: https://creativecommons.org/licenses/by/4.0/

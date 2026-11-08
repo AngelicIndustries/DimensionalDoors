@@ -32,6 +32,7 @@ import org.dimdev.dimdoors.blocks.TransTrapdoor;
 import org.dimdev.dimdoors.blocks.TransientDoor;
 import org.dimdev.dimdoors.blocks.UnstableDoor;
 import org.dimdev.dimdoors.blocks.WarpDoor;
+import org.dimdev.dimdoors.commands.CommandCreateAgedRift;
 import org.dimdev.dimdoors.commands.CommandCreateDungeonRift;
 import org.dimdev.dimdoors.commands.CommandCreatePocket;
 import org.dimdev.dimdoors.commands.CommandCreateRandomRift;
@@ -513,6 +514,7 @@ public class DimDoors {
         event.registerServerCommand(CommandDeleteRifts.instance());
         event.registerServerCommand(CommandExportDungeon.instance());
         event.registerServerCommand(CommandCreatePocket.instance());
+        event.registerServerCommand(CommandCreateAgedRift.instance());
         event.registerServerCommand(CommandTeleportPlayer.instance());
 
         try {

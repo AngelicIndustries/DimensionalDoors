@@ -44,6 +44,8 @@ public class TileEntityRift extends DDTileEntityBase {
     private static final float MAX_UNRAVEL_CHANCE = 500000;
     // Single rifts spawn Endermen once they unravel this far (about an hour loaded at the default speed)
     private static final float ENDERMAN_RADIUS = 3;
+    /** Past this unravel radius (about a quarter of an hour loaded) a rift sounds big, open and closing. */
+    public static final float BIG_RADIUS = 1.5F;
     /**
      * How far a crack shakes, as a share of its width. 1.12 used the cube of the width, up to 100 blocks on old rifts.
      */
@@ -68,6 +70,7 @@ public class TileEntityRift extends DDTileEntityBase {
     public float renderAngle;
     private boolean stabilized = false;
     private int syncedRadius;
+    private boolean closeSounded;
 
     public TileEntityRift() {
         // Vary the update times of rifts to prevent all the rifts in a cluster
@@ -144,6 +147,16 @@ public class TileEntityRift extends DDTileEntityBase {
         if (!worldObj.isRemote) {
             worldObj.markBlockForUpdate(xCoord, yCoord, zCoord);
         }
+    }
+
+    /**
+     * The size a new rift grows to in the given ticks loaded: grow adds speed / (size + 1) ten times a tick, so
+     * (size + 1)^2 grows by 20 * speed a tick.
+     */
+    public static float sizeAfter(long ticks, DDProperties properties) {
+        float size = (float) (Math.sqrt(1 + 20 * Math.max(0, properties.RiftGrowthSpeed) * ticks) - 1);
+        if (properties.MaxRiftRadius > 0) size = Math.min(size, (float) properties.MaxRiftRadius * SIZE_PER_BLOCK);
+        return size;
     }
 
     private void grow(DDProperties properties) {
@@ -240,6 +253,18 @@ public class TileEntityRift extends DDTileEntityBase {
     }
 
     private void closeRift() {
+        if (!closeSounded && !worldObj.isRemote) {
+            // A big rift's close is heard farther
+            boolean big = radius() >= BIG_RADIUS;
+            worldObj.playSoundEffect(
+                xCoord + 0.5,
+                yCoord + 0.5,
+                zCoord + 0.5,
+                DimDoors.modid + (big ? ":rift.close.big" : ":rift.close.small"),
+                big ? 1.5F : 1,
+                1);
+            closeSounded = true;
+        }
         NewDimData dimension = PocketManager.createDimensionData(worldObj);
         if (size < CLOSING_PERIOD / 2) {
             for (DimLink riftLink : dimension.findRiftsInRange(worldObj, 6, xCoord, yCoord, zCoord)) {
@@ -262,7 +287,6 @@ public class TileEntityRift extends DDTileEntityBase {
                 dimension.deleteLink(link);
             }
             worldObj.setBlockToAir(xCoord, yCoord, zCoord);
-            worldObj.playSound(xCoord + 0.5, yCoord + 0.5, zCoord + 0.5, "mods.DimDoors.sfx.riftClose", 0.7f, 1, false);
         }
 
         // Grown rifts close about as fast as new ones

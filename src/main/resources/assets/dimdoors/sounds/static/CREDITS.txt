@@ -1,0 +1,2 @@
+static.ogg is continuous static.wav by Jace, CC0 (public domain), from Freesound (https://freesound.org/s/35291/),
+made mono with matched loudness and a seamless loop (the last 0.5 s crossfaded into the start).

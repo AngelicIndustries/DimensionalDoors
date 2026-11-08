@@ -99,12 +99,12 @@ public class ItemStabilizedRiftSignature extends ItemRiftSignature {
 
             DimDoors.blockRift.tryPlacingRift(sourceWorld, source.getX(), source.getY(), source.getZ());
             DimDoors.sendChat(player, "Rift Created");
-            world.playSoundAtEntity(player, "mods.DimDoors.sfx.riftEnd", 0.6f, 1);
+            world.playSoundAtEntity(player, DimDoors.modid + ":riftEnd", 0.6f, 1);
         } else {
             // The link signature has not been used. Store its current target as the first location.
             setSource(stack, x, adjustedY, z, orientation, PocketManager.createDimensionData(world));
             DimDoors.sendChat(player, "Location Stored in Stabilized Rift Signature");
-            world.playSoundAtEntity(player, "mods.DimDoors.sfx.riftStart", 0.6f, 1);
+            world.playSoundAtEntity(player, DimDoors.modid + ":riftStart", 0.6f, 1);
         }
         return true;
     }
@@ -145,7 +145,7 @@ public class ItemStabilizedRiftSignature extends ItemRiftSignature {
                 DimDoors.blockRift.tryPlacingRift(sourceWorld, source.getX(), source.getY(), source.getZ());
 
                 // This call doesn't seem to be working...
-                world.playSoundEffect(x + 0.5, adjustedY + 0.5, z + 0.5, "mods.DimDoors.sfx.riftEnd", 0.6f, 1);
+                world.playSoundEffect(x + 0.5, adjustedY + 0.5, z + 0.5, DimDoors.modid + ":riftEnd", 0.6f, 1);
                 return true;
             }
         }

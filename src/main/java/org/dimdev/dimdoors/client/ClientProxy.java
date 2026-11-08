@@ -52,6 +52,15 @@ public class ClientProxy extends CommonProxy {
             .register(new LimboSounds());
         FMLCommonHandler.instance()
             .bus()
+            .register(new PortalSounds());
+        FMLCommonHandler.instance()
+            .bus()
+            .register(new RiftSounds());
+        FMLCommonHandler.instance()
+            .bus()
+            .register(new StaticSounds());
+        FMLCommonHandler.instance()
+            .bus()
             .register(new TrepidationHeartbeat());
 
     }
