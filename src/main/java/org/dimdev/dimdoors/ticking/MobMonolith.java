@@ -189,9 +189,13 @@ public class MobMonolith extends EntityFlying implements IMob {
                     // Aggro increases faster outside of Limbo
                     aggro += 3;
                 }
+            } else if (player == null || !isAggroed()) {
+                // Once it lets go (no player within the aggro range) or its aggro has run out, the eye shuts as fast
+                // as it opened, and stays shut until a player comes near in sight, so it opens all at once
+                if (player == null) aggro = (short) Math.min(aggro, AGGRO_START - 1);
+                aggro -= OPENING_RATE;
             } else if (isDangerous()) {
-                // Otherwise the eye closes, slowly. Until a player comes near in sight it stays shut, not even half
-                // open, so it opens all at once.
+                // A player out of sight but in range: the aggro runs out slowly, the eye open and on them
                 aggro--;
             } else {
                 aggro -= 3;
@@ -268,6 +272,16 @@ public class MobMonolith extends EntityFlying implements IMob {
     /** How far the aggro has gone: 0 when it starts (the red particles) to 1 when the Monolith takes the player. */
     public float getAggroDepth() {
         return MathHelper.clamp_float((float) (aggro - AGGRO_START) / (MAX_AGGRO - AGGRO_START), 0, 1);
+    }
+
+    /** Vanilla's idle looking about, without the looking: a Monolith turns only to face a player. */
+    @Override
+    protected void updateEntityActionState() {
+        float yaw = this.rotationYaw, pitch = this.rotationPitch, yawHead = this.rotationYawHead;
+        super.updateEntityActionState();
+        this.rotationYaw = yaw;
+        this.rotationPitch = pitch;
+        this.rotationYawHead = yawHead;
     }
 
     private void facePlayer(EntityPlayer player) {
