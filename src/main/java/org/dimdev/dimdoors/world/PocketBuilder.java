@@ -395,7 +395,10 @@ public class PocketBuilder {
         PocketManager.createDimensionData(world)
             .pointLinkAt(reverseLink, source);
 
-        // Build the actual pocket area
+        // Build the actual pocket area, with the door the entrance hands it
+        if (door instanceof IDimDoor) {
+            door = ((IDimDoor) door).getPocketDoor();
+        }
         buildPocket(
             world,
             entrance.getX(),

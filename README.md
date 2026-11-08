@@ -44,8 +44,11 @@ it to keep them out of Limbo, for example because the respawn is a resurrection.
 
 Another mod can add its own door by extending `org.dimdev.dimdoors.blocks.BaseDimDoor`. Any such door is immune to
 rift regeneration. Through `IDimDoor.placeExitDoor` and `IDimDoor.placeExitPlatformBlock` it can build its own kind of
-door and platform at the far end of a safe exit. `org.dimdev.dimdoors.api.DimDoorsLinks` tells what link starts at a
-block and closes a link without leaving a rift. Depend on the `dev` jar with `compileOnly`.
+door and platform at the far end of a safe exit, and with `IDimDoor.getPocketDoor` it can give a pocket built through it
+a different door inside. `org.dimdev.dimdoors.api.DimDoorsLinks` tells what link starts at a block and closes a link
+without leaving a rift. It also does what the Rift Remover, Rift Stabilizer and Rift Signature do: close a rift,
+stabilize one and open a linked pair. `DimDoorsClient.highlightRiftCores` shows nearby rift cores on the client. Depend
+on the `dev` jar with `compileOnly`.
 
 ## Building
 

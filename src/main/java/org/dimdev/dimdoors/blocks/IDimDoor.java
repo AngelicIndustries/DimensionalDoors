@@ -1,5 +1,6 @@
 package org.dimdev.dimdoors.blocks;
 
+import net.minecraft.block.Block;
 import net.minecraft.entity.Entity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemDoor;
@@ -62,5 +63,13 @@ public interface IDimDoor {
      */
     default void placeExitPlatformBlock(World world, int x, int y, int z, Point4D source) {
         world.setBlock(x, y, z, DimDoors.blockDimWall, 0, 2);
+    }
+
+    /**
+     * The door that a new pocket built through this door gets inside. The default is this door; a door that doesn't
+     * last may hand the pocket a lasting one.
+     */
+    default Block getPocketDoor() {
+        return (Block) this;
     }
 }

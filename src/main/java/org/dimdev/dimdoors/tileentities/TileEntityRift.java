@@ -250,6 +250,9 @@ public class TileEntityRift extends DDTileEntityBase {
                 if (!rift.shouldClose) {
                     rift.shouldClose = true;
                     rift.markDirty();
+                    if (!worldObj.isRemote) {
+                        worldObj.markBlockForUpdate(location.getX(), location.getY(), location.getZ());
+                    }
                 }
             }
         }
