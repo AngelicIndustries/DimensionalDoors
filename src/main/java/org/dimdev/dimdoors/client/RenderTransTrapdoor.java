@@ -1,159 +1,68 @@
 package org.dimdev.dimdoors.client;
 
-import java.nio.FloatBuffer;
 import java.util.Random;
 
 import net.minecraft.block.BlockTrapDoor;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.GLAllocation;
-import net.minecraft.client.renderer.tileentity.TileEntitySpecialRenderer;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.ResourceLocation;
 
 import org.dimdev.dimdoors.DimDoors;
 import org.dimdev.dimdoors.blocks.TransTrapdoor;
 import org.dimdev.dimdoors.config.DDProperties;
-import org.dimdev.dimdoors.tileentities.TileEntityTransTrapdoor;
-import org.lwjgl.opengl.GL11;
 
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 
+/** A transdimensional trapdoor's portal, lying in its opening (also under a shut trapdoor). */
 @SideOnly(Side.CLIENT)
-public class RenderTransTrapdoor extends TileEntitySpecialRenderer {
+public class RenderTransTrapdoor extends PortalRenderer {
 
-    private final FloatBuffer field_76908_a = GLAllocation.createDirectFloatBuffer(16);
     private static DDProperties properties = null;
     private final ResourceLocation riftPath = new ResourceLocation(DimDoors.modid + ":textures/other/RIFT.png");
-    private final ResourceLocation warpPath = new ResourceLocation(DimDoors.modid + ":textures/other/WARP.png");
+    /** How high in its block the portal lies, for the trapdoor being drawn. */
+    private double height;
 
     public RenderTransTrapdoor() {
         if (properties == null) properties = DDProperties.instance();
     }
 
     /**
-     * Renders the dimdoor.
+     * A spot on the portal: h east and v north from the opening's middle, so its front faces up as the old quad's did.
      */
-    public void renderTransTrapdoorTileEntity(TileEntityTransTrapdoor tile, double x, double y, double z, float par8) {
-        GL11.glDisable(GL11.GL_LIGHTING);
-        Random random = new Random(31100L);
-        int metadata = tile.getWorldObj()
-            .getBlockMetadata(tile.xCoord, tile.yCoord, tile.zCoord);
-
-        for (int count = 0; count < 16; ++count) {
-            GL11.glPushMatrix();
-            float var15 = 16 - count;
-            float var16 = 0.2625F;
-            float var17 = 1.0F / (var15 + 1.0F);
-
-            if (count == 0) {
-                this.bindTexture(riftPath);
-                var17 = 0.1F;
-                var15 = 25.0F;
-                var16 = 0.125F;
-                GL11.glEnable(GL11.GL_BLEND);
-                GL11.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
-            }
-
-            if (count == 1) {
-                this.bindTexture(warpPath);
-                GL11.glEnable(GL11.GL_BLEND);
-                GL11.glBlendFunc(GL11.GL_ONE, GL11.GL_ONE);
-                var16 = .5F;
-            }
-
-            GL11.glTranslatef(Minecraft.getSystemTime() % 200000L / 200000.0F, 0, 0.0F);
-            GL11.glTranslatef(0, Minecraft.getSystemTime() % 200000L / 200000.0F, 0.0F);
-
-            GL11.glTranslatef(0, 0, Minecraft.getSystemTime() % 200000L / 200000.0F);
-
-            GL11.glTexGeni(GL11.GL_S, GL11.GL_TEXTURE_GEN_MODE, GL11.GL_OBJECT_LINEAR);
-            GL11.glTexGeni(GL11.GL_T, GL11.GL_TEXTURE_GEN_MODE, GL11.GL_OBJECT_LINEAR);
-            GL11.glTexGeni(GL11.GL_R, GL11.GL_TEXTURE_GEN_MODE, GL11.GL_OBJECT_LINEAR);
-            GL11.glTexGeni(GL11.GL_Q, GL11.GL_TEXTURE_GEN_MODE, GL11.GL_EYE_LINEAR);
-
-            GL11.glTexGen(GL11.GL_S, GL11.GL_OBJECT_PLANE, this.getFloatBuffer(1.0F, 0.0F, 0.0F, 0.0F));
-            GL11.glTexGen(GL11.GL_T, GL11.GL_OBJECT_PLANE, this.getFloatBuffer(0.0F, 0.0F, 1.0F, 0.0F));
-            GL11.glTexGen(GL11.GL_R, GL11.GL_OBJECT_PLANE, this.getFloatBuffer(0.0F, 0.0F, 0.0F, 1.0F));
-            GL11.glTexGen(GL11.GL_Q, GL11.GL_EYE_PLANE, this.getFloatBuffer(0.0F, 1.0F, 0.0F, 0.0F));
-
-            GL11.glEnable(GL11.GL_TEXTURE_GEN_S);
-            GL11.glEnable(GL11.GL_TEXTURE_GEN_T);
-            GL11.glEnable(GL11.GL_TEXTURE_GEN_R);
-            GL11.glEnable(GL11.GL_TEXTURE_GEN_Q);
-            GL11.glPopMatrix();
-            GL11.glMatrixMode(GL11.GL_TEXTURE);
-            GL11.glPushMatrix();
-            GL11.glLoadIdentity();
-            GL11.glTranslatef(0.0F, Minecraft.getSystemTime() % 200000L / 200000.0F * var15, 0.0F);
-            GL11.glScalef(var16, var16, var16);
-            GL11.glTranslatef(0.5F, 0.5F, 0.5F);
-            GL11.glRotatef((count * count * 4321 + count * 9) * 2.0F, 0.0F, 0.0F, 1.0F);
-            GL11.glTranslatef(0.5F, 0.5F, 0.5F);
-
-            GL11.glBegin(GL11.GL_QUADS);
-
-            float var21 = random.nextFloat() * 0.5F + 0.1F;
-            float var22 = random.nextFloat() * 0.4F + 0.4F;
-            float var23 = random.nextFloat() * 0.6F + 0.5F;
-
-            if (count == 0) {
-                var23 = 1.0F;
-                var22 = 1.0F;
-            }
-            GL11.glColor4d(var21 * var17, var22 * var17, var23 * var17, 1.0F);
-            if (TransTrapdoor.isTrapdoorSetLow(metadata)) {
-                if (BlockTrapDoor.func_150118_d(metadata)) {
-                    GL11.glVertex3d(x, y + 0.2, z);
-                    GL11.glVertex3d(x, y + 0.2, z + 1);
-                    GL11.glVertex3d(x + 1, y + 0.2, z + 1);
-                    GL11.glVertex3d(x + 1, y + 0.2, z);
-                } else {
-                    GL11.glVertex3d(x, y + 0.15, z);
-                    GL11.glVertex3d(x, y + 0.15, z + 1);
-                    GL11.glVertex3d(x + 1, y + 0.15, z + 1);
-                    GL11.glVertex3d(x + 1, y + 0.15, z);
-                }
-            } else {
-                if (BlockTrapDoor.func_150118_d(metadata)) {
-                    GL11.glVertex3d(x, y + 0.95, z);
-                    GL11.glVertex3d(x, y + 0.95, z + 1);
-                    GL11.glVertex3d(x + 1, y + 0.95, z + 1);
-                    GL11.glVertex3d(x + 1, y + 0.95, z);
-                } else {
-                    GL11.glVertex3d(x, y + 0.85, z);
-                    GL11.glVertex3d(x, y + 0.85, z + 1);
-                    GL11.glVertex3d(x + 1, y + 0.85, z + 1);
-                    GL11.glVertex3d(x + 1, y + 0.85, z);
-                }
-            }
-            GL11.glEnd();
-            GL11.glPopMatrix();
-            GL11.glMatrixMode(GL11.GL_MODELVIEW);
-        }
-
-        GL11.glDisable(GL11.GL_BLEND);
-        GL11.glDisable(GL11.GL_TEXTURE_GEN_S);
-        GL11.glDisable(GL11.GL_TEXTURE_GEN_T);
-        GL11.glDisable(GL11.GL_TEXTURE_GEN_R);
-        GL11.glDisable(GL11.GL_TEXTURE_GEN_Q);
-        GL11.glEnable(GL11.GL_LIGHTING);
+    @Override
+    protected void place(TileEntity tile, double x, double y, double z, double h, double v, double[] out, int at) {
+        out[at] = x + 0.5 + h;
+        out[at + 1] = y + height;
+        out[at + 2] = z + 0.5 - v;
     }
 
-    private FloatBuffer getFloatBuffer(float par1, float par2, float par3, float par4) {
-        this.field_76908_a.clear();
-        this.field_76908_a.put(par1)
-            .put(par2)
-            .put(par3)
-            .put(par4);
-        this.field_76908_a.flip();
-        return this.field_76908_a;
+    /**
+     * Object planes for s and t (east and south), and an eye plane for q: the height above the camera, less the time
+     * the old renderer had translated by when it set the plane.
+     */
+    @Override
+    protected void generatedCoords(TileEntity tile, double vx, double vy, double vz, float time, double[] stq) {
+        stq[0] = vx;
+        stq[1] = vz;
+        stq[2] = vy - time;
     }
 
     @Override
-    public void renderTileEntityAt(TileEntity par1TileEntity, double par2, double par4, double par6, float par8) {
-        if (properties.DoorRenderingEnabled) {
-            this.renderTransTrapdoorTileEntity((TileEntityTransTrapdoor) par1TileEntity, par2, par4, par6, par8);
-        }
+    protected float[] layerColor(TileEntity tile, int layer, Random random) {
+        float red = random.nextFloat() * 0.5F + 0.1F;
+        float green = random.nextFloat() * 0.4F + 0.4F;
+        float blue = random.nextFloat() * 0.6F + 0.5F;
+        return layer == 0 ? new float[] { red, 1.0F, 1.0F } : new float[] { red, green, blue };
+    }
+
+    @Override
+    public void renderTileEntityAt(TileEntity tile, double x, double y, double z, float partialTicks) {
+        if (!properties.DoorRenderingEnabled) return;
+        // As high as the old quad lay for the trapdoor's half and whether it is open
+        int metadata = tile.getWorldObj()
+            .getBlockMetadata(tile.xCoord, tile.yCoord, tile.zCoord);
+        boolean open = BlockTrapDoor.func_150118_d(metadata);
+        height = TransTrapdoor.isTrapdoorSetLow(metadata) ? (open ? 0.2 : 0.15) : (open ? 0.95 : 0.85);
+        renderPortal(tile, x, y, z, 0.5, 0.5, riftPath, 1.0F);
     }
 }

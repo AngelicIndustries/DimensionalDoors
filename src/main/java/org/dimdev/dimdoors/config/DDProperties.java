@@ -110,6 +110,9 @@ public class DDProperties {
     public final Configuration Config;
     public final boolean LimboReturnsInventoryEnabled;
     public final boolean DoorRenderingEnabled;
+    public final double PortalRoundness;
+    public final double PortalEdgeRoughness;
+    public final double PortalSpinSpeed;
     public final boolean TNFREAKINGT_Enabled;
     public final boolean MonolithTeleportationEnabled;
     public final boolean DangerousLimboMonolithsDisabled;
@@ -522,6 +525,34 @@ public class DDProperties {
             .getInt();
         DoorRenderingEnabled = config.get(Configuration.CATEGORY_GENERAL, "Enable Door Rendering", true)
             .getBoolean(true);
+        PortalRoundness = config.get(
+            Configuration.CATEGORY_GENERAL,
+            "Portal Roundness",
+            0.25,
+            "The shape of door and trapdoor portals, from 0 (a rectangle) through rectangles with ever rounder corners "
+                + "to 1 (an oval; a circle in a trapdoor). Client only.",
+            0.0,
+            1.0)
+            .getDouble();
+        PortalEdgeRoughness = config
+            .get(
+                Configuration.CATEGORY_GENERAL,
+                "Portal Edge Roughness",
+                1.0,
+                "How fractal the edge of door and trapdoor portals is: 0 is smooth, 1 the usual bulges on bulges, more "
+                    + "makes them bigger. Client only.",
+                0.0,
+                3.0)
+            .getDouble();
+        PortalSpinSpeed = config.get(
+            Configuration.CATEGORY_GENERAL,
+            "Portal Spin Speed",
+            1.0,
+            "How fast the edge of door and trapdoor portals turns, as a multiple of the usual pace (a turn in about "
+                + "8 seconds); 0 keeps it still. Client only.",
+            0.0,
+            5.0)
+            .getDouble();
 
         TNFREAKINGT_Enabled = config.get(Configuration.CATEGORY_GENERAL, "EXPLOSIONS!!???!!!?!?!!", false)
             .getBoolean(false);

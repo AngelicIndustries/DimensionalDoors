@@ -4,25 +4,33 @@ import java.util.Arrays;
 import java.util.Random;
 
 /**
- * The shape of a door's portal for one frame, in the doorway's plane: h across and v up from the doorway's middle. An
- * oval whose edge is a fractal (bulges on bulges, each row twice as many and about two thirds as tall) turning slowly
- * around it, shaken a little, with a glowing rim whose outer edge flickers in spikes turning the other way. Now and
- * then a glitch cuts it into bands and shifts them sideways. All of it is quads, as shader packs expect.
+ * The shape of a door's or trapdoor's portal for one frame, in the opening's plane: h across and v up from its
+ * middle. A rectangle with rounded corners, or an oval (see update), whose edge is a fractal (bulges on bulges, each
+ * row twice as many and about two thirds as tall) turning slowly around it, shaken a little, with a glowing rim whose
+ * outer edge flickers in spikes turning the other way. Now and then a glitch cuts it into bands and shifts them
+ * sideways. All of it is quads, as shader packs expect.
  */
 final class PortalShape {
 
-    /** Per fill vertex: h and v of its spot on the oval (where its texture is), and h and v where it is drawn. */
+    /** Per fill vertex: h and v of its spot on the portal (where its texture is), and h and v where it is drawn. */
     static final int FILL_STRIDE = 4;
-    /** Per rim vertex: the same, then its glow (0 to 1), the turn around the oval (0 to 1) and how far out (0 to 1). */
+    /**
+     * Per rim vertex: the same, then its glow (0 to 1), the turn around the portal (0 to 1) and how far out (0 to 1).
+     */
     static final int RIM_STRIDE = 7;
 
     private static final int POINTS = 384;
-    /** The oval's half width and height, as parts of the doorway's. */
-    private static final double WIDTH = 0.8, HEIGHT = 0.88;
-    /** The edge's rows of bulges: how many fit around the oval, and how far each moves the edge, in blocks. */
+    /** How far the portal keeps from the opening's sides, in blocks. */
+    private static final double MARGIN = 0.1;
+    /** The steepest superellipse, standing in for a sharp rectangle, and how finely its outline is measured. */
+    private static final double MAX_EXPONENT = 400;
+    private static final int OUTLINE_STEPS = 8192;
+    /** One band covering everything, unshifted, for when no glitch cuts the portal. */
+    private static final double[][] UNBROKEN = { { 0, 0, 0 } };
+    /** The edge's rows of bulges: how many fit around the portal, and how far each moves the edge, in blocks. */
     private static final int[] WAVES = { 8, 16, 32, 64 };
     private static final double[] HEIGHTS = { 0.022, 0.015, 0.01, 0.0065 };
-    /** How fast the edge turns around the oval, and how fast each row drifts on its own, in radians a second. */
+    /** How fast the edge turns around the portal, and how fast each row drifts on its own, in radians a second. */
     private static final double SPIN = 0.8, DRIFT = 0.4;
     /** The rim reaches this far inside the edge, and up to this far outside it, in blocks. */
     private static final double RIM_IN = 0.035, RIM_OUT = 0.09;
@@ -46,15 +54,28 @@ final class PortalShape {
     /** The edge, and the rim's inner and outer rings, POINTS + 1 of each so the last closes the loop. */
     private final double[] edge = new double[2 * (POINTS + 1)], inner = new double[edge.length],
         outer = new double[edge.length];
-    private final double[] fan = new double[2 * (POINTS + 2)], rimIn = new double[20], rimOut = new double[20];
+    /**
+     * The outline before its bulges, in even steps along it: for each point, the spot on the middle line it bulges
+     * away from, the way it bulges and how far out it lies.
+     */
+    private final double[] spine = new double[edge.length], away = new double[edge.length],
+        extent = new double[POINTS + 1];
+    private double outlineWidth = -1, outlineHeight, outlineRoundness;
+    private final double[] quad = new double[8], rimIn = new double[20], rimOut = new double[20];
     private final double[] edgePhase = new double[WAVES.length], flamePhase = new double[WAVES.length];
 
-    /** Made into the oval at a time, inside a doorway of the given half size, its own per seed. */
-    void oval(long seed, long millis, double halfWidth, double halfHeight) {
+    /**
+     * Made into the portal at a time, inside an opening of the given half size, its own per seed: a rectangle at
+     * roundness 0, an oval at 1, and rectangles with ever rounder corners between. Roughness scales the edge's bulges
+     * (0 is a smooth edge) and spin speed how fast the edge and the rim's spikes turn and drift (0 keeps them still).
+     */
+    void update(long seed, long millis, double halfWidth, double halfHeight, double roundness, double roughness,
+        double spinSpeed) {
         fill.clear();
         rim.clear();
         flash = 0;
-        double time = millis / 1000.0;
+        outline(halfWidth, halfHeight, roundness);
+        double time = millis / 1000.0, turning = time * spinSpeed;
         Random shake = new Random(mix(seed, millis / SHAKE_MS));
         double ch = (shake.nextDouble() * 2 - 1) * SHAKE, cv = (shake.nextDouble() * 2 - 1) * SHAKE;
         double pulse = (shake.nextDouble() * 2 - 1) * PULSE;
@@ -64,36 +85,30 @@ final class PortalShape {
             flamePhase[k] = phases.nextDouble() * Math.PI * 2;
         }
 
-        double a = halfWidth * WIDTH, b = halfHeight * HEIGHT;
         for (int i = 0; i <= POINTS; i++) {
             double angle = Math.PI * 2 * (i % POINTS) / POINTS;
-            double ph = a * Math.cos(angle), pv = b * Math.sin(angle);
-            double length = Math.sqrt(ph * ph + pv * pv);
-            double uh = ph / length, uv = pv / length;
-            double reach = reach(ch, cv, uh, uv, halfWidth, halfHeight);
-            double r = length + pulse + waves(angle, time, SPIN, edgePhase, false);
-            double flame = 0.5 + 0.5 * waves(angle, time, FLAME_SPIN, flamePhase, true) / HEIGHTS[0];
+            double sh = spine[2 * i] + ch, sv = spine[2 * i + 1] + cv, uh = away[2 * i], uv = away[2 * i + 1];
+            double reach = reach(sh, sv, uh, uv, halfWidth, halfHeight);
+            double r = extent[i] + pulse + roughness * waves(angle, turning, SPIN, edgePhase, false);
+            double flame = 0.5 + 0.5 * roughness * waves(angle, turning, FLAME_SPIN, flamePhase, true) / HEIGHTS[0];
             double out = r + RIM_OUT * (0.4 + 0.6 * Math.max(0, Math.min(1, flame)));
-            put(edge, i, ch, cv, uh, uv, Math.min(r, reach));
-            put(inner, i, ch, cv, uh, uv, Math.min(r - RIM_IN, reach));
-            put(outer, i, ch, cv, uh, uv, Math.min(out, reach));
+            put(edge, i, sh, sv, uh, uv, Math.min(r, reach));
+            put(inner, i, sh, sv, uh, uv, Math.min(r - RIM_IN, reach));
+            put(outer, i, sh, sv, uh, uv, Math.min(out, reach));
         }
 
         double[][] bands = glitchBands(seed, millis, halfHeight);
-        if (bands == null) {
-            // Unbroken: the fill is one fan around the middle
-            fan[0] = ch;
-            fan[1] = cv;
-            System.arraycopy(edge, 0, fan, 2, edge.length);
-            addFan(fill, fan, 2, POINTS + 2, 0, ch, cv);
-            for (int i = 0; i < POINTS; i++) addRimQuads(i, null, 0, ch, cv);
-            return;
-        }
-        for (double[] band : bands) {
-            double[] bounds = { band[0], band[1], -halfWidth - band[2], halfWidth - band[2] };
+        for (double[] band : bands == null ? UNBROKEN : bands) {
+            double[] bounds = bands == null ? null
+                : new double[] { band[0], band[1], -halfWidth - band[2], halfWidth - band[2] };
             for (int i = 0; i < POINTS; i++) {
-                double[] triangle = { ch, cv, edge[2 * i], edge[2 * i + 1], edge[2 * i + 2], edge[2 * i + 3] };
-                double[] piece = clip(triangle, 2, bounds);
+                // The fill between the middle line and the edge
+                quad[0] = spine[2 * i] + ch;
+                quad[1] = spine[2 * i + 1] + cv;
+                System.arraycopy(edge, 2 * i, quad, 2, 4);
+                quad[6] = spine[2 * i + 2] + ch;
+                quad[7] = spine[2 * i + 3] + cv;
+                double[] piece = bounds == null ? quad : clip(quad, 2, bounds);
                 if (piece != null) addFan(fill, piece, 2, piece.length / 2, band[2], ch, cv);
                 addRimQuads(i, bounds, band[2], ch, cv);
             }
@@ -101,7 +116,44 @@ final class PortalShape {
     }
 
     /**
-     * The fractal at an angle around the oval, turning at the spin: rows of round bulges meeting in sharp dips, or
+     * Works out the outline before its bulges, a superellipse (|h / a|^n + |v / b|^n = 1, n = 2 / roundness), when
+     * the size or roundness changed. Its points are even steps along it, so the bulges are even all around. Each
+     * bulges away from the nearest spot on a middle line along the long side (as long as the long side less the
+     * short), so the sides bulge straight out and the ends round about their middle, and no two bulges cross.
+     */
+    private void outline(double halfWidth, double halfHeight, double roundness) {
+        if (halfWidth == outlineWidth && halfHeight == outlineHeight && roundness == outlineRoundness) return;
+        outlineWidth = halfWidth;
+        outlineHeight = halfHeight;
+        outlineRoundness = roundness;
+        double a = halfWidth - MARGIN, b = halfHeight - MARGIN;
+        double power = roundness <= 2 / MAX_EXPONENT ? 2 / MAX_EXPONENT : roundness;
+        double[] dense = new double[2 * (OUTLINE_STEPS + 1)], along = new double[OUTLINE_STEPS + 1];
+        for (int j = 0; j <= OUTLINE_STEPS; j++) {
+            double t = Math.PI * 2 * j / OUTLINE_STEPS;
+            dense[2 * j] = a * superPow(Math.cos(t), power);
+            dense[2 * j + 1] = b * superPow(Math.sin(t), power);
+            if (j > 0) along[j] = along[j - 1]
+                + Math.hypot(dense[2 * j] - dense[2 * j - 2], dense[2 * j + 1] - dense[2 * j - 1]);
+        }
+        double spineH = Math.max(0, a - b), spineV = Math.max(0, b - a);
+        for (int i = 0, j = 0; i <= POINTS; i++) {
+            double target = along[OUTLINE_STEPS] * i / POINTS;
+            while (j < OUTLINE_STEPS - 1 && along[j + 1] < target) j++;
+            double f = (target - along[j]) / Math.max(1.0E-9, along[j + 1] - along[j]);
+            double h = dense[2 * j] + (dense[2 * j + 2] - dense[2 * j]) * f;
+            double v = dense[2 * j + 1] + (dense[2 * j + 3] - dense[2 * j + 1]) * f;
+            spine[2 * i] = Math.max(-spineH, Math.min(spineH, h));
+            spine[2 * i + 1] = Math.max(-spineV, Math.min(spineV, v));
+            extent[i] = Math.hypot(h - spine[2 * i], v - spine[2 * i + 1]);
+            away[2 * i] = (h - spine[2 * i]) / extent[i];
+            away[2 * i + 1] = (v - spine[2 * i + 1]) / extent[i];
+        }
+    }
+
+    /**
+     * The fractal at a turn around the portal (in radians), turning at the spin: rows of round bulges meeting in sharp
+     * dips, or
      * turned over, sharp spikes. Averages 0.
      */
     private static double waves(double angle, double time, double spin, double[] phase, boolean spikes) {
@@ -114,19 +166,27 @@ final class PortalShape {
         return sum;
     }
 
-    /** How far from the middle along a direction the doorway reaches. */
-    private static double reach(double ch, double cv, double uh, double uv, double halfWidth, double halfHeight) {
+    /**
+     * x to the power, keeping its sign. A cosine or sine that should be 0 comes out a hair off it, which a small
+     * power (a sharp corner) would blow up to most of the way out.
+     */
+    private static double superPow(double x, double power) {
+        return Math.abs(x) < 1.0E-9 ? 0 : Math.copySign(Math.pow(Math.abs(x), power), x);
+    }
+
+    /** How far from a spot along a direction the opening reaches. */
+    private static double reach(double sh, double sv, double uh, double uv, double halfWidth, double halfHeight) {
         double reach = Double.MAX_VALUE;
-        if (uh > 0) reach = (halfWidth - ch) / uh;
-        else if (uh < 0) reach = (-halfWidth - ch) / uh;
-        if (uv > 0) reach = Math.min(reach, (halfHeight - cv) / uv);
-        else if (uv < 0) reach = Math.min(reach, (-halfHeight - cv) / uv);
+        if (uh > 0) reach = (halfWidth - sh) / uh;
+        else if (uh < 0) reach = (-halfWidth - sh) / uh;
+        if (uv > 0) reach = Math.min(reach, (halfHeight - sv) / uv);
+        else if (uv < 0) reach = Math.min(reach, (-halfHeight - sv) / uv);
         return reach;
     }
 
-    private static void put(double[] ring, int i, double ch, double cv, double uh, double uv, double r) {
-        ring[2 * i] = ch + uh * r;
-        ring[2 * i + 1] = cv + uv * r;
+    private static void put(double[] ring, int i, double sh, double sv, double uh, double uv, double r) {
+        ring[2 * i] = sh + uh * r;
+        ring[2 * i + 1] = sv + uv * r;
     }
 
     /**
