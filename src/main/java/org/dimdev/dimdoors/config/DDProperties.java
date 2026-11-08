@@ -113,6 +113,23 @@ public class DDProperties {
     public final double PortalRoundness;
     public final double PortalEdgeRoughness;
     public final double PortalSpinSpeed;
+    public final PortalPlacement OpenPortalPlacement;
+
+    /** Where an open door's portal goes, clear of the door's panel or not. */
+    public enum PortalPlacement {
+
+        /** Full width, set into the doorway, partly hidden in the panel, as it always was. */
+        VANILLA,
+        /** Beside the panel. */
+        NARROW,
+        /** Full width, just in front of the doorway, the panel behind it. */
+        FORWARD;
+
+        public String id() {
+            return name().toLowerCase(java.util.Locale.ROOT);
+        }
+    }
+
     public final boolean TNFREAKINGT_Enabled;
     public final boolean MonolithTeleportationEnabled;
     public final boolean DangerousLimboMonolithsDisabled;
@@ -130,6 +147,7 @@ public class DDProperties {
     public final int GatewayGenerationChance;
     public final int FortressGatewayGenerationChance;
     public final String[] DoorVariants;
+    public final String[] TrapdoorVariants;
     public final int MonolithSpawningChance;
     public final int WorldThreadDropChance;
     public final int LimboEntryRange;
@@ -553,6 +571,21 @@ public class DDProperties {
             0.0,
             5.0)
             .getDouble();
+        String placement = config.getString(
+            "Open Portal Placement",
+            Configuration.CATEGORY_GENERAL,
+            PortalPlacement.FORWARD.id(),
+            "Where the portal of an open door goes: vanilla (full width, set into the doorway, so the open panel hides "
+                + "its side), narrow (beside the panel) or forward (full width, just in front of the doorway). "
+                + "Trapdoors keep theirs beside the panel unless this is vanilla, as moving it up would float it over "
+                + "the hatch. Client only.",
+            new String[] { "vanilla", "narrow", "forward" });
+        PortalPlacement chosen = PortalPlacement.FORWARD;
+        for (PortalPlacement value : PortalPlacement.values()) {
+            if (value.id()
+                .equals(placement)) chosen = value;
+        }
+        OpenPortalPlacement = chosen;
 
         TNFREAKINGT_Enabled = config.get(Configuration.CATEGORY_GENERAL, "EXPLOSIONS!!???!!!?!?!!", false)
             .getBoolean(false);
@@ -710,6 +743,16 @@ public class DDProperties {
                 + "placed under a rift becomes its variant, except for personal ones. The iron, wooden, quartz "
                 + "and golden doors with their own kinds stand for our existing doors. Doors from mods that "
                 + "aren't installed are skipped.")
+            .getStringList();
+        TrapdoorVariants = config
+            .get(
+                CATEGORY_DOOR_VARIANTS,
+                "Trapdoor Variants",
+                org.dimdev.dimdoors.TrapdoorVariants.DEFAULTS,
+                "Trapdoors that get a Transdimensional variant, by block registry name. Each works like the "
+                    + "Transdimensional Trapdoor and is crafted like it, from its own trapdoor, when that crafting "
+                    + "option is on; an iron one only opens by redstone. Trapdoors from mods that aren't installed are "
+                    + "skipped.")
             .getStringList();
 
         WorldThreadDropChance = config

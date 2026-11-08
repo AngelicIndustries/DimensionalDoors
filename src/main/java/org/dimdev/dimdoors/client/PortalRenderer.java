@@ -7,6 +7,7 @@ import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.tileentity.TileEntitySpecialRenderer;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.ResourceLocation;
+import net.minecraftforge.client.MinecraftForgeClient;
 
 import org.dimdev.dimdoors.DimDoors;
 import org.dimdev.dimdoors.config.DDProperties;
@@ -51,27 +52,41 @@ public abstract class PortalRenderer extends TileEntitySpecialRenderer {
     protected abstract float[] layerColor(TileEntity tile, int layer, Random random);
 
     /**
-     * The portal in an opening of the given half size. The first layer has its own texture; the others dim the further
-     * back they are, by 1 / (depth + dimming).
+     * The portal in an opening from left to right and bottom to top, across and up its plane from the middle. Its
+     * layers are drawn with the world and its rim afterwards, with what is see-through (tile entities get a second
+     * pass after water): drawn with the world, the rim hid the water behind it, and under a shader pack the
+     * background it glows over was lit and fogged as if it were at the portal. The first layer has its own texture;
+     * the others dim the further back they are, by 1 / (depth + dimming).
      */
-    protected void renderPortal(TileEntity tile, double x, double y, double z, double halfWidth, double halfHeight,
-        ResourceLocation firstLayer, float dimming) {
+    protected void renderPortal(TileEntity tile, double x, double y, double z, double left, double right, double bottom,
+        double top, ResourceLocation firstLayer, float dimming) {
+        int pass = MinecraftForgeClient.getRenderPass();
         long now = Minecraft.getSystemTime();
         DDProperties properties = DDProperties.instance();
         shape.update(
             tile.xCoord * 3129871L ^ tile.zCoord * 116129781L ^ tile.yCoord,
             now,
-            halfWidth,
-            halfHeight,
+            left,
+            right,
+            bottom,
+            top,
             properties.PortalRoundness,
             properties.PortalEdgeRoughness,
             properties.PortalSpinSpeed);
         boolean shaders = ShaderPacks.inUse();
-        float time = now % 200000L / 200000.0F;
         GL11.glDisable(GL11.GL_LIGHTING);
         GL11.glEnable(GL11.GL_BLEND);
-        Tessellator tessellator = Tessellator.instance;
+        if (pass != 1) renderLayers(tile, x, y, z, now, firstLayer, dimming, shaders);
+        if (pass != 0) renderRim(tile, x, y, z, now, properties.PortalSpinSpeed, shaders);
+        GL11.glDisable(GL11.GL_BLEND);
+        GL11.glEnable(GL11.GL_LIGHTING);
+    }
 
+    /** The 16 layers of the warp texture, in the portal's shape. */
+    private void renderLayers(TileEntity tile, double x, double y, double z, long now, ResourceLocation firstLayer,
+        float dimming, boolean shaders) {
+        float time = now % 200000L / 200000.0F;
+        Tessellator tessellator = Tessellator.instance;
         PortalShape.Quads fill = shape.fill;
         int count = fill.vertices();
         if (drawn.length < count * 3) {
@@ -115,15 +130,16 @@ public abstract class PortalRenderer extends TileEntitySpecialRenderer {
             }
             tessellator.draw();
         }
-        renderRim(tile, x, y, z, now, properties.PortalSpinSpeed, shaders);
-        GL11.glDisable(GL11.GL_BLEND);
-        GL11.glEnable(GL11.GL_LIGHTING);
     }
 
-    /** The rim, added on top: brightest along the edge, its texture flowing around the portal. */
+    /**
+     * The rim, added on top without hiding what is behind it: brightest along the edge, its texture flowing around the
+     * portal.
+     */
     private void renderRim(TileEntity tile, double x, double y, double z, long now, double spinSpeed, boolean shaders) {
         bindTexture(RIM_TEXTURE);
         GL11.glBlendFunc(GL11.GL_ONE, GL11.GL_ONE);
+        GL11.glDepthMask(false);
         float[] color = tile.getWorldObj().provider.dimensionId == NETHER_DIMENSION_ID ? NETHER_RIM : RIM;
         double flow = now % 1000000L / 1000.0 * spinSpeed * RIM_FLOW * RIM_REPEAT;
         PortalShape.Quads rim = shape.rim;
@@ -137,5 +153,6 @@ public abstract class PortalRenderer extends TileEntitySpecialRenderer {
             tessellator.addVertexWithUV(spot[0], spot[1], spot[2], rim.get(i, 5) * RIM_REPEAT - flow, rim.get(i, 6));
         }
         tessellator.draw();
+        GL11.glDepthMask(true);
     }
 }

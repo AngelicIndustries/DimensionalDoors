@@ -6,6 +6,7 @@ import java.io.InputStream;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Deque;
+import java.util.function.Supplier;
 
 import javax.imageio.ImageIO;
 
@@ -19,27 +20,45 @@ import net.minecraft.util.ResourceLocation;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.dimdev.dimdoors.blocks.TransTrapdoor;
 
 /**
- * A door variant's item icon: its base door's icon with the dimensional portal showing through the door's windows, as
- * modern versions draw a variant over the portal. A door without windows keeps its plain icon. Made when the item
- * textures are stitched, so it follows resource packs.
+ * An item icon with the dimensional portal showing through: a door's or trapdoor's own icon with the portal moving in
+ * its windows, as modern versions draw a door variant over the portal. One without windows keeps its plain icon. Made
+ * when the textures are stitched, so it follows resource packs.
  */
-public class DoorVariantSprite extends TextureAtlasSprite {
+public class PortalSprite extends TextureAtlasSprite {
 
     private static final Logger LOG = LogManager.getLogger("DimDoors");
     private static final ResourceLocation PORTAL = new ResourceLocation("dimdoors", "textures/door_variant_portal.png");
     private static final int FRAME_TIME = 2;
 
-    private final ItemStack base;
+    private final Supplier<IIcon> base;
     private final String basePath;
     private boolean failed;
 
-    /** @param basePath the atlas' texture folder, textures/items or textures/blocks */
-    public DoorVariantSprite(String name, ItemStack base, String basePath) {
+    /**
+     * @param base     the plain icon, asked for when the atlas loads
+     * @param basePath the atlas' texture folder, textures/items or textures/blocks
+     */
+    private PortalSprite(String name, Supplier<IIcon> base, String basePath) {
         super(name);
         this.base = base;
         this.basePath = basePath;
+    }
+
+    /** A door item's icon, drawn from the base door item's. */
+    public static PortalSprite door(String name, ItemStack base, String basePath) {
+        return new PortalSprite(
+            name,
+            () -> base.getItem()
+                .getIconIndex(base),
+            basePath);
+    }
+
+    /** A trapdoor item's icon, drawn from the block's plain icon in the block atlas, as the item is drawn in 3D. */
+    public static PortalSprite trapdoor(String name, TransTrapdoor trapdoor) {
+        return new PortalSprite(name, () -> trapdoor.plainIcon(1, 0), "textures/blocks");
     }
 
     /** Whether the icon couldn't be made, so the base door's icon should be drawn instead. */
@@ -59,14 +78,16 @@ public class DoorVariantSprite extends TextureAtlasSprite {
         boolean[] windows;
         BufferedImage portal = null;
         try {
-            IIcon baseIcon = base.getItem()
-                .getIconIndex(base);
-            BufferedImage door = read(manager, iconLocation(baseIcon.getIconName()));
+            BufferedImage door = read(
+                manager,
+                iconLocation(
+                    base.get()
+                        .getIconName()));
             icon = door.getSubimage(0, 0, door.getWidth(), door.getWidth());
             windows = windows(icon);
             if (any(windows)) portal = read(manager, PORTAL);
         } catch (IOException | RuntimeException e) {
-            LOG.warn("Couldn't draw the item icon of {}; it uses its base door's", getIconName(), e);
+            LOG.warn("Couldn't draw the item icon of {}; it uses its plain one", getIconName(), e);
             failed = true;
             icon = new BufferedImage(16, 16, BufferedImage.TYPE_INT_ARGB);
             windows = new boolean[16 * 16];

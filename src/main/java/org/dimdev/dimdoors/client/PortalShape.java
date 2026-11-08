@@ -56,28 +56,32 @@ final class PortalShape {
         outer = new double[edge.length];
     /**
      * The outline before its bulges, in even steps along it: for each point, the spot on the middle line it bulges
-     * away from, the way it bulges and how far out it lies.
+     * away from, the way it bulges and how far out it lies. Those of the last few sizes are kept, as a renderer
+     * draws portals of a few sizes (open and shut).
      */
-    private final double[] spine = new double[edge.length], away = new double[edge.length],
-        extent = new double[POINTS + 1];
-    private double outlineWidth = -1, outlineHeight, outlineRoundness;
+    private double[] spine, away, extent;
+    private final Outline[] outlines = new Outline[4];
+    private int nextOutline;
     private final double[] quad = new double[8], rimIn = new double[20], rimOut = new double[20];
     private final double[] edgePhase = new double[WAVES.length], flamePhase = new double[WAVES.length];
 
     /**
-     * Made into the portal at a time, inside an opening of the given half size, its own per seed: a rectangle at
+     * Made into the portal at a time, inside an opening from left to right and bottom to top (from the doorway's
+     * middle), its own per seed: a rectangle at
      * roundness 0, an oval at 1, and rectangles with ever rounder corners between. Roughness scales the edge's bulges
      * (0 is a smooth edge) and spin speed how fast the edge and the rim's spikes turn and drift (0 keeps them still).
      */
-    void update(long seed, long millis, double halfWidth, double halfHeight, double roundness, double roughness,
-        double spinSpeed) {
+    void update(long seed, long millis, double left, double right, double bottom, double top, double roundness,
+        double roughness, double spinSpeed) {
         fill.clear();
         rim.clear();
         flash = 0;
-        outline(halfWidth, halfHeight, roundness);
+        outline((right - left) / 2, (top - bottom) / 2, roundness);
         double time = millis / 1000.0, turning = time * spinSpeed;
         Random shake = new Random(mix(seed, millis / SHAKE_MS));
         double ch = (shake.nextDouble() * 2 - 1) * SHAKE, cv = (shake.nextDouble() * 2 - 1) * SHAKE;
+        // The middle of the portal, shaken
+        double mh = (left + right) / 2 + ch, mv = (bottom + top) / 2 + cv;
         double pulse = (shake.nextDouble() * 2 - 1) * PULSE;
         Random phases = new Random(seed);
         for (int k = 0; k < WAVES.length; k++) {
@@ -87,8 +91,8 @@ final class PortalShape {
 
         for (int i = 0; i <= POINTS; i++) {
             double angle = Math.PI * 2 * (i % POINTS) / POINTS;
-            double sh = spine[2 * i] + ch, sv = spine[2 * i + 1] + cv, uh = away[2 * i], uv = away[2 * i + 1];
-            double reach = reach(sh, sv, uh, uv, halfWidth, halfHeight);
+            double sh = spine[2 * i] + mh, sv = spine[2 * i + 1] + mv, uh = away[2 * i], uv = away[2 * i + 1];
+            double reach = reach(sh, sv, uh, uv, left, right, bottom, top);
             double r = extent[i] + pulse + roughness * waves(angle, turning, SPIN, edgePhase, false);
             double flame = 0.5 + 0.5 * roughness * waves(angle, turning, FLAME_SPIN, flamePhase, true) / HEIGHTS[0];
             double out = r + RIM_OUT * (0.4 + 0.6 * Math.max(0, Math.min(1, flame)));
@@ -97,17 +101,16 @@ final class PortalShape {
             put(outer, i, sh, sv, uh, uv, Math.min(out, reach));
         }
 
-        double[][] bands = glitchBands(seed, millis, halfHeight);
+        double[][] bands = glitchBands(seed, millis, bottom, top);
         for (double[] band : bands == null ? UNBROKEN : bands) {
-            double[] bounds = bands == null ? null
-                : new double[] { band[0], band[1], -halfWidth - band[2], halfWidth - band[2] };
+            double[] bounds = bands == null ? null : new double[] { band[0], band[1], left - band[2], right - band[2] };
             for (int i = 0; i < POINTS; i++) {
                 // The fill between the middle line and the edge
-                quad[0] = spine[2 * i] + ch;
-                quad[1] = spine[2 * i + 1] + cv;
+                quad[0] = spine[2 * i] + mh;
+                quad[1] = spine[2 * i + 1] + mv;
                 System.arraycopy(edge, 2 * i, quad, 2, 4);
-                quad[6] = spine[2 * i + 2] + ch;
-                quad[7] = spine[2 * i + 3] + cv;
+                quad[6] = spine[2 * i + 2] + mh;
+                quad[7] = spine[2 * i + 3] + mv;
                 double[] piece = bounds == null ? quad : clip(quad, 2, bounds);
                 if (piece != null) addFan(fill, piece, 2, piece.length / 2, band[2], ch, cv);
                 addRimQuads(i, bounds, band[2], ch, cv);
@@ -116,16 +119,27 @@ final class PortalShape {
     }
 
     /**
-     * Works out the outline before its bulges, a superellipse (|h / a|^n + |v / b|^n = 1, n = 2 / roundness), when
-     * the size or roundness changed. Its points are even steps along it, so the bulges are even all around. Each
-     * bulges away from the nearest spot on a middle line along the long side (as long as the long side less the
-     * short), so the sides bulge straight out and the ends round about their middle, and no two bulges cross.
+     * Picks the outline before its bulges, working it out for a new size or roundness: a superellipse
+     * (|h / a|^n + |v / b|^n = 1, n = 2 / roundness). Its points are even steps along it, so the bulges are even all
+     * around. Each bulges away from the nearest spot on a middle line along the long side (as long as the long side
+     * less the short), so the sides bulge straight out and the ends round about their middle, and no two bulges
+     * cross.
      */
     private void outline(double halfWidth, double halfHeight, double roundness) {
-        if (halfWidth == outlineWidth && halfHeight == outlineHeight && roundness == outlineRoundness) return;
-        outlineWidth = halfWidth;
-        outlineHeight = halfHeight;
-        outlineRoundness = roundness;
+        for (Outline outline : outlines) {
+            if (outline != null && outline.matches(halfWidth, halfHeight, roundness)) {
+                spine = outline.spine;
+                away = outline.away;
+                extent = outline.extent;
+                return;
+            }
+        }
+        Outline outline = new Outline(halfWidth, halfHeight, roundness);
+        outlines[nextOutline] = outline;
+        nextOutline = (nextOutline + 1) % outlines.length;
+        spine = outline.spine;
+        away = outline.away;
+        extent = outline.extent;
         double a = halfWidth - MARGIN, b = halfHeight - MARGIN;
         double power = roundness <= 2 / MAX_EXPONENT ? 2 / MAX_EXPONENT : roundness;
         double[] dense = new double[2 * (OUTLINE_STEPS + 1)], along = new double[OUTLINE_STEPS + 1];
@@ -153,8 +167,7 @@ final class PortalShape {
 
     /**
      * The fractal at a turn around the portal (in radians), turning at the spin: rows of round bulges meeting in sharp
-     * dips, or
-     * turned over, sharp spikes. Averages 0.
+     * dips, or turned over, sharp spikes. Averages 0.
      */
     private static double waves(double angle, double time, double spin, double[] phase, boolean spikes) {
         double sum = 0;
@@ -175,12 +188,13 @@ final class PortalShape {
     }
 
     /** How far from a spot along a direction the opening reaches. */
-    private static double reach(double sh, double sv, double uh, double uv, double halfWidth, double halfHeight) {
+    private static double reach(double sh, double sv, double uh, double uv, double left, double right, double bottom,
+        double top) {
         double reach = Double.MAX_VALUE;
-        if (uh > 0) reach = (halfWidth - sh) / uh;
-        else if (uh < 0) reach = (-halfWidth - sh) / uh;
-        if (uv > 0) reach = Math.min(reach, (halfHeight - sv) / uv);
-        else if (uv < 0) reach = Math.min(reach, (-halfHeight - sv) / uv);
+        if (uh > 0) reach = (right - sh) / uh;
+        else if (uh < 0) reach = (left - sh) / uh;
+        if (uv > 0) reach = Math.min(reach, (top - sv) / uv);
+        else if (uv < 0) reach = Math.min(reach, (bottom - sv) / uv);
         return reach;
     }
 
@@ -193,7 +207,7 @@ final class PortalShape {
      * The bands a glitch cuts the portal into right now, each {v from, v to, h shift}, or null when it isn't
      * glitching. Sets the flash.
      */
-    private double[][] glitchBands(long seed, long millis, double halfHeight) {
+    private double[][] glitchBands(long seed, long millis, double bottom, double top) {
         long window = millis / GLITCH_WINDOW_MS;
         Random random = new Random(mix(seed ^ 0x6C1D7C4AL, window));
         if (random.nextFloat() >= GLITCH_CHANCE) return null;
@@ -204,9 +218,9 @@ final class PortalShape {
         random = new Random(mix(seed ^ 0x3A9B21F5L, millis / GLITCH_STEP_MS));
         int cuts = 2 + random.nextInt(4);
         double[] at = new double[cuts + 2];
-        at[0] = -halfHeight * 2;
-        at[1] = halfHeight * 2;
-        for (int i = 2; i < at.length; i++) at[i] = (random.nextDouble() * 2 - 1) * halfHeight;
+        at[0] = bottom - 1;
+        at[1] = top + 1;
+        for (int i = 2; i < at.length; i++) at[i] = bottom + random.nextDouble() * (top - bottom);
         Arrays.sort(at);
         double[][] bands = new double[cuts + 1][];
         int count = 0;
@@ -320,6 +334,23 @@ final class PortalShape {
         z = (z ^ (z >>> 30)) * 0xBF58476D1CE4E5B9L;
         z = (z ^ (z >>> 27)) * 0x94D049BB133111EBL;
         return z ^ (z >>> 31);
+    }
+
+    private static final class Outline {
+
+        final double halfWidth, halfHeight, roundness;
+        final double[] spine = new double[2 * (POINTS + 1)], away = new double[2 * (POINTS + 1)],
+            extent = new double[POINTS + 1];
+
+        Outline(double halfWidth, double halfHeight, double roundness) {
+            this.halfWidth = halfWidth;
+            this.halfHeight = halfHeight;
+            this.roundness = roundness;
+        }
+
+        boolean matches(double halfWidth, double halfHeight, double roundness) {
+            return halfWidth == this.halfWidth && halfHeight == this.halfHeight && roundness == this.roundness;
+        }
     }
 
     /** Vertices four to a quad, each a run of stride values. */

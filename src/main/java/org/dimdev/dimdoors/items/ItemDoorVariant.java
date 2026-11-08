@@ -12,14 +12,14 @@ import net.minecraft.util.StatCollector;
 import org.dimdev.dimdoors.DimDoors;
 import org.dimdev.dimdoors.blocks.BaseDimDoor;
 import org.dimdev.dimdoors.blocks.DoorVariantBlock;
-import org.dimdev.dimdoors.client.DoorVariantSprite;
+import org.dimdev.dimdoors.client.PortalSprite;
 import org.dimdev.dimdoors.config.DoorKind;
 
 import cpw.mods.fml.common.registry.GameData;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 
-/** The item of a door variant, drawn as its base door with the portal through its windows (DoorVariantSprite). */
+/** The item of a door variant, drawn as its base door with the portal through its windows (PortalSprite). */
 public class ItemDoorVariant extends BaseItemDoor {
 
     private final DoorVariantBlock door;
@@ -83,10 +83,8 @@ public class ItemDoorVariant extends BaseItemDoor {
             String name = "dimdoors:door_variant/" + GameData.getItemRegistry()
                 .getNameForObject(this)
                 .replace(':', '/');
-            DoorVariantSprite sprite = new DoorVariantSprite(
-                name,
-                base,
-                map.getTextureType() == 0 ? "textures/blocks" : "textures/items");
+            PortalSprite sprite = PortalSprite
+                .door(name, base, map.getTextureType() == 0 ? "textures/blocks" : "textures/items");
             map.setTextureEntry(name, sprite);
             itemIcon = sprite;
         }
@@ -111,7 +109,7 @@ public class ItemDoorVariant extends BaseItemDoor {
     /** Our icon, or null to draw the base door's. */
     @SideOnly(Side.CLIENT)
     private IIcon drawnIcon() {
-        return itemIcon instanceof DoorVariantSprite sprite && !sprite.failed() ? itemIcon : null;
+        return itemIcon instanceof PortalSprite sprite && !sprite.failed() ? itemIcon : null;
     }
 
     @Override

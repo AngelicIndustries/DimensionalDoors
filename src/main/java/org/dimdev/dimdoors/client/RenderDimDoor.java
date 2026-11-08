@@ -4,20 +4,27 @@ import static org.lwjgl.opengl.GL11.*;
 
 import java.util.Random;
 
+import net.minecraft.block.Block;
+import net.minecraft.block.BlockDoor;
 import net.minecraft.client.renderer.ActiveRenderInfo;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.ResourceLocation;
+import net.minecraftforge.client.MinecraftForgeClient;
 
 import org.dimdev.dimdoors.DimDoors;
 import org.dimdev.dimdoors.config.DDProperties;
+import org.dimdev.dimdoors.config.DDProperties.PortalPlacement;
 import org.dimdev.dimdoors.tileentities.TileEntityDimDoor;
 import org.lwjgl.opengl.GL11;
 
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 
-/** A dimensional door's portal in its doorway (also behind a shut door's windows), and its keyhole. */
+/**
+ * A dimensional door's portal in its doorway (also behind a shut door's windows), placed around an open door's panel
+ * as the config says, and its keyhole.
+ */
 @SideOnly(Side.CLIENT)
 public class RenderDimDoor extends PortalRenderer {
 
@@ -29,6 +36,10 @@ public class RenderDimDoor extends PortalRenderer {
         DimDoors.modid + ":textures/other/keyOutlineLight.png");
 
     private static DDProperties properties = null;
+    /** How thick a door's or trapdoor's panel is. */
+    static final double PANEL = 0.1875;
+    /** How far into its block, along the way it faces, the portal of the door being drawn lies. */
+    private double depth;
 
     public RenderDimDoor() {
         if (properties == null) properties = DDProperties.instance();
@@ -40,26 +51,22 @@ public class RenderDimDoor extends PortalRenderer {
      */
     @Override
     protected void place(TileEntity tile, double x, double y, double z, double h, double v, double[] out, int at) {
-        int orientation = ((TileEntityDimDoor) tile).orientation;
-        switch (orientation) {
+        switch (((TileEntityDimDoor) tile).orientation % 4) {
             case 0:
-            case 4:
-                out[at] = x + (orientation == 0 ? .01 : .15);
+                out[at] = x + depth;
                 out[at + 2] = z + 0.5 + h;
                 break;
             case 1:
-            case 5:
                 out[at] = x + 0.5 - h;
-                out[at + 2] = z + (orientation == 1 ? .01 : .15);
+                out[at + 2] = z + depth;
                 break;
             case 2:
-            case 6:
-                out[at] = x + (orientation == 2 ? .99 : .85);
+                out[at] = x + depth;
                 out[at + 2] = z + 0.5 - h;
                 break;
             default:
                 out[at] = x + 0.5 + h;
-                out[at + 2] = z + (orientation == 3 ? .99 : .85);
+                out[at + 2] = z + depth;
         }
         out[at + 1] = y + v;
     }
@@ -153,9 +160,27 @@ public class RenderDimDoor extends PortalRenderer {
             }
 
             if (tile.openOrClosed) {
-
-                renderPortal(tile, par2, par4, par6, 0.5, 1, WARP, .80F);
-                if (tile.lockStatus >= 1) {
+                // The portal faces out of the block's low side for orientations 0 and 1, its high side for 2 and 3:
+                // inside a shut door's panel, set into an open doorway, or just in front of it
+                boolean low = tile.orientation % 4 < 2;
+                PortalPlacement placement = properties.OpenPortalPlacement;
+                if (tile.orientation < 4) depth = low ? .01 : .99;
+                else if (placement == PortalPlacement.FORWARD) depth = low ? -.01 : 1.01;
+                else depth = low ? .15 : .85;
+                // An open door's panel stands in the doorway along its hinge side: the left, seen from the portal's
+                // front, unless the door is hinged the other way
+                double left = -0.5, right = 0.5;
+                if (tile.orientation > 3 && placement == PortalPlacement.NARROW) {
+                    Block block = tile.getWorldObj()
+                        .getBlock(tile.xCoord, tile.yCoord, tile.zCoord);
+                    boolean mirrored = block instanceof BlockDoor
+                        && (((BlockDoor) block).func_150012_g(tile.getWorldObj(), tile.xCoord, tile.yCoord, tile.zCoord)
+                            & 16) != 0;
+                    if (mirrored) right -= PANEL;
+                    else left += PANEL;
+                }
+                renderPortal(tile, par2, par4, par6, left, right, -1, 1, WARP, .80F);
+                if (tile.lockStatus >= 1 && MinecraftForgeClient.getRenderPass() != 1) {
                     for (int i = 0; i < 1 + tile.lockStatus; i++) {
                         this.renderKeyHole(tile, par2, par4, par6, i);
 

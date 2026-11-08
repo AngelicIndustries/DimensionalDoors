@@ -356,6 +356,7 @@ public class DimDoors {
 
         // Dimensional variants of other doors, from the door variant list
         DoorVariants.register(properties);
+        TrapdoorVariants.register(properties);
 
         BlockRotator.setupOrientations();
 

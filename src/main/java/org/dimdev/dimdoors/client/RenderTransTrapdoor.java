@@ -13,7 +13,10 @@ import org.dimdev.dimdoors.config.DDProperties;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 
-/** A transdimensional trapdoor's portal, lying in its opening (also under a shut trapdoor). */
+/**
+ * A transdimensional trapdoor's portal, lying in its opening (also under a shut trapdoor), beside an open trapdoor's
+ * panel unless placed as in vanilla.
+ */
 @SideOnly(Side.CLIENT)
 public class RenderTransTrapdoor extends PortalRenderer {
 
@@ -63,6 +66,24 @@ public class RenderTransTrapdoor extends PortalRenderer {
             .getBlockMetadata(tile.xCoord, tile.yCoord, tile.zCoord);
         boolean open = BlockTrapDoor.func_150118_d(metadata);
         height = TransTrapdoor.isTrapdoorSetLow(metadata) ? (open ? 0.2 : 0.15) : (open ? 0.95 : 0.85);
-        renderPortal(tile, x, y, z, 0.5, 0.5, riftPath, 1.0F);
+        // An open trapdoor's panel stands up along its hinge side, which the portal keeps clear of unless placed as
+        // in vanilla
+        double left = -0.5, right = 0.5, bottom = -0.5, top = 0.5;
+        if (open && properties.OpenPortalPlacement != DDProperties.PortalPlacement.VANILLA) {
+            switch (metadata & 3) {
+                case 0:
+                    bottom += RenderDimDoor.PANEL;
+                    break;
+                case 1:
+                    top -= RenderDimDoor.PANEL;
+                    break;
+                case 2:
+                    right -= RenderDimDoor.PANEL;
+                    break;
+                default:
+                    left += RenderDimDoor.PANEL;
+            }
+        }
+        renderPortal(tile, x, y, z, left, right, bottom, top, riftPath, 1.0F);
     }
 }

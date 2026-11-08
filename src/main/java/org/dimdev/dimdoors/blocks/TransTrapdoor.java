@@ -7,16 +7,20 @@ import net.minecraft.block.BlockTrapDoor;
 import net.minecraft.block.ITileEntityProvider;
 import net.minecraft.block.material.Material;
 import net.minecraft.client.renderer.texture.IIconRegister;
+import net.minecraft.client.renderer.texture.TextureMap;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Blocks;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
+import net.minecraft.util.IIcon;
 import net.minecraft.util.MovingObjectPosition;
+import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
 
 import org.dimdev.dimdoors.DimDoors;
+import org.dimdev.dimdoors.client.PortalSprite;
 import org.dimdev.dimdoors.core.DDTeleporter;
 import org.dimdev.dimdoors.core.DimLink;
 import org.dimdev.dimdoors.core.LinkType;
@@ -30,14 +34,48 @@ import cpw.mods.fml.relauncher.SideOnly;
 
 public class TransTrapdoor extends BlockTrapDoor implements IDimDoor, ITileEntityProvider {
 
+    /** The item's icon: the trapdoor with the portal showing through, as its item draws it in 3D from block icons. */
+    @SideOnly(Side.CLIENT)
+    private PortalSprite portalIcon;
+
     public TransTrapdoor(Material material) {
         super(material);
         this.setCreativeTab(DimDoors.dimDoorsCreativeTab);
     }
 
     @Override
-    public void registerBlockIcons(IIconRegister par1IconRegister) {
-        this.blockIcon = par1IconRegister.registerIcon(DimDoors.modid + ":" + this.getUnlocalizedName());
+    @SideOnly(Side.CLIENT)
+    public void registerBlockIcons(IIconRegister iconRegister) {
+        this.blockIcon = iconRegister.registerIcon(DimDoors.modid + ":" + this.getUnlocalizedName());
+        registerItemIcon(iconRegister, DimDoors.modid + ":trapdoor_portal/dimHatch");
+    }
+
+    /** Draws the item's icon from the plain one when the atlas loads. */
+    @SideOnly(Side.CLIENT)
+    protected void registerItemIcon(IIconRegister iconRegister, String name) {
+        if (iconRegister instanceof TextureMap map) {
+            portalIcon = PortalSprite.trapdoor(name, this);
+            map.setTextureEntry(name, portalIcon);
+        }
+    }
+
+    /** The trapdoor's own icon, without the portal. */
+    @SideOnly(Side.CLIENT)
+    public IIcon plainIcon(int side, int metadata) {
+        return blockIcon;
+    }
+
+    /** Asked for by the item and particles; the trapdoor in the world is drawn plain, the portal showing below it. */
+    @Override
+    @SideOnly(Side.CLIENT)
+    public IIcon getIcon(int side, int metadata) {
+        return portalIcon != null && !portalIcon.failed() ? portalIcon : plainIcon(side, metadata);
+    }
+
+    @Override
+    @SideOnly(Side.CLIENT)
+    public IIcon getIcon(IBlockAccess blockAccess, int x, int y, int z, int side) {
+        return plainIcon(side, blockAccess.getBlockMetadata(x, y, z));
     }
 
     // Teleports the player to the exit link of that dimension, assuming it is a pocket
@@ -124,6 +162,7 @@ public class TransTrapdoor extends BlockTrapDoor implements IDimDoor, ITileEntit
         return new ItemStack(this.getDoorItem(), 1, 0);
     }
 
+    /** Breaking it gives back the plain trapdoor it was made from. */
     @Override
     public Item getItemDropped(int metadata, Random random, int fortuneLevel) {
         return Item.getItemFromBlock(Blocks.trapdoor);
@@ -131,7 +170,7 @@ public class TransTrapdoor extends BlockTrapDoor implements IDimDoor, ITileEntit
 
     @Override
     public Item getDoorItem() {
-        return Item.getItemFromBlock(DimDoors.transTrapdoor);
+        return Item.getItemFromBlock(this);
     }
 
     public static boolean isTrapdoorSetLow(int metadata) {

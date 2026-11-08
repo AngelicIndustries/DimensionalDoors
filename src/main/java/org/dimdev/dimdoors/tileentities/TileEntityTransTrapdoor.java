@@ -25,4 +25,10 @@ public class TileEntityTransTrapdoor extends DDTileEntityBase {
         }
         return rgbaColor;
     }
+
+    /** Drawn with the world and again after water, for the portal's rim (PortalRenderer). */
+    @Override
+    public boolean shouldRenderInPass(int pass) {
+        return pass == 0 || pass == 1;
+    }
 }

@@ -84,6 +84,7 @@ dimdoors.variant.dungeon=Dungeon %s
 dimdoors.variant.nether_dungeon=Infernal %s
 dimdoors.variant.personal=Personal %s
 dimdoors.variant.golden=Anchored %s
+dimdoors.variant.trapdoor=Transdimensional %s
 tile.fadebloom.name=Fadebloom
 dimdoors.limbofog.title=Limbo fog
 dimdoors.limbofog.density=Density: %s (about %s blocks of sight)
