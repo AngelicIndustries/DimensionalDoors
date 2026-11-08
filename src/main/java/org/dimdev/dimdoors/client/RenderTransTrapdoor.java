@@ -2,6 +2,7 @@ package org.dimdev.dimdoors.client;
 
 import java.util.Random;
 
+import net.minecraft.block.Block;
 import net.minecraft.block.BlockTrapDoor;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.ResourceLocation;
@@ -15,7 +16,7 @@ import cpw.mods.fml.relauncher.SideOnly;
 
 /**
  * A transdimensional trapdoor's portal, lying in its opening (also under a shut trapdoor), beside an open trapdoor's
- * panel unless placed as in vanilla.
+ * panel unless placed as in vanilla. Only a trapdoor on a rift has one.
  */
 @SideOnly(Side.CLIENT)
 public class RenderTransTrapdoor extends PortalRenderer {
@@ -61,6 +62,12 @@ public class RenderTransTrapdoor extends PortalRenderer {
     @Override
     public void renderTileEntityAt(TileEntity tile, double x, double y, double z, float partialTicks) {
         if (!properties.DoorRenderingEnabled) return;
+        // Only one that leads somewhere shows a portal: outside a pocket, a trapdoor not on a rift does nothing
+        Block block = tile.getBlockType();
+        if (!(block instanceof TransTrapdoor)
+            || !((TransTrapdoor) block).isDoorOnRift(tile.getWorldObj(), tile.xCoord, tile.yCoord, tile.zCoord)) {
+            return;
+        }
         // As high as the old quad lay for the trapdoor's half and whether it is open
         int metadata = tile.getWorldObj()
             .getBlockMetadata(tile.xCoord, tile.yCoord, tile.zCoord);

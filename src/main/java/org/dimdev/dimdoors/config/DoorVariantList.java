@@ -45,7 +45,15 @@ public final class DoorVariantList {
         "plantmegapack:bambooGiantTimberDoor=warp", "plantmegapack:bambooGoldenDoor=warp",
         "plantmegapack:bambooMosoDoor=warp", "plantmegapack:bambooShortTassledDoor=warp",
         "plantmegapack:bambooTimorBlackDoor=warp", "plantmegapack:bambooTropicalBlueDoor=warp",
-        "plantmegapack:bambooWetForestDoor=warp" };
+        "plantmegapack:bambooWetForestDoor=warp",
+
+        "biomic:baobab_door=warp", "biomic:blackwood_door=warp", "biomic:blue_bioshroom_door=warp",
+        "biomic:brimwood_door=nether_dungeon", "biomic:cobalt_door=nether_dungeon", "biomic:cypress_door=warp",
+        "biomic:dead_door=warp", "biomic:eucalyptus_door=warp", "biomic:green_bioshroom_door=warp",
+        "biomic:joshua_door=warp", "biomic:kapok_door=warp", "biomic:larch_door=warp", "biomic:magnolia_door=warp",
+        "biomic:maple_door=warp", "biomic:palm_door=warp", "biomic:pine_door=warp", "biomic:pink_bioshroom_door=warp",
+        "biomic:redwood_door=warp", "biomic:socotra_door=warp", "biomic:willow_door=warp", "biomic:wisteria_door=warp",
+        "biomic:yellow_bioshroom_door=nether_dungeon" };
 
     private DoorVariantList() {}
 
