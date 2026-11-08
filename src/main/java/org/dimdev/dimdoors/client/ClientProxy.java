@@ -37,7 +37,7 @@ public class ClientProxy extends CommonProxy {
         RiftCurves.get(0);
 
         // MinecraftForgeClient.preloadTexture(RIFT2_PNG);
-        RenderingRegistry.registerEntityRenderingHandler(MobMonolith.class, new RenderMobObelisk(.5F));
+        RenderingRegistry.registerEntityRenderingHandler(MobMonolith.class, RenderMobObelisk.create(.5F));
         RenderingRegistry.registerEntityRenderingHandler(EntityFallingDripstone.class, new RenderFallingDripstone());
         RenderingRegistry.registerBlockHandler(new PrivatePocketRender(RenderingRegistry.getNextAvailableRenderId()));
         if (DimDoors.fadebloom != null) {
@@ -109,6 +109,7 @@ public class ClientProxy extends CommonProxy {
     public void registerSidedHooks(DDProperties properties) {
         ClientOnlyHooks hooks = new ClientOnlyHooks(properties);
         MinecraftForge.EVENT_BUS.register(hooks);
+        MinecraftForge.EVENT_BUS.register(new MonolithEyeGlow());
         LimboFogCommand.register();
         FMLCommonHandler.instance()
             .bus()

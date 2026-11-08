@@ -5,34 +5,64 @@ import net.minecraft.client.renderer.OpenGlHelper;
 import net.minecraft.client.renderer.entity.RenderLiving;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLiving;
+import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.util.ResourceLocation;
-import net.minecraftforge.client.event.RenderLivingEvent;
-import net.minecraftforge.common.MinecraftForge;
 
 import org.dimdev.dimdoors.DimDoors;
 import org.dimdev.dimdoors.ticking.MobMonolith;
 import org.lwjgl.opengl.GL11;
-import org.lwjgl.opengl.GL12;
 
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 
+/**
+ * Draws a Monolith as vanilla draws a spider: the body, then its open eye glowing in a render pass, which Angelica
+ * draws
+ * with a shader pack's glowing eyes program (RenderMobObeliskAngelica). Complementary lights and fogs that program's
+ * pixels as the body under them, though, so under a shader pack the eye glows again after the world (MonolithEyeGlow).
+ * The whole Monolith jitters as its aggro grows.
+ */
 @SideOnly(Side.CLIENT)
 public class RenderMobObelisk extends RenderLiving {
 
     protected ModelMobObelisk obeliskModel;
 
-    public RenderMobObelisk(float f) {
-        super(new ModelMobObelisk(), f);
+    protected RenderMobObelisk(float shadowSize) {
+        super(new ModelMobObelisk(), shadowSize);
         this.obeliskModel = (ModelMobObelisk) this.mainModel;
+        setRenderPassModel(new ModelMobObelisk());
+    }
+
+    /** The renderer, marked as one with an eye pass when Angelica has the API for it. */
+    public static RenderMobObelisk create(float shadowSize) {
+        return hasAngelicaEyePass() ? RenderMobObeliskAngelica.create(shadowSize) : new RenderMobObelisk(shadowSize);
+    }
+
+    /** Whether Angelica is there with its eye pass API (EyePassRenderer). */
+    private static boolean hasAngelicaEyePass() {
+        try {
+            Class.forName(
+                "com.gtnewhorizons.angelica.api.EyePassRenderer",
+                false,
+                RenderMobObelisk.class.getClassLoader());
+            return true;
+        } catch (ClassNotFoundException | LinkageError e) {
+            return false;
+        }
     }
 
     @Override
-    public void doRender(EntityLiving entity, double x, double y, double z, float par8, float par9) {
+    public void doRender(EntityLiving entity, double x, double y, double z, float yaw, float partialTicks) {
+        MobMonolith monolith = ((MobMonolith) entity);
+        double[] jitter = jitter(monolith);
+        super.doRender(entity, x + jitter[0], y + jitter[1], z + jitter[2], yaw, partialTicks);
+        if (monolith.getTextureState() > 0 && ShaderPacks.inUse()) MonolithEyeGlow.queue(monolith);
+    }
+
+    /** How far a Monolith is shaken from its place right now, growing with its aggro; each has its own shake. */
+    static double[] jitter(MobMonolith monolith) {
         final float minScaling = 0;
         final float maxScaling = 0.1f;
-        MobMonolith monolith = ((MobMonolith) entity);
-
         float aggroScaling = 0;
         if (monolith.isDangerous()) {
             // Use linear interpolation to scale how much jitter we want for our given aggro level
@@ -42,113 +72,56 @@ public class RenderMobObelisk extends RenderLiving {
         // Calculate jitter - include entity ID to give Monoliths individual jitters
         float time = ((Minecraft.getSystemTime() + 0xF1234568 * monolith.getEntityId()) % 200000) / 50.0F;
         // We use random constants here on purpose just to get different wave forms
-        double xJitter = aggroScaling * Math.sin(1.1f * time) * Math.sin(0.8f * time);
-        double yJitter = aggroScaling * Math.sin(1.2f * time) * Math.sin(0.9f * time);
-        double zJitter = aggroScaling * Math.sin(1.3f * time) * Math.sin(0.7f * time);
-
-        // Render with jitter
-        this.render(entity, x + xJitter, y + yJitter, z + zJitter, par8, par9);
-        this.func_110827_b(entity, x, y, z, par8, par9);
+        return new double[] { aggroScaling * Math.sin(1.1f * time) * Math.sin(0.8f * time),
+            aggroScaling * Math.sin(1.2f * time) * Math.sin(0.9f * time),
+            aggroScaling * Math.sin(1.3f * time) * Math.sin(0.7f * time) };
     }
 
-    public void render(EntityLiving par1EntityLivingBase, double x, double y, double z, float par8, float par9) {
-        if (MinecraftForge.EVENT_BUS.post(new RenderLivingEvent.Pre(par1EntityLivingBase, this, x, y, z))) return;
-        GL11.glPushMatrix();
-        GL11.glDisable(GL11.GL_CULL_FACE);
+    /** Tilted by the Monolith's pitch, and its model 48 pixels higher than vanilla places one. */
+    @Override
+    protected void preRenderCallback(EntityLivingBase entity, float partialTicks) {
+        GL11.glRotatef(((MobMonolith) entity).pitchLevel, 1.0F, 0.0F, 0.0F);
+        GL11.glTranslatef(0.0F, 48 * 0.0625F, 0.0F);
+    }
+
+    /** The body, unlit and blended. */
+    @Override
+    protected void renderModel(EntityLivingBase entity, float limbSwing, float limbSwingAmount, float ageInTicks,
+        float headYaw, float headPitch, float scale) {
         GL11.glDisable(GL11.GL_LIGHTING);
         GL11.glEnable(GL11.GL_BLEND);
         GL11.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
-        this.mainModel.onGround = this.renderSwingProgress(par1EntityLivingBase, par9);
-
-        try {
-            float interpolatedYaw = interpolateRotation(
-                par1EntityLivingBase.prevRenderYawOffset,
-                par1EntityLivingBase.renderYawOffset,
-                par9);
-            float interpolatedYawHead = interpolateRotation(
-                par1EntityLivingBase.prevRotationYawHead,
-                par1EntityLivingBase.rotationYawHead,
-                par9);
-            float rotation;
-            float pitch = par1EntityLivingBase.prevRotationPitch
-                + (par1EntityLivingBase.rotationPitch - par1EntityLivingBase.prevRotationPitch) * par9;
-            this.renderLivingAt(par1EntityLivingBase, x, y, z);
-
-            rotation = this.handleRotationFloat(par1EntityLivingBase, par9);
-            this.rotateCorpse(par1EntityLivingBase, rotation, interpolatedYaw, par9);
-
-            float f6 = 0.0625F;
-            GL11.glEnable(GL12.GL_RESCALE_NORMAL);
-
-            GL11.glScalef(-1.0F, -1.0F, 1.0F);
-            this.preRenderCallback(par1EntityLivingBase, par9);
-            GL11.glRotatef(((MobMonolith) par1EntityLivingBase).pitchLevel, 1.0F, 0.0F, 0.0F);
-            GL11.glTranslatef(0.0F, 24.0F * f6 - 0.0078125F, 0.0F);
-
-            this.renderModel(par1EntityLivingBase, 0, 0, rotation, interpolatedYaw, pitch, f6);
-            this.renderGlowingEyes((MobMonolith) par1EntityLivingBase, rotation, interpolatedYaw, pitch, f6);
-
-            OpenGlHelper.setActiveTexture(OpenGlHelper.lightmapTexUnit);
-            GL11.glDisable(GL11.GL_TEXTURE_2D);
-            OpenGlHelper.setActiveTexture(OpenGlHelper.defaultTexUnit);
-
-            GL11.glDisable(GL12.GL_RESCALE_NORMAL);
-        } catch (Exception exception) {
-            exception.printStackTrace();
-        }
-
-        OpenGlHelper.setActiveTexture(OpenGlHelper.lightmapTexUnit);
-        GL11.glEnable(GL11.GL_TEXTURE_2D);
-        OpenGlHelper.setActiveTexture(OpenGlHelper.defaultTexUnit);
-        GL11.glEnable(GL11.GL_CULL_FACE);
-        GL11.glEnable(GL11.GL_LIGHTING);
+        super.renderModel(entity, limbSwing, limbSwingAmount, ageInTicks, headYaw, headPitch, scale);
         GL11.glDisable(GL11.GL_BLEND);
-        GL11.glPopMatrix();
-        MinecraftForge.EVENT_BUS.post(new RenderLivingEvent.Post(par1EntityLivingBase, this, x, y, z));
+        GL11.glEnable(GL11.GL_LIGHTING);
     }
 
     /**
-     * The model again with only its eyes, at full brightness and added on top, so a Monolith's red eyes glow even in
-     * Limbo's dark (as vanilla draws spider eyes; with a shader pack, through its glowing eyes program). A calm
-     * Monolith has none.
+     * The glow of an open eye: the model again with only its eyes, at full brightness and added on top, as vanilla
+     * draws spider eyes.
      */
-    private void renderGlowingEyes(MobMonolith monolith, float rotation, float yaw, float pitch, float scale) {
-        if (monolith.getTextureState() == 0) {
-            return;
-        }
-        this.bindTexture(MonolithEyesTexture.of(this.getEntityTexture(monolith)));
+    @Override
+    protected int shouldRenderPass(EntityLivingBase entity, int pass, float partialTicks) {
+        MobMonolith monolith = (MobMonolith) entity;
+        if (pass > 0 || monolith.getTextureState() == 0) return -1;
+        bindTexture(MonolithEyesTexture.of(texture(monolith)));
+        GL11.glEnable(GL11.GL_BLEND);
+        GL11.glDisable(GL11.GL_ALPHA_TEST);
         GL11.glBlendFunc(GL11.GL_ONE, GL11.GL_ONE);
-        // Without the lightmap, so nothing that darkens it (Dark Limbo, Darkerer) dims the eyes
-        OpenGlHelper.setActiveTexture(OpenGlHelper.lightmapTexUnit);
-        GL11.glDisable(GL11.GL_TEXTURE_2D);
-        OpenGlHelper.setActiveTexture(OpenGlHelper.defaultTexUnit);
+        GL11.glDepthMask(false);
+        // Full light, so nothing that darkens Limbo (Dark Limbo, Darkerer) dims the eyes. Vanilla's spider eyes use
+        // 61680, which turns black where lightmap coordinates are packed into 16 bits (Angelica)
+        OpenGlHelper.setLightmapTextureCoords(OpenGlHelper.lightmapTexUnit, 240.0F, 240.0F);
         GL11.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
-        boolean eyePass = ShaderEyePass.begin();
-        try {
-            this.mainModel.render(monolith, 0, 0, rotation, yaw, pitch, scale);
-        } finally {
-            if (eyePass) ShaderEyePass.end();
-        }
-        OpenGlHelper.setActiveTexture(OpenGlHelper.lightmapTexUnit);
-        GL11.glEnable(GL11.GL_TEXTURE_2D);
-        OpenGlHelper.setActiveTexture(OpenGlHelper.defaultTexUnit);
-        GL11.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
-    }
-
-    private static float interpolateRotation(float par1, float par2, float par3) {
-        float f3 = par2 - par1;
-        while (f3 < -180.0f) {
-            f3 += 360.0F;
-        }
-        while (f3 >= 180.0F) {
-            f3 -= 360.0F;
-        }
-        return par1 + par3 * f3;
+        return 1;
     }
 
     @Override
     protected ResourceLocation getEntityTexture(Entity entity) {
-        MobMonolith monolith = (MobMonolith) entity;
+        return texture((MobMonolith) entity);
+    }
+
+    static ResourceLocation texture(MobMonolith monolith) {
         return new ResourceLocation(
             DimDoors.modid + ":textures/mobs/oldMonolith/Monolith" + monolith.getTextureState() + ".png");
     }
