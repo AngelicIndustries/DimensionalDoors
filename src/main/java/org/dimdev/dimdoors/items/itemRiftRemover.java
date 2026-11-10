@@ -93,8 +93,7 @@ public class itemRiftRemover extends Item {
                 // Tell the rift's tile entity to do its removal animation
                 TileEntity tileEntity = world.getTileEntity(x, y, z);
                 if (tileEntity != null && tileEntity instanceof TileEntityRift) {
-                    ((TileEntityRift) tileEntity).shouldClose = true;
-                    tileEntity.markDirty();
+                    ((TileEntityRift) tileEntity).startClosing(false);
                 } else if (!world.isRemote) {
                     // Only set the block to air on the server side so that we don't
                     // tell the server to remove the rift block before it can use the

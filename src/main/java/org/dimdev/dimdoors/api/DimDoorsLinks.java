@@ -86,9 +86,9 @@ public final class DimDoorsLinks {
     }
 
     /**
-     * Starts closing the rift at the block, as the Rift Remover does: it shrinks away, rifts within 6 blocks close with
-     * it, and each one's link is deleted once it is gone. Returns false without a rift with a link, or if it is
-     * already closing.
+     * Starts closing the rift at the block, as the Rift Remover does: it swells and winds down with its closing sound,
+     * rifts within 6 blocks start closing at the sound's snap, and each one's link is deleted once it is gone. Returns
+     * false without a rift with a link, or if it is already closing.
      */
     public static boolean closeRift(World world, int x, int y, int z) {
         return closeRift(world, x, y, z, true);
@@ -100,10 +100,7 @@ public final class DimDoorsLinks {
         if (rift == null || rift.shouldClose) {
             return false;
         }
-        rift.shouldClose = true;
-        rift.closesAlone = !nearby;
-        rift.markDirty();
-        world.markBlockForUpdate(x, y, z);
+        rift.startClosing(!nearby);
         return true;
     }
 

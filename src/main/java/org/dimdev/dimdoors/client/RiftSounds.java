@@ -24,8 +24,7 @@ import cpw.mods.fml.common.gameevent.TickEvent;
 /**
  * The sound of open rifts, the nearest few within hearing: a small rift rumbles, and as it grows past
  * TileEntityRift.BIG_RADIUS the rumble gives way to a heavier drone, heard farther. A rift that starts to close falls
- * silent quickly, under its own
- * closing sound (played by the rift on the server).
+ * silent quickly, under its own closing sound (ClosingRifts).
  */
 public final class RiftSounds {
 

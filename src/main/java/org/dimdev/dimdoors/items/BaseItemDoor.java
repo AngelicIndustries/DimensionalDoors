@@ -12,6 +12,7 @@ import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemDoor;
 import net.minecraft.item.ItemStack;
+import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.MathHelper;
 import net.minecraft.util.MovingObjectPosition;
 import net.minecraft.util.Vec3;
@@ -23,6 +24,7 @@ import org.dimdev.dimdoors.config.DDProperties;
 import org.dimdev.dimdoors.core.DimLink;
 import org.dimdev.dimdoors.core.PocketManager;
 import org.dimdev.dimdoors.tileentities.TileEntityDimDoor;
+import org.dimdev.dimdoors.tileentities.TileEntityRift;
 
 public abstract class BaseItemDoor extends ItemDoor {
 
@@ -189,7 +191,10 @@ public abstract class BaseItemDoor extends ItemDoor {
 
         MovingObjectPosition hit = BaseItemDoor.doRayTrace(player.worldObj, player, true);
         if (hit != null) {
-            if (world.getBlock(hit.blockX, hit.blockY, hit.blockZ) == DimDoors.blockRift) {
+            // A rift that is closing takes no door
+            TileEntity rift = world.getTileEntity(hit.blockX, hit.blockY, hit.blockZ);
+            if (world.getBlock(hit.blockX, hit.blockY, hit.blockZ) == DimDoors.blockRift
+                && !(rift instanceof TileEntityRift && ((TileEntityRift) rift).shouldClose)) {
                 DimLink link = PocketManager.getLink(hit.blockX, hit.blockY, hit.blockZ, world.provider.dimensionId);
                 if (link != null) {
                     int x = hit.blockX;

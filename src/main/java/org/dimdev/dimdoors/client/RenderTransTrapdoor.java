@@ -61,6 +61,7 @@ public class RenderTransTrapdoor extends PortalRenderer {
 
     @Override
     public void renderTileEntityAt(TileEntity tile, double x, double y, double z, float partialTicks) {
+        ClosingRifts.draw(tile, x, y, z);
         if (!properties.DoorRenderingEnabled) return;
         // Only one that leads somewhere shows a portal: outside a pocket, a trapdoor not on a rift does nothing
         Block block = tile.getBlockType();

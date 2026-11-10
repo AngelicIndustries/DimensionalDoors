@@ -9,8 +9,12 @@ import net.minecraft.network.play.server.S35PacketUpdateTileEntity;
 import net.minecraft.util.AxisAlignedBB;
 
 import org.dimdev.dimdoors.DimDoors;
+import org.dimdev.dimdoors.client.ClosingRifts;
 import org.dimdev.dimdoors.core.PocketManager;
 import org.dimdev.dimdoors.watcher.ClientLinkData;
+
+import cpw.mods.fml.relauncher.Side;
+import cpw.mods.fml.relauncher.SideOnly;
 
 public class TileEntityDimDoor extends DDTileEntityBase {
 
@@ -80,8 +84,10 @@ public class TileEntityDimDoor extends DDTileEntityBase {
 
     /** The doorway is drawn from the upper block down through the lower one, so both have to be in view. */
     @Override
+    @SideOnly(Side.CLIENT)
     public AxisAlignedBB getRenderBoundingBox() {
-        return AxisAlignedBB.getBoundingBox(xCoord, yCoord - 1, zCoord, xCoord + 1, yCoord + 1, zCoord + 1);
+        return ClosingRifts
+            .expand(this, AxisAlignedBB.getBoundingBox(xCoord, yCoord - 1, zCoord, xCoord + 1, yCoord + 1, zCoord + 1));
     }
 
     @Override

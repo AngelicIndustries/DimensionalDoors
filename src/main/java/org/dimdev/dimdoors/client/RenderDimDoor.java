@@ -151,6 +151,7 @@ public class RenderDimDoor extends PortalRenderer {
 
     @Override
     public void renderTileEntityAt(TileEntity par1TileEntity, double par2, double par4, double par6, float par8) {
+        ClosingRifts.draw(par1TileEntity, par2, par4, par6);
         if (properties.DoorRenderingEnabled) {
             TileEntityDimDoor tile = (TileEntityDimDoor) par1TileEntity;
             try {

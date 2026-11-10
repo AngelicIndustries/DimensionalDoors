@@ -8,6 +8,7 @@ import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.ResourceLocation;
 
 import org.dimdev.dimdoors.DimDoors;
+import org.dimdev.dimdoors.tileentities.RiftClosing;
 import org.dimdev.dimdoors.tileentities.TileEntityRift;
 
 import cpw.mods.fml.relauncher.Side;
@@ -35,7 +36,18 @@ public class RenderRift extends TileEntitySpecialRenderer {
         if (DimDoors.properties.ShowRiftCore || System.currentTimeMillis() <= showCoresUntil) {
             renderCore(rift, x, y, z, partialTicks);
         }
-        double size = rift.crackSize();
+        double size = rift.crackSize(), twist = 0;
+        if (rift.shouldClose) {
+            RiftClosing closing = rift.closing();
+            double seconds = rift.closeSeconds();
+            size *= closing.scale(seconds);
+            twist = closing.twist(seconds);
+        }
+        drawCrack(rift.riftRotation, rift.curveId, size, twist, x + 0.5, y + 0.5, z + 0.5);
+    }
+
+    /** Draws a rift's crack, turned by {@code twist} radians in its own plane, one way or the other by its shape. */
+    static void drawCrack(float rotation, int curveId, double size, double twist, double x, double y, double z) {
         if (size <= 0) return;
         glPushMatrix();
         // Both sides, no texture or lighting
@@ -43,7 +55,7 @@ public class RenderRift extends TileEntitySpecialRenderer {
         glDisable(GL_CULL_FACE);
         glDisable(GL_TEXTURE_2D);
         glEnable(GL_BLEND);
-        drawCrack(rift.riftRotation, RiftCurves.get(rift.curveId), size, x + 0.5, y + 0.5, z + 0.5);
+        drawCrack(rotation, RiftCurves.get(curveId), size, (curveId & 1) == 0 ? twist : -twist, x, y, z);
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
         glColor4f(1, 1, 1, 1);
         glDisable(GL_BLEND);
@@ -84,8 +96,8 @@ public class RenderRift extends TileEntitySpecialRenderer {
         glPopMatrix();
     }
 
-    private static void drawCrack(float rotation, RiftCurves.Curve curve, double size, double xWorld, double yWorld,
-        double zWorld) {
+    private static void drawCrack(float rotation, RiftCurves.Curve curve, double size, double twist, double xWorld,
+        double yWorld, double zWorld) {
         double scale = size / (curve.maxX - curve.minX);
         // The middle of the curve's bounding box
         double offsetX = (curve.maxX + curve.minX) / 2D;
@@ -110,6 +122,7 @@ public class RenderRift extends TileEntitySpecialRenderer {
                 * flutterMagnitude;
         }
         double cos = Math.cos(Math.toRadians(rotation)), sin = Math.sin(Math.toRadians(rotation));
+        double twistCos = Math.cos(twist), twistSin = Math.sin(twist);
         // Nearly black: it darkens whatever is behind it
         glColor4f(0.08F, 0.08F, 0.08F, 0.3F);
         glBlendFunc(GL_ONE_MINUS_DST_COLOR, GL_ZERO);
@@ -118,11 +131,14 @@ public class RenderRift extends TileEntitySpecialRenderer {
             int px = curve.xs[i], py = curve.ys[i];
             // Keeps most triangles in the middle from fluttering into each other
             int flutterIndex = Math.abs((px + py) * (px + py + 1) / 2 + py);
-            double fx = px + flutters[(flutterIndex + 1) % flutterModulo] - offsetX;
+            double cx = px + flutters[(flutterIndex + 1) % flutterModulo] - offsetX;
+            double cy = py + flutters[flutterIndex % flutterModulo] - offsetY;
             double fz = flutters[(flutterIndex + 2) % flutterModulo];
-            // Turned about the rift; 1.12 left the centring out of z, which put turned cracks beside their rift
+            // Twisted in its plane, then turned about the rift; 1.12 left the centring out of z, which put turned
+            // cracks beside their rift
+            double fx = cx * twistCos - cy * twistSin;
             double vx = fx * cos - fz * sin;
-            double vy = py + flutters[flutterIndex % flutterModulo] - offsetY;
+            double vy = cx * twistSin + cy * twistCos;
             double vz = fx * sin + fz * cos;
             glVertex3d(xWorld + vx * scale + xJitter, yWorld + vy * scale + yJitter, zWorld + vz * scale + zJitter);
         }

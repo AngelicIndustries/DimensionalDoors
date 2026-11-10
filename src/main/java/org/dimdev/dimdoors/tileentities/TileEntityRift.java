@@ -3,6 +3,7 @@ package org.dimdev.dimdoors.tileentities;
 import java.util.List;
 import java.util.Random;
 
+import net.minecraft.client.Minecraft;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.monster.EntityEnderman;
 import net.minecraft.entity.player.EntityPlayer;
@@ -37,7 +38,6 @@ public class TileEntityRift extends DDTileEntityBase {
     private static final int HOSTILE_ENDERMAN_CHANCE = 1;
     private static final int MAX_HOSTILE_ENDERMAN_CHANCE = 3;
     private static final int UPDATE_PERIOD = 200;
-    private static final int CLOSING_PERIOD = 40;
     // Growth follows the 1.12 rewrite: the size grows like the square root of the time the rift has been loaded, and
     // it unravels a block within size / 400 blocks with a chance of size / 500000 each tick (see unravel for where)
     private static final float SIZE_PER_BLOCK = 400;
@@ -54,13 +54,19 @@ public class TileEntityRift extends DDTileEntityBase {
     private static final Random random = new Random();
 
     private int updateTimer;
-    private final int closeTimer = 0;
     public int xOffset = 0;
     public int yOffset = 0;
     public int zOffset = 0;
     public boolean shouldClose = false;
     /** Whether a closing rift leaves the rifts near it open, unlike the Rift Remover's. */
     public boolean closesAlone = false;
+    /** The world time this rift started closing at, or -1. */
+    public long closingSince = -1;
+    /** Whether it closes with the big sound, decided when it starts. */
+    public boolean closeBig;
+    /** Client only: the system time this client's view of the close started at, or -1. */
+    public long closeStartMillis = -1;
+    private boolean closeSeen, closeSpread, replacedSeen;
     public Point4D nearestRiftLocation = null;
     public int spawnedEndermenID = 0;
 
@@ -72,7 +78,6 @@ public class TileEntityRift extends DDTileEntityBase {
     public float renderAngle;
     private boolean stabilized = false;
     private int syncedRadius;
-    private boolean closeSounded;
 
     public TileEntityRift() {
         // Vary the update times of rifts to prevent all the rifts in a cluster
@@ -266,45 +271,76 @@ public class TileEntityRift extends DDTileEntityBase {
         }
     }
 
-    private void closeRift() {
-        if (!closeSounded && !worldObj.isRemote) {
-            // A big rift's close is heard farther
-            boolean big = radius() >= BIG_RADIUS;
-            worldObj.playSoundEffect(
-                xCoord + 0.5,
-                yCoord + 0.5,
-                zCoord + 0.5,
-                DimDoors.modid + (big ? ":rift.close.big" : ":rift.close.small"),
-                big ? 1.5F : 1,
-                1);
-            closeSounded = true;
+    /**
+     * Starts this rift closing, as the Rift Remover does: timed to its closing sound, it swells and winds down, and its
+     * link is deleted once it is gone. Unless {@code alone}, the rifts within 6 blocks start closing at the sound's
+     * snap.
+     */
+    public void startClosing(boolean alone) {
+        if (shouldClose) return;
+        shouldClose = true;
+        closesAlone = alone;
+        closingSince = worldObj.getTotalWorldTime();
+        closeBig = radius() >= BIG_RADIUS;
+        markDirty();
+        if (!worldObj.isRemote) {
+            worldObj.markBlockForUpdate(xCoord, yCoord, zCoord);
         }
+    }
+
+    /** How this rift closes, once it has started to. */
+    public RiftClosing closing() {
+        return RiftClosing.of(closeBig, curveId);
+    }
+
+    private void closeRift() {
+        if (closingSince < 0) {
+            // Started closing before closes were timed
+            closingSince = worldObj.getTotalWorldTime();
+            closeBig = radius() >= BIG_RADIUS;
+        }
+        if (worldObj.isRemote) {
+            // The client plays the sound and times the crack from when it sees the close begin
+            if (!closeSeen) {
+                closeSeen = true;
+                DimDoors.proxy.riftClosing(this);
+            }
+            return;
+        }
+        RiftClosing closing = closing();
+        long elapsed = worldObj.getTotalWorldTime() - closingSince;
         NewDimData dimension = PocketManager.createDimensionData(worldObj);
-        if (!closesAlone && size < CLOSING_PERIOD / 2) {
+        if (!closesAlone && !closeSpread && elapsed >= closing.swellTicks()) {
+            closeSpread = true;
             for (DimLink riftLink : dimension.findRiftsInRange(worldObj, 6, xCoord, yCoord, zCoord)) {
                 Point4D location = riftLink.source();
                 TileEntity entity = worldObj.getTileEntity(location.getX(), location.getY(), location.getZ());
-                if (!(entity instanceof TileEntityRift)) continue;
-                TileEntityRift rift = (TileEntityRift) entity;
-                if (!rift.shouldClose) {
-                    rift.shouldClose = true;
-                    rift.markDirty();
-                    if (!worldObj.isRemote) {
-                        worldObj.markBlockForUpdate(location.getX(), location.getY(), location.getZ());
-                    }
-                }
+                if (entity instanceof TileEntityRift) ((TileEntityRift) entity).startClosing(false);
             }
         }
-        if (size <= 0 && !worldObj.isRemote) {
+        if (elapsed >= closing.endTicks()) {
             DimLink link = PocketManager.getLink(this.xCoord, this.yCoord, this.zCoord, worldObj);
-            if (link != null && !worldObj.isRemote) {
+            if (link != null) {
                 dimension.deleteLink(link);
             }
             worldObj.setBlockToAir(xCoord, yCoord, zCoord);
         }
+    }
 
-        // Grown rifts close about as fast as new ones
-        size -= Math.max(1, size / CLOSING_PERIOD);
+    /** Seconds into this rift's close on this client, or 0 before it has seen the close begin. */
+    @SideOnly(Side.CLIENT)
+    public double closeSeconds() {
+        return closeStartMillis < 0 ? 0 : (Minecraft.getSystemTime() - closeStartMillis) / 1000D;
+    }
+
+    @Override
+    public void invalidate() {
+        super.invalidate();
+        // A door set on the rift takes its place, and on the client the crack closes into it
+        if (worldObj != null && worldObj.isRemote && !replacedSeen) {
+            replacedSeen = true;
+            DimDoors.proxy.riftReplaced(this);
+        }
     }
 
     public boolean updateNearestRift() {
@@ -382,6 +418,8 @@ public class TileEntityRift extends DDTileEntityBase {
         this.zOffset = nbt.getInteger("zOffset");
         this.shouldClose = nbt.getBoolean("shouldClose");
         this.closesAlone = nbt.getBoolean("closesAlone");
+        this.closingSince = nbt.hasKey("closingSince") ? nbt.getLong("closingSince") : -1;
+        this.closeBig = nbt.getBoolean("closeBig");
         this.spawnedEndermenID = nbt.getInteger("spawnedEndermenID");
         this.riftRotation = nbt.getInteger("riftRotation");
         this.size = nbt.getFloat("size");
@@ -400,6 +438,8 @@ public class TileEntityRift extends DDTileEntityBase {
         nbt.setInteger("zOffset", this.zOffset);
         nbt.setBoolean("shouldClose", this.shouldClose);
         nbt.setBoolean("closesAlone", this.closesAlone);
+        nbt.setLong("closingSince", this.closingSince);
+        nbt.setBoolean("closeBig", this.closeBig);
         nbt.setInteger("spawnedEndermenID", this.spawnedEndermenID);
         nbt.setInteger("riftRotation", this.riftRotation);
         nbt.setFloat("size", this.size);
@@ -412,7 +452,8 @@ public class TileEntityRift extends DDTileEntityBase {
     @Override
     @SideOnly(Side.CLIENT)
     public AxisAlignedBB getRenderBoundingBox() {
-        double crack = crackSize();
+        // A closing crack swells first
+        double crack = crackSize() * (shouldClose ? 1 + RiftClosing.SWELL : 1);
         double reach = 1 + crack / 2 + DimDoors.properties.RiftJitter * CRACK_SHAKE * crack;
         return AxisAlignedBB.getBoundingBox(
             xCoord + 0.5 - reach,

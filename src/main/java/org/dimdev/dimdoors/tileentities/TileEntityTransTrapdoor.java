@@ -2,7 +2,13 @@ package org.dimdev.dimdoors.tileentities;
 
 import java.util.Random;
 
+import net.minecraft.util.AxisAlignedBB;
+
 import org.dimdev.dimdoors.DimDoors;
+import org.dimdev.dimdoors.client.ClosingRifts;
+
+import cpw.mods.fml.relauncher.Side;
+import cpw.mods.fml.relauncher.SideOnly;
 
 public class TileEntityTransTrapdoor extends DDTileEntityBase {
 
@@ -24,6 +30,13 @@ public class TileEntityTransTrapdoor extends DDTileEntityBase {
             rgbaColor[2] = worldObj.rand.nextFloat() * 0.6F + 0.5F;
         }
         return rgbaColor;
+    }
+
+    /** Grown while a rift's crack closes into the trapdoor. */
+    @Override
+    @SideOnly(Side.CLIENT)
+    public AxisAlignedBB getRenderBoundingBox() {
+        return ClosingRifts.expand(this, super.getRenderBoundingBox());
     }
 
     /** Drawn with the world and again after water, for the portal's rim (PortalRenderer). */

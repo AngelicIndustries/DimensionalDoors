@@ -106,6 +106,16 @@ public class ClientProxy extends CommonProxy {
     }
 
     @Override
+    public void riftClosing(TileEntityRift rift) {
+        ClosingRifts.started(rift);
+    }
+
+    @Override
+    public void riftReplaced(TileEntityRift rift) {
+        ClosingRifts.replaced(rift);
+    }
+
+    @Override
     public void registerSidedHooks(DDProperties properties) {
         ClientOnlyHooks hooks = new ClientOnlyHooks(properties);
         MinecraftForge.EVENT_BUS.register(hooks);

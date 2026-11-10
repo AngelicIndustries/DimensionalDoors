@@ -13,6 +13,7 @@ import net.minecraft.world.World;
 import org.dimdev.dimdoors.blocks.BaseDimDoor;
 import org.dimdev.dimdoors.config.DDProperties;
 import org.dimdev.dimdoors.tileentities.TileEntityDimDoor;
+import org.dimdev.dimdoors.tileentities.TileEntityRift;
 
 import cpw.mods.fml.common.FMLCommonHandler;
 import cpw.mods.fml.common.network.IGuiHandler;
@@ -146,6 +147,12 @@ public class CommonProxy implements IGuiHandler {
 
     /** Shows every rift's core for a while, after a rift tool misses (client only). */
     public void highlightRiftCores() {}
+
+    /** Client: a rift has started closing, seen for the first time. */
+    public void riftClosing(TileEntityRift rift) {}
+
+    /** Client: a rift's tile entity has gone, perhaps for a door set on it. */
+    public void riftReplaced(TileEntityRift rift) {}
 
     public void registerSidedHooks(DDProperties properties) {
         new ServerPacketHandler();
