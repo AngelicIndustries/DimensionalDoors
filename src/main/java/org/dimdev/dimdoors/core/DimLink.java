@@ -16,6 +16,8 @@ public abstract class DimLink {
     protected DimLink parent;
     protected LinkTail tail;
     protected List<DimLink> children;
+    /** Set by the Rift Stabilizer. Kept with the link so a rift that grows back where a door stood stays stable. */
+    protected boolean stabilized;
 
     protected DimLink(Point4D point, int orientation, DDLock lock, DimLink parent) {
 
@@ -69,6 +71,7 @@ public abstract class DimLink {
         parent = null;
         point = null;
         tail = new LinkTail(LinkType.NORMAL, null);
+        stabilized = false;
     }
 
     public int orientation() {
@@ -85,6 +88,10 @@ public abstract class DimLink {
             return destinationLink.orientation();
         }
         return (orientation + 2) % 4;
+    }
+
+    public boolean isStabilized() {
+        return stabilized;
     }
 
     public boolean hasDestination() {

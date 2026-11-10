@@ -179,6 +179,9 @@
 								"lockKey"
 							]
 						
+						},
+						"stabilized": {
+							"type": "boolean"
 						}
 					},
 					"required": [

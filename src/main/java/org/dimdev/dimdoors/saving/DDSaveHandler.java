@@ -113,6 +113,9 @@ public class DDSaveHandler {
                     if (destination != null) {
                         data.pointLinkAt(link, destination);
                     }
+                    if (packedLink.stabilized) {
+                        data.stabilize(link);
+                    }
                 }
                 unpackedLinks.add(packedLink);
             }
@@ -124,7 +127,11 @@ public class DDSaveHandler {
             for (PackedLinkData packedLink : linksToUnpack) {
                 NewDimData data = PocketManager.getDimensionData(packedLink.source.getDimension());
                 if (data != null && data.getLink(packedLink.parent) != null) {
-                    data.createChildLink(packedLink.source, data.getLink(packedLink.parent), packedLink.lock);
+                    DimLink link = data
+                        .createChildLink(packedLink.source, data.getLink(packedLink.parent), packedLink.lock);
+                    if (packedLink.stabilized) {
+                        data.stabilize(link);
+                    }
                 }
                 unpackedLinks.add(packedLink);
             }

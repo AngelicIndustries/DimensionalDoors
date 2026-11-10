@@ -59,6 +59,8 @@ public class TileEntityRift extends DDTileEntityBase {
     public int yOffset = 0;
     public int zOffset = 0;
     public boolean shouldClose = false;
+    /** Whether a closing rift leaves the rifts near it open, unlike the Rift Remover's. */
+    public boolean closesAlone = false;
     public Point4D nearestRiftLocation = null;
     public int spawnedEndermenID = 0;
 
@@ -81,7 +83,8 @@ public class TileEntityRift extends DDTileEntityBase {
 
     @Override
     public void updateEntity() {
-        if (PocketManager.getLink(xCoord, yCoord, zCoord, worldObj.provider.dimensionId) == null) {
+        DimLink link = PocketManager.getLink(xCoord, yCoord, zCoord, worldObj.provider.dimensionId);
+        if (link == null) {
             if (worldObj.getBlock(xCoord, yCoord, zCoord) == DimDoors.blockRift) {
                 worldObj.setBlockToAir(xCoord, yCoord, zCoord);
             } else {
@@ -93,6 +96,12 @@ public class TileEntityRift extends DDTileEntityBase {
         if (worldObj.getBlock(xCoord, yCoord, zCoord) != DimDoors.blockRift) {
             invalidate();
             return;
+        }
+
+        // A rift growing back where a door stood takes the link's stabilization, and one stabilized before links kept
+        // it gives it to its link
+        if (!worldObj.isRemote && stabilized != link.isStabilized()) {
+            stabilize();
         }
 
         // Check if this rift should render white closing particles and
@@ -145,6 +154,11 @@ public class TileEntityRift extends DDTileEntityBase {
         stabilized = true;
         markDirty();
         if (!worldObj.isRemote) {
+            NewDimData dimension = PocketManager.createDimensionData(worldObj);
+            DimLink link = dimension.getLink(xCoord, yCoord, zCoord);
+            if (link != null) {
+                dimension.stabilize(link);
+            }
             worldObj.markBlockForUpdate(xCoord, yCoord, zCoord);
         }
     }
@@ -266,7 +280,7 @@ public class TileEntityRift extends DDTileEntityBase {
             closeSounded = true;
         }
         NewDimData dimension = PocketManager.createDimensionData(worldObj);
-        if (size < CLOSING_PERIOD / 2) {
+        if (!closesAlone && size < CLOSING_PERIOD / 2) {
             for (DimLink riftLink : dimension.findRiftsInRange(worldObj, 6, xCoord, yCoord, zCoord)) {
                 Point4D location = riftLink.source();
                 TileEntity entity = worldObj.getTileEntity(location.getX(), location.getY(), location.getZ());
@@ -367,6 +381,7 @@ public class TileEntityRift extends DDTileEntityBase {
         this.yOffset = nbt.getInteger("yOffset");
         this.zOffset = nbt.getInteger("zOffset");
         this.shouldClose = nbt.getBoolean("shouldClose");
+        this.closesAlone = nbt.getBoolean("closesAlone");
         this.spawnedEndermenID = nbt.getInteger("spawnedEndermenID");
         this.riftRotation = nbt.getInteger("riftRotation");
         this.size = nbt.getFloat("size");
@@ -384,6 +399,7 @@ public class TileEntityRift extends DDTileEntityBase {
         nbt.setInteger("yOffset", this.yOffset);
         nbt.setInteger("zOffset", this.zOffset);
         nbt.setBoolean("shouldClose", this.shouldClose);
+        nbt.setBoolean("closesAlone", this.closesAlone);
         nbt.setInteger("spawnedEndermenID", this.spawnedEndermenID);
         nbt.setInteger("riftRotation", this.riftRotation);
         nbt.setFloat("size", this.size);

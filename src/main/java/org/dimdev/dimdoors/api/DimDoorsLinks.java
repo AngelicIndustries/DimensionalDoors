@@ -91,11 +91,17 @@ public final class DimDoorsLinks {
      * already closing.
      */
     public static boolean closeRift(World world, int x, int y, int z) {
+        return closeRift(world, x, y, z, true);
+    }
+
+    /** As {@link #closeRift(World, int, int, int)}, but the rifts near it only close with it if {@code nearby}. */
+    public static boolean closeRift(World world, int x, int y, int z, boolean nearby) {
         TileEntityRift rift = riftAt(world, x, y, z);
         if (rift == null || rift.shouldClose) {
             return false;
         }
         rift.shouldClose = true;
+        rift.closesAlone = !nearby;
         rift.markDirty();
         world.markBlockForUpdate(x, y, z);
         return true;

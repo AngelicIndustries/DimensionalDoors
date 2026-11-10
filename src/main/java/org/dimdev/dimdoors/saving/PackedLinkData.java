@@ -14,14 +14,17 @@ public class PackedLinkData {
     public final int orientation;
     public final List<Point3D> children;
     public final DDLock lock;
+    /** Missing from older saves, which read as false. */
+    public final boolean stabilized;
 
     public PackedLinkData(Point4D source, Point3D parent, PackedLinkTail tail, int orientation, List<Point3D> children,
-        DDLock lock) {
+        DDLock lock, boolean stabilized) {
         this.source = source;
         this.parent = parent;
         this.tail = tail;
         this.orientation = orientation;
         this.children = children;
         this.lock = lock;
+        this.stabilized = stabilized;
     }
 }

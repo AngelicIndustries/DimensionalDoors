@@ -384,6 +384,11 @@ public abstract class NewDimData implements IPackable<PackedDimData> {
         this.modified = true;
     }
 
+    public void stabilize(DimLink link) {
+        link.stabilized = true;
+        modified = true;
+    }
+
     public void lock(DimLink link, boolean locked) {
         InnerDimLink innerLink = (InnerDimLink) link;
         innerLink.lock.setLockState(locked);
@@ -449,7 +454,15 @@ public abstract class NewDimData implements IPackable<PackedDimData> {
                         .toPoint3D());
             }
             PackedLinkTail tail = new PackedLinkTail(link.tail.getDestination(), link.tail.getLinkType());
-            Links.add(new PackedLinkData(link.point, parentPoint, tail, link.orientation, children, link.lock));
+            Links.add(
+                new PackedLinkData(
+                    link.point,
+                    parentPoint,
+                    tail,
+                    link.orientation,
+                    children,
+                    link.lock,
+                    link.stabilized));
         }
         // The pocket tree fields of Legacy's format are left at a root dimension's values: pockets save on their own
         return new PackedDimData(

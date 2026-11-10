@@ -74,7 +74,8 @@ public class OldSaveImporter {
                     tail,
                     link.linkOrientation,
                     children,
-                    null);
+                    null,
+                    false);
 
                 newPackedLinkData.add(newPackedLink);
                 allPackedLinks.add(newPackedLink);
