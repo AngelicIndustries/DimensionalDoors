@@ -1,8 +1,9 @@
 package org.dimdev.dimdoors;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 import java.util.Random;
 
 import net.minecraft.enchantment.Enchantment;
@@ -18,15 +19,29 @@ import net.minecraft.util.WeightedRandomChestContent;
 import net.minecraftforge.common.ChestGenHooks;
 
 import org.dimdev.dimdoors.config.DDProperties;
-import org.dimdev.dimdoors.util.WeightedContainer;
+import org.dimdev.dimdoors.dungeon.DungeonData;
+import org.dimdev.dimdoors.mixins.AccessorChestGenHooks;
 
-/*
- * Registers a category of loot chests for Dimensional Doors in Forge.
+/**
+ * Dungeon chest loot, from Forge loot categories that TooMuchLoot or MineTweaker can change: dimensionalDungeonChest,
+ * and dimensionalGraveChest for the remains of someone who died there. Either can be set for one dungeon pack or one
+ * dungeon by adding a category named after it, and the most specific one that exists is used. The loot section of the
+ * config tells packmakers the same.
  */
 public class DDLoot {
 
+    public static final String DUNGEON_CHEST = "dimensionalDungeonChest";
+    public static final String GRAVE_CHEST = "dimensionalGraveChest";
+    /** An NBT tag on a loot item that stands for something made as the chest is filled. */
+    public static final String LOOT_TAG = "DimDoorsLoot";
+    /** A Transcendent or Trepidation book: Forge would turn an enchanted book entry into a random enchantment. */
+    private static final String ENCHANTED_BOOK = "enchantedBook";
+    /** The head of a player who died in a pocket dimension, or of a Dimensional Doors author. */
+    private static final String GRAVE_HEAD = "graveHead";
+
     private static final String[] SPECIAL_SKULL_OWNERS = new String[] { "stevenrs11", "kamikazekiwi3", "fbt", "Jaitsu",
         "XCompWiz", "skyboy026", "Wylker" };
+    private static final int PLAYER_SKULL_METADATA = 3;
 
     private static final double MIN_ITEM_DAMAGE = 0.3;
     private static final double MAX_ITEM_DAMAGE = 0.9;
@@ -35,79 +50,151 @@ public class DDLoot {
     private static final int SPECIAL_SKULL_CHANCE = 20;
     private static final int MAX_SPECIAL_SKULL_CHANCE = 100;
 
-    public static final String DIMENSIONAL_DUNGEON_CHEST = "dimensionalDungeonChest";
-    public static ChestGenHooks DungeonChestInfo = null;
-    private static final int CHEST_SIZE = 6;
+    private static final int DUNGEON_CHEST_DRAWS = 6;
+    private static final int MIN_GRAVE_CHEST_DRAWS = 7, MAX_GRAVE_CHEST_DRAWS = 10;
 
     private DDLoot() {}
 
+    /** Sets up the base categories; other mods and loot tools change them from here. */
     public static void registerInfo(DDProperties properties) {
-        // Register the dimensional dungeon chest with ChestGenHooks. This isn't necessary, but allows
-        // other mods to add their own loot to our chests if they know our loot category, without having
-        // to interface with our code.
-        DungeonChestInfo = ChestGenHooks.getInfo(DIMENSIONAL_DUNGEON_CHEST);
-        DungeonChestInfo.setMin(CHEST_SIZE);
-        DungeonChestInfo.setMax(CHEST_SIZE);
-
-        ArrayList<WeightedRandomChestContent> items = new ArrayList<WeightedRandomChestContent>();
-
-        addContent(true, items, Items.iron_ingot, 160, 1, 3);
-        addContent(true, items, Items.coal, 120, 1, 3);
-        addContent(true, items, Items.quartz, 120, 1, 3);
-        addContent(true, items, Items.book, 100);
-        addContent(true, items, Items.gold_ingot, 80, 1, 3);
-        addContent(true, items, Items.diamond, 40, 1, 2);
-        addContent(true, items, Items.emerald, 20, 1, 2);
-        addContent(true, items, Items.golden_apple, 10);
-
-        addContent(
-            properties.FabricOfRealityLootEnabled,
-            items,
-            Item.getItemFromBlock(DimDoors.blockDimWall),
-            20,
-            16,
-            64);
-        addContent(properties.WorldThreadLootEnabled, items, DimDoors.itemWorldThread, 80, 2, 12);
-        addWeighted(items, DimDoors.itemRiftSignature, properties.RiftSignatureLootWeight);
-        addWeighted(items, DimDoors.itemStabilizedRiftSignature, properties.StabilizedRiftSignatureLootWeight);
-        addWeighted(items, DimDoors.itemPersonalDoor, properties.PersonalDimDoorLootWeight);
+        ChestGenHooks dungeon = ChestGenHooks.getInfo(DUNGEON_CHEST);
+        dungeon.setMin(DUNGEON_CHEST_DRAWS);
+        dungeon.setMax(DUNGEON_CHEST_DRAWS);
+        add(dungeon, true, Items.iron_ingot, 160, 1, 3);
+        add(dungeon, true, Items.coal, 120, 1, 3);
+        add(dungeon, true, Items.quartz, 120, 1, 3);
+        add(dungeon, true, Items.book, 100, 1, 1);
+        add(dungeon, true, Items.gold_ingot, 80, 1, 3);
+        add(dungeon, true, Items.diamond, 40, 1, 2);
+        add(dungeon, true, Items.emerald, 20, 1, 2);
+        add(dungeon, true, Items.golden_apple, 10, 1, 1);
+        add(dungeon, properties.FabricOfRealityLootEnabled, Item.getItemFromBlock(DimDoors.blockDimWall), 20, 16, 64);
+        add(dungeon, properties.WorldThreadLootEnabled, DimDoors.itemWorldThread, 80, 2, 12);
+        addWeighted(dungeon, DimDoors.itemRiftSignature, properties.RiftSignatureLootWeight);
+        addWeighted(dungeon, DimDoors.itemStabilizedRiftSignature, properties.StabilizedRiftSignatureLootWeight);
+        addWeighted(dungeon, DimDoors.itemPersonalDoor, properties.PersonalDimDoorLootWeight);
         // One of the three discs, the weight split between them
         int discWeight = (properties.MusicDiscLootWeight + 2) / 3;
-        addWeighted(items, DimDoors.itemRecordCreepy, discWeight);
-        addWeighted(items, DimDoors.itemRecordTheyStareBack, discWeight);
-        addWeighted(items, DimDoors.itemRecordWhiteVoid, discWeight);
+        addWeighted(dungeon, DimDoors.itemRecordCreepy, discWeight);
+        addWeighted(dungeon, DimDoors.itemRecordTheyStareBack, discWeight);
+        addWeighted(dungeon, DimDoors.itemRecordWhiteVoid, discWeight);
         if (properties.LootEnchantmentBookWeight > 0
             && (DimDoors.transcendent != null || DimDoors.trepidation != null)) {
-            items.add(new EnchantmentBook(properties.LootEnchantmentBookWeight));
+            dungeon.addItem(
+                new WeightedRandomChestContent(
+                    special(new ItemStack(Items.book), ENCHANTED_BOOK),
+                    1,
+                    1,
+                    properties.LootEnchantmentBookWeight));
         }
 
-        // Add all the items to our dungeon chest
-        addItemsToContainer(DungeonChestInfo, items);
+        // What someone who died here left: their remains, a few to each draw so they lie scattered, and some of their
+        // gear and belongings. Weights out of about 875 give graves the odds their fixed rolls used to have.
+        ChestGenHooks grave = ChestGenHooks.getInfo(GRAVE_CHEST);
+        grave.setMin(MIN_GRAVE_CHEST_DRAWS);
+        grave.setMax(MAX_GRAVE_CHEST_DRAWS);
+        add(grave, true, Items.bone, 250, 1, 2);
+        add(grave, true, Items.rotten_flesh, 200, 1, 2);
+        add(grave, true, Items.iron_pickaxe, 30, 1, 1);
+        add(grave, true, Items.bow, 30, 1, 1);
+        add(grave, true, Items.arrow, 30, 8, 32);
+        add(grave, true, Items.iron_sword, 20, 1, 1);
+        add(grave, true, Items.stone_sword, 10, 1, 1);
+        add(grave, properties.RiftBladeLootEnabled, DimDoors.itemRiftBlade, 10, 1, 1);
+        add(grave, true, Items.iron_helmet, 25, 1, 1);
+        add(grave, true, Items.chainmail_helmet, 10, 1, 1);
+        add(grave, true, Items.iron_chestplate, 25, 1, 1);
+        add(grave, true, Items.chainmail_chestplate, 10, 1, 1);
+        add(grave, true, Items.iron_leggings, 25, 1, 1);
+        add(grave, true, Items.chainmail_leggings, 10, 1, 1);
+        add(grave, true, Items.iron_boots, 25, 1, 1);
+        add(grave, true, Items.chainmail_boots, 10, 1, 1);
+        add(grave, true, Items.name_tag, 40, 1, 1);
+        add(grave, true, Items.glass_bottle, 35, 1, 1);
+        add(grave, true, Items.ender_pearl, 30, 1, 1);
+        add(grave, true, Items.ghast_tear, 30, 1, 1);
+        add(grave, true, Items.record_11, 5, 1, 1);
+        grave.addItem(
+            new WeightedRandomChestContent(
+                special(new ItemStack(Items.skull, 1, PLAYER_SKULL_METADATA), GRAVE_HEAD),
+                1,
+                1,
+                5));
     }
 
-    private static void addWeighted(ArrayList<WeightedRandomChestContent> items, Item item, int weight) {
-        addContent(weight > 0, items, item, weight);
+    private static void addWeighted(ChestGenHooks category, Item item, int weight) {
+        add(category, weight > 0, item, weight, 1, 1);
     }
 
-    private static void addContent(boolean include, ArrayList<WeightedRandomChestContent> items, Item item,
-        int weight) {
-        if (include) items.add(new WeightedRandomChestContent(item, 0, 1, 1, weight));
+    private static void add(ChestGenHooks category, boolean include, Item item, int weight, int min, int max) {
+        if (include) category.addItem(new WeightedRandomChestContent(item, 0, min, max, weight));
     }
 
-    private static void addContent(boolean include, ArrayList<WeightedRandomChestContent> items, Item item, int weight,
-        int minAmount, int maxAmount) {
-        if (include) items.add(new WeightedRandomChestContent(item, 0, minAmount, maxAmount, weight));
+    private static ItemStack special(ItemStack stack, String kind) {
+        NBTTagCompound tag = new NBTTagCompound();
+        tag.setString(LOOT_TAG, kind);
+        stack.setTagCompound(tag);
+        return stack;
     }
 
-    private static void addItemsToContainer(ChestGenHooks container, ArrayList<WeightedRandomChestContent> items) {
-        for (WeightedRandomChestContent item : items) {
-            container.addItem(item);
+    /**
+     * The loot category for a chest in a dungeon: the dungeon's own, else its pack's, else the base one. One that
+     * exists is used even if it holds nothing, so a packmaker can leave a dungeon's chests empty.
+     */
+    static ChestGenHooks category(String base, DungeonData dungeon) {
+        if (dungeon != null && dungeon.dungeonType().Owner != null) {
+            String pack = base + "."
+                + dungeon.dungeonType().Owner.getName()
+                    .toLowerCase(Locale.ROOT);
+            Map<String, ChestGenHooks> categories = AccessorChestGenHooks.getChestInfo();
+            ChestGenHooks own = categories.get(pack + "." + dungeon.schematicName());
+            if (own != null) return own;
+            ChestGenHooks packs = categories.get(pack);
+            if (packs != null) return packs;
         }
+        return ChestGenHooks.getInfo(base);
     }
 
-    private static void fillChest(ArrayList<ItemStack> stacks, IInventory inventory, Random random) {
-        // This custom chest-filling function avoids overwriting item stacks
+    /** Fills an empty chest in a dungeon (null for one built outside any): a grave chest some of the time. */
+    public static void fillChest(IInventory inventory, Random random, DDProperties properties, DungeonData dungeon) {
+        boolean grave = random.nextInt(100) < properties.GraveChestChance;
+        ChestGenHooks loot = category(grave ? GRAVE_CHEST : DUNGEON_CHEST, dungeon);
+        WeightedRandomChestContent[] content = loot.getItems(random);
+        List<ItemStack> stacks = new ArrayList<ItemStack>();
+        if (content.length > 0) {
+            int draws = loot.getCount(random);
+            for (int k = 0; k < draws; k++) {
+                WeightedRandomChestContent draw = (WeightedRandomChestContent) WeightedRandom
+                    .getRandomItem(random, content);
+                // Asked again for each draw, so that enchanted books don't all come out alike
+                draw = draw.theItemId.getItem()
+                    .getChestGenBase(loot, random, draw);
+                if (draw == null) continue;
+                for (ItemStack stack : ChestGenHooks.generateStacks(
+                    random,
+                    draw.theItemId,
+                    draw.theMinimumChanceToGenerateItem,
+                    draw.theMaximumChanceToGenerateItem)) {
+                    ItemStack made = make(stack, random, grave);
+                    if (made != null) stacks.add(made);
+                }
+            }
+        }
+        scatter(stacks, inventory, random);
+    }
 
+    /** A drawn stack as it goes in the chest: special items made, and a grave's gear worn. Null leaves it out. */
+    private static ItemStack make(ItemStack stack, Random random, boolean grave) {
+        NBTTagCompound tag = stack.getTagCompound();
+        String kind = tag != null ? tag.getString(LOOT_TAG) : "";
+        if (kind.equals(ENCHANTED_BOOK)) return enchantedBook(random);
+        if (kind.equals(GRAVE_HEAD)) return graveHead(random);
+        if (grave && stack.isItemStackDamageable()) wear(stack, random);
+        return stack;
+    }
+
+    /** Puts the stacks in the chest in a spread-out order, without putting one on another. */
+    private static void scatter(List<ItemStack> stacks, IInventory inventory, Random random) {
         // The prime number below is used for choosing chest slots in a seemingly-random pattern. Its value
         // was selected specifically to achieve a spread-out distribution for chests with up to 104 slots.
         // Choosing a prime number ensures that our increments are relatively-prime to the chest size, which
@@ -123,185 +210,43 @@ public class DDLoot {
                 limit--;
                 index = (index + primeOffset) % size;
             }
+            // A full chest takes no more, rather than losing what it holds
+            if (limit == 0) return;
 
             inventory.setInventorySlotContents(index, item);
         }
     }
 
-    public static void generateChestContents(ChestGenHooks chestInfo, IInventory inventory, Random random) {
-        // This is a custom version of net.minecraft.util.WeightedRandomChestContent.generateChestContents()
-        // It's designed to avoid the following bugs in MC 1.5:
-        // 1. If multiple enchanted books appear, then they will have the same enchantment
-        // 2. The randomized filling algorithm will sometimes overwrite item stacks with other stacks
-
-        int count = chestInfo.getCount(random);
-        WeightedRandomChestContent[] content = chestInfo.getItems(random);
-        ArrayList<ItemStack> allStacks = new ArrayList<ItemStack>();
-
-        for (int k = 0; k < count; k++) {
-            WeightedRandomChestContent selection = (WeightedRandomChestContent) WeightedRandom
-                .getRandomItem(random, content);
-
-            if (selection instanceof EnchantmentBook) {
-                allStacks.add(((EnchantmentBook) selection).roll(random));
-                continue;
+    /** Wears gear down, and half the time gives it one enchantment it could have, at the lowest level. */
+    private static void wear(ItemStack stack, Random random) {
+        stack.setItemDamage(
+            (int) (stack.getMaxDamage() * MathHelper.getRandomDoubleInRange(random, MIN_ITEM_DAMAGE, MAX_ITEM_DAMAGE)));
+        if (stack.isItemEnchanted() || random.nextInt(MAX_ITEM_ENCHANTMENT_CHANCE) >= ITEM_ENCHANTMENT_CHANCE) return;
+        List<Enchantment> fitting = new ArrayList<Enchantment>();
+        for (Enchantment enchantment : Enchantment.enchantmentsList) {
+            // Transcendent and Trepidation only come as books
+            if (enchantment != null && enchantment.canApply(stack)
+                && enchantment != DimDoors.transcendent
+                && enchantment != DimDoors.trepidation) {
+                fitting.add(enchantment);
             }
-
-            // Call getChestGenBase() to make sure we generate a different enchantment for books.
-            // Don't just use a condition to check if the item is an instance of ItemEnchantedBook because
-            // we don't know if other mods might add items that also need to be regenerated.
-            selection = selection.theItemId.getItem()
-                .getChestGenBase(chestInfo, random, selection);
-
-            ItemStack[] stacks = ChestGenHooks.generateStacks(
-                random,
-                selection.theItemId,
-                selection.theMinimumChanceToGenerateItem,
-                selection.theMaximumChanceToGenerateItem);
-            Collections.addAll(allStacks, stacks);
         }
-
-        fillChest(allStacks, inventory, random);
+        if (!fitting.isEmpty()) stack.addEnchantment(fitting.get(random.nextInt(fitting.size())), 1);
     }
 
-    public static void fillGraveChest(IInventory inventory, Random random, DDProperties properties) {
-        // This function fills "grave chests", which are chests for dungeons that
-        // look like a player died in the area and his remains were gathered in
-        // a chest. Doing this properly requires fine control of loot generation,
-        // so we use our own function rather than Minecraft's functions.
-        int k;
-        int count;
-        ArrayList<ItemStack> stacks = new ArrayList<ItemStack>();
-        ArrayList<WeightedContainer<Item>> selection = new ArrayList<WeightedContainer<Item>>();
-
-        // Insert bones and rotten flesh
-        // Make stacks of single items to spread them out
-        count = MathHelper.getRandomIntegerInRange(random, 2, 5);
-        for (k = 0; k < count; k++) {
-            stacks.add(new ItemStack(Items.bone, 1));
-        }
-        count = MathHelper.getRandomIntegerInRange(random, 2, 4);
-        for (k = 0; k < count; k++) {
-            stacks.add(new ItemStack(Items.rotten_flesh, 1));
-        }
-
-        // Insert tools
-        // 30% chance of adding a pickaxe
-        if (random.nextInt(100) < 30) {
-            addModifiedTool(Items.iron_pickaxe, stacks, random);
-        }
-        // 30% chance of adding a bow and some arrows
-        if (random.nextInt(100) < 30) {
-            addModifiedBow(stacks, random);
-            stacks.add(new ItemStack(Items.arrow, MathHelper.getRandomIntegerInRange(random, 8, 32)));
-        }
-        // 10% chance of adding a Rift Blade (no enchants)
-        if (properties.RiftBladeLootEnabled && random.nextInt(100) < 10) {
-            stacks.add(new ItemStack(DimDoors.itemRiftBlade, 1));
-        } else {
-            // 20% of adding an iron sword, 10% of adding a stone sword
-            addModifiedSword(getRandomItem(Items.iron_sword, Items.stone_sword, null, 20, 10, random), stacks, random);
-        }
-
-        // Insert equipment
-        // For each piece, 25% of an iron piece, 10% of a chainmail piece
-        addModifiedEquipment(
-            getRandomItem(Items.iron_helmet, Items.chainmail_helmet, null, 25, 10, random),
-            stacks,
-            random);
-        addModifiedEquipment(
-            getRandomItem(Items.iron_chestplate, Items.chainmail_chestplate, null, 25, 10, random),
-            stacks,
-            random);
-        addModifiedEquipment(
-            getRandomItem(Items.iron_leggings, Items.chainmail_leggings, null, 25, 10, random),
-            stacks,
-            random);
-        addModifiedEquipment(getRandomItem(Items.iron_boots, Items.iron_boots, null, 25, 10, random), stacks, random);
-
-        // Insert other random stuff
-        // 40% chance for a name tag, 35% chance for a glass bottle
-        // 30% chance for an ender pearl, 5% chance for record 11
-        // 30% chance for a ghast tear
-        addItemWithChance(stacks, random, 40, Items.name_tag, 1);
-        addItemWithChance(stacks, random, 35, Items.glass_bottle, 1);
-        addItemWithChance(stacks, random, 30, Items.ender_pearl, 1);
-        addItemWithChance(stacks, random, 30, Items.ghast_tear, 1);
-        addItemWithChance(stacks, random, 5, Items.record_11, 1);
-
-        // Finally, there is a 5% chance of adding a player head
-        if (random.nextInt(100) < 5) {
-            addGraveSkull(stacks, random);
-        }
-
-        fillChest(stacks, inventory, random);
+    private static ItemStack enchantedBook(Random random) {
+        List<Enchantment> pool = new ArrayList<Enchantment>();
+        if (DimDoors.transcendent != null) pool.add(DimDoors.transcendent);
+        if (DimDoors.trepidation != null) pool.add(DimDoors.trepidation);
+        if (pool.isEmpty()) return null;
+        Enchantment enchantment = pool.get(random.nextInt(pool.size()));
+        ItemStack book = new ItemStack(Items.enchanted_book);
+        Items.enchanted_book
+            .addEnchantment(book, new EnchantmentData(enchantment, 1 + random.nextInt(enchantment.getMaxLevel())));
+        return book;
     }
 
-    private static void addModifiedEquipment(Item item, ArrayList<ItemStack> stacks, Random random) {
-        if (item == null) return;
-
-        stacks.add(
-            getModifiedItem(
-                item,
-                random,
-                new Enchantment[] { Enchantment.blastProtection, Enchantment.fireProtection, Enchantment.protection,
-                    Enchantment.projectileProtection }));
-    }
-
-    private static void addModifiedSword(Item item, ArrayList<ItemStack> stacks, Random random) {
-        if (item == null) return;
-
-        stacks.add(
-            getModifiedItem(
-                item,
-                random,
-                new Enchantment[] { Enchantment.fireAspect, Enchantment.knockback, Enchantment.sharpness }));
-    }
-
-    private static void addModifiedTool(Item tool, ArrayList<ItemStack> stacks, Random random) {
-        if (tool == null) return;
-
-        stacks.add(getModifiedItem(tool, random, new Enchantment[] { Enchantment.efficiency, Enchantment.unbreaking }));
-    }
-
-    private static void addModifiedBow(ArrayList<ItemStack> stacks, Random random) {
-        stacks.add(
-            getModifiedItem(
-                Items.bow,
-                random,
-                new Enchantment[] { Enchantment.flame, Enchantment.power, Enchantment.punch }));
-    }
-
-    private static ItemStack getModifiedItem(Item item, Random random, Enchantment[] enchantments) {
-        ItemStack result = applyRandomDamage(item, random);
-        if (enchantments.length > 0 && random.nextInt(MAX_ITEM_ENCHANTMENT_CHANCE) < ITEM_ENCHANTMENT_CHANCE) {
-            result.addEnchantment(enchantments[random.nextInt(enchantments.length)], 1);
-        }
-        return result;
-    }
-
-    private static Item getRandomItem(Item a, Item b, Item c, int weightA, int weightB, Random random) {
-        int roll = random.nextInt(100);
-        if (roll < weightA) return a;
-        if (roll < weightA + weightB) return b;
-        return c;
-    }
-
-    private static void addItemWithChance(ArrayList<ItemStack> stacks, Random random, int chance, Item item,
-        int count) {
-        if (random.nextInt(100) < chance) {
-            stacks.add(new ItemStack(item, count));
-        }
-    }
-
-    private static ItemStack applyRandomDamage(Item item, Random random) {
-        int damage = (int) (item.getMaxDamage()
-            * MathHelper.getRandomDoubleInRange(random, MIN_ITEM_DAMAGE, MAX_ITEM_DAMAGE));
-        return new ItemStack(item, 1, damage);
-    }
-
-    private static void addGraveSkull(ArrayList<ItemStack> stacks, Random random) {
-        final int PLAYER_SKULL_METADATA = 3;
+    private static ItemStack graveHead(Random random) {
         DeathTracker deathTracker = DimDoors.deathTracker;
         String skullOwner;
         if (deathTracker.isEmpty() || (random.nextInt(MAX_SPECIAL_SKULL_CHANCE) < SPECIAL_SKULL_CHANCE)) {
@@ -312,32 +257,6 @@ public class DDLoot {
         ItemStack skull = new ItemStack(Items.skull, 1, PLAYER_SKULL_METADATA);
         skull.stackTagCompound = new NBTTagCompound();
         skull.stackTagCompound.setString("SkullOwner", skullOwner);
-        stacks.add(skull);
-    }
-
-    /** A book with Transcendent or Trepidation, which come only from these chests. */
-    private static final class EnchantmentBook extends WeightedRandomChestContent {
-
-        EnchantmentBook(int weight) {
-            // A plain book: Forge turns entries that hold an enchanted book into a random one
-            super(Items.book, 0, 1, 1, weight);
-        }
-
-        ItemStack roll(Random random) {
-            List<Enchantment> pool = new ArrayList<Enchantment>();
-            if (DimDoors.transcendent != null) pool.add(DimDoors.transcendent);
-            if (DimDoors.trepidation != null) pool.add(DimDoors.trepidation);
-            Enchantment enchantment = pool.get(random.nextInt(pool.size()));
-            ItemStack book = new ItemStack(Items.enchanted_book);
-            Items.enchanted_book
-                .addEnchantment(book, new EnchantmentData(enchantment, 1 + random.nextInt(enchantment.getMaxLevel())));
-            return book;
-        }
-
-        /** For other mods filling our chests the vanilla way. */
-        @Override
-        protected ItemStack[] generateChestContent(Random random, IInventory inventory) {
-            return new ItemStack[] { roll(random) };
-        }
+        return skull;
     }
 }

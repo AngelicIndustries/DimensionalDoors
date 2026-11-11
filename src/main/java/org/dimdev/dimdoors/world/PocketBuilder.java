@@ -72,7 +72,8 @@ public class PocketBuilder {
             virtual = calculateNoisyDestination(virtual, pocket, dungeon, orientation);
         }
 
-        // Generate the dungeon
+        // Generate the dungeon, its chests filled from its own loot if it has some
+        schematic.setDungeon(dungeon);
         schematic.copyToWorld(world, destination, orientation, link, random, properties, false);
 
         // Finish up destination initialization

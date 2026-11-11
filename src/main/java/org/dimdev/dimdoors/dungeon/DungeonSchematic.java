@@ -60,6 +60,7 @@ public class DungeonSchematic extends Schematic {
     private ArrayList<Block> modBlockFilterExceptions;
     // Doors that lead somewhere other than a dungeon: "pocket", "personal", or a "pair" leading to each other
     private NBTTagList links = new NBTTagList();
+    private DungeonData dungeon;
 
     private DungeonSchematic(Schematic source) {
         super(source);
@@ -79,6 +80,11 @@ public class DungeonSchematic extends Schematic {
         if (x < 0 || y < 0 || z < 0 || x >= width || y >= height || z >= length) return Blocks.air;
         Block block = blocks[calculateIndex(x, y, z)];
         return block != null ? block : Blocks.air;
+    }
+
+    /** Which dungeon this is, for its chests' loot; null leaves them the base loot. */
+    public void setDungeon(DungeonData dungeon) {
+        this.dungeon = dungeon;
     }
 
     public int getOrientation() {
@@ -284,8 +290,8 @@ public class DungeonSchematic extends Schematic {
         Point3D maxCorner = new Point3D(width - 1, height - 1, length - 1);
         transformCorners(entranceDoorLocation, pocketCenter, turnAngle, minCorner, maxCorner);
 
-        // Fill empty chests and dispensers
-        FillContainersOperation filler = new FillContainersOperation(random, properties);
+        // Fill empty chests and the like
+        FillContainersOperation filler = new FillContainersOperation(random, properties, dungeon);
         filler.apply(world, minCorner, maxCorner);
 
         // Set up entrance door rift

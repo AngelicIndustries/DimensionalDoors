@@ -68,6 +68,8 @@ public class DDProperties {
     public final int RiftSignatureLootWeight;
     public final int StabilizedRiftSignatureLootWeight;
     public final int PersonalDimDoorLootWeight;
+    public final int GraveChestChance;
+    public final String[] LootContainers;
 
     /**
      * Other Flags
@@ -283,6 +285,33 @@ public class DDProperties {
         PersonalDimDoorLootWeight = lootWeight(config, "Personal Dimensional Door", 10);
         LootEnchantmentBookWeight = lootWeight(config, "Transcendent or Trepidation Book", 9);
         MusicDiscLootWeight = lootWeight(config, "Music Disc", 9);
+        config.setCategoryComment(
+            CATEGORY_LOOT,
+            "Dungeon chests are filled from Forge loot categories, which TooMuchLoot or MineTweaker can change: "
+                + "dimensionalDungeonChest, and dimensionalGraveChest for the remains of someone who died there. Each "
+                + "can be set for one dungeon pack or one dungeon only, by adding a category named after it: "
+                + "dimensionalDungeonChest.ruins, or dimensionalDungeonChest.ruins.DeadEnd_6x-LavaTrap_Open_100 with the "
+                + "dungeon's name as /dd-rift lists it. The most specific one that exists is used, even if it holds "
+                + "nothing. Damageable items in grave chests come worn and sometimes enchanted. Two items with "
+                + "the NBT tag DimDoorsLoot stand for something else: a book with DimDoorsLoot:\"enchantedBook\" is a "
+                + "Transcendent or Trepidation book, and a skull with DimDoorsLoot:\"graveHead\" is the head of a "
+                + "player who died in a pocket dimension or of a Dimensional Doors author. The options below set the defaults.");
+        GraveChestChance = config
+            .get(
+                CATEGORY_LOOT,
+                "Grave Chest Chance",
+                17,
+                "Percent of dungeon chests that are grave chests. The default is 17, about one in six.",
+                0,
+                100)
+            .getInt();
+        LootContainers = config
+            .get(
+                CATEGORY_LOOT,
+                "Loot Containers",
+                new String[] { "minecraft:chest", "minecraft:trapped_chest", "etfuturum:barrel" },
+                "Containers that are filled with loot when a dungeon is built, by block name, if they are empty.")
+            .getStringList();
 
         RiftGriefingEnabled = config.get(
             Configuration.CATEGORY_GENERAL,

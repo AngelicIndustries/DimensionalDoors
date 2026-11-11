@@ -1,52 +1,43 @@
 package org.dimdev.dimdoors.dungeon;
 
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Random;
+import java.util.Set;
 
 import net.minecraft.block.Block;
-import net.minecraft.block.BlockContainer;
 import net.minecraft.inventory.IInventory;
 import net.minecraft.tileentity.TileEntity;
-import net.minecraft.tileentity.TileEntityChest;
 import net.minecraft.world.World;
 
 import org.dimdev.dimdoors.DDLoot;
 import org.dimdev.dimdoors.config.DDProperties;
 import org.dimdev.dimdoors.schematic.WorldOperation;
 
+/** Fills a newly built dungeon's empty loot containers (the Loot Containers option) with its loot. */
 public class FillContainersOperation extends WorldOperation {
 
     private final Random random;
     private final DDProperties properties;
+    private final DungeonData dungeon;
+    private final Set<String> containers;
 
-    private static final int GRAVE_CHEST_CHANCE = 1;
-    private static final int MAX_GRAVE_CHEST_CHANCE = 6;
-
-    public FillContainersOperation(Random random, DDProperties properties) {
+    public FillContainersOperation(Random random, DDProperties properties, DungeonData dungeon) {
         super("FillContainersOperation");
         this.random = random;
         this.properties = properties;
+        this.dungeon = dungeon;
+        this.containers = new HashSet<String>(Arrays.asList(properties.LootContainers));
     }
 
     @Override
     protected boolean applyToBlock(World world, int x, int y, int z) {
         Block block = world.getBlock(x, y, z);
-
-        // Fill empty chests and dispensers
-        if (block instanceof BlockContainer) {
+        if (block.hasTileEntity(world.getBlockMetadata(x, y, z))
+            && containers.contains(Block.blockRegistry.getNameForObject(block))) {
             TileEntity tileEntity = world.getTileEntity(x, y, z);
-
-            // Fill chests, and Et Futurum's barrels like them
-            if (tileEntity instanceof TileEntityChest
-                || "etfuturum:barrel".equals(Block.blockRegistry.getNameForObject(block))) {
-                IInventory chest = (IInventory) tileEntity;
-                if (isInventoryEmpty(chest)) {
-                    // Randomly choose whether this will be a regular dungeon chest or a grave chest
-                    if (random.nextInt(MAX_GRAVE_CHEST_CHANCE) < GRAVE_CHEST_CHANCE) {
-                        DDLoot.fillGraveChest(chest, random, properties);
-                    } else {
-                        DDLoot.generateChestContents(DDLoot.DungeonChestInfo, chest, random);
-                    }
-                }
+            if (tileEntity instanceof IInventory && isInventoryEmpty((IInventory) tileEntity)) {
+                DDLoot.fillChest((IInventory) tileEntity, random, properties, dungeon);
             }
         }
         return true;
