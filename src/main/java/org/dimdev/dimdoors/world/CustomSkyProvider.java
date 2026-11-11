@@ -2,7 +2,6 @@ package org.dimdev.dimdoors.world;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.WorldClient;
-import net.minecraft.client.renderer.GLAllocation;
 import net.minecraft.client.renderer.RenderHelper;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.util.MathHelper;
@@ -14,9 +13,6 @@ import org.lwjgl.opengl.GL11;
 
 public class CustomSkyProvider extends IRenderHandler {
 
-    int starGLCallList;
-    int glSkyList;
-    int glSkyList2;
     private static final ResourceLocation locationEndSkyPng = new ResourceLocation("textures/environment/end_sky.png");
 
     public ResourceLocation getMoonRenderPath() {
@@ -27,12 +23,24 @@ public class CustomSkyProvider extends IRenderHandler {
         return null;
     }
 
+    /** Where in its day the sky is drawn, as World.getCelestialAngle gives it. */
+    protected float celestialAngle(WorldClient world, float partialTicks) {
+        return world.getCelestialAngle(partialTicks);
+    }
+
+    /** How tall the sun is drawn, as a share of its width. */
+    protected float sunHeight() {
+        return 1;
+    }
+
+    /** Draws more on the sun, whose quad spans these halves of its width and height at y 100. */
+    protected void drawOnSun(Minecraft mc, Tessellator tessellator, float halfWidth, float halfHeight) {}
+
     @Override
     public void render(float par1, WorldClient world, Minecraft mc) {
 
-        starGLCallList = GLAllocation.generateDisplayLists(3);
-        glSkyList = this.starGLCallList + 1;
-        glSkyList2 = this.starGLCallList + 2;
+        // This drew three display lists that were allocated anew each frame and never filled, so nothing, and leaked
+        // them; they are left out
         GL11.glDisable(GL11.GL_FOG);
         GL11.glDisable(GL11.GL_ALPHA_TEST);
         GL11.glEnable(GL11.GL_BLEND);
@@ -63,7 +71,6 @@ public class CustomSkyProvider extends IRenderHandler {
             GL11.glDepthMask(false);
             GL11.glEnable(GL11.GL_FOG);
             GL11.glColor3f(f1, f2, f3);
-            GL11.glCallList(this.glSkyList);
             GL11.glDisable(GL11.GL_FOG);
             GL11.glDisable(GL11.GL_ALPHA_TEST);
             GL11.glEnable(GL11.GL_BLEND);
@@ -128,15 +135,17 @@ public class CustomSkyProvider extends IRenderHandler {
             GL11.glColor4f(1.0F, 1.0F, 1.0F, f4);
             GL11.glTranslatef(f7, f8, f9);
             GL11.glRotatef(-90.0F, 0.0F, 1.0F, 0.0F);
-            GL11.glRotatef(world.getCelestialAngle(par1) * 360.0F, 1.0F, 0.0F, 0.0F);
+            GL11.glRotatef(celestialAngle(world, par1) * 360.0F, 1.0F, 0.0F, 0.0F);
             f10 = 30.0F;
+            float sunHalfHeight = f10 * sunHeight();
             mc.renderEngine.bindTexture(this.getSunRenderPath());
             tessellator1.startDrawingQuads();
-            tessellator1.addVertexWithUV((-f10), 100.0D, (-f10), 0.0D, 0.0D);
-            tessellator1.addVertexWithUV(f10, 100.0D, (-f10), 1.0D, 0.0D);
-            tessellator1.addVertexWithUV(f10, 100.0D, f10, 1.0D, 1.0D);
-            tessellator1.addVertexWithUV((-f10), 100.0D, f10, 0.0D, 1.0D);
+            tessellator1.addVertexWithUV((-f10), 100.0D, (-sunHalfHeight), 0.0D, 0.0D);
+            tessellator1.addVertexWithUV(f10, 100.0D, (-sunHalfHeight), 1.0D, 0.0D);
+            tessellator1.addVertexWithUV(f10, 100.0D, sunHalfHeight, 1.0D, 1.0D);
+            tessellator1.addVertexWithUV((-f10), 100.0D, sunHalfHeight, 0.0D, 1.0D);
             tessellator1.draw();
+            drawOnSun(mc, tessellator1, f10, sunHalfHeight);
             f10 = 20.0F;
             mc.renderEngine.bindTexture(this.getMoonRenderPath());
             int k = world.getMoonPhase();
@@ -153,13 +162,6 @@ public class CustomSkyProvider extends IRenderHandler {
             tessellator1.addVertexWithUV((-f10), -100.0D, (-f10), f16, f15);
             tessellator1.draw();
             GL11.glDisable(GL11.GL_TEXTURE_2D);
-            float f18 = world.getStarBrightness(par1) * f4;
-
-            if (f18 > 0.0F) {
-                GL11.glColor4f(f18, f18, f18, f18);
-                GL11.glCallList(this.starGLCallList);
-            }
-
             GL11.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
             GL11.glDisable(GL11.GL_BLEND);
             GL11.glEnable(GL11.GL_ALPHA_TEST);
@@ -170,10 +172,6 @@ public class CustomSkyProvider extends IRenderHandler {
             double d0 = mc.thePlayer.getPosition(par1).yCoord - world.getHorizon();
 
             if (d0 < 0.0D) {
-                GL11.glPushMatrix();
-                GL11.glTranslatef(0.0F, 12.0F, 0.0F);
-                GL11.glCallList(this.glSkyList2);
-                GL11.glPopMatrix();
                 f8 = 1.0F;
                 f9 = -((float) (d0 + 65.0D));
                 f10 = -f8;
@@ -208,10 +206,6 @@ public class CustomSkyProvider extends IRenderHandler {
                 GL11.glColor3f(f1, f2, f3);
             }
 
-            GL11.glPushMatrix();
-            GL11.glTranslatef(0.0F, -((float) (d0 - 16.0D)), 0.0F);
-            GL11.glCallList(this.glSkyList2);
-            GL11.glPopMatrix();
             GL11.glEnable(GL11.GL_TEXTURE_2D);
             GL11.glDepthMask(true);
         }
