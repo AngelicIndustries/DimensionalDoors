@@ -371,9 +371,14 @@ public class TileEntityRift extends DDTileEntityBase {
         this.markDirty();
     }
 
+    /**
+     * Drawn with the world, before particles. Drawn after them, as it used to be, it was left out wherever one of its
+     * own particles had already been drawn in front of it, and those half see-through particles showed what lay behind
+     * the crack, like holes in it.
+     */
     @Override
     public boolean shouldRenderInPass(int pass) {
-        return pass == 1;
+        return pass == 0;
     }
 
     public int countAncestorLinks(DimLink link) {
