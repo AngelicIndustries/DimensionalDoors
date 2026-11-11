@@ -53,7 +53,6 @@ public class DungeonHelper {
     public static final String SCHEMATIC_FILE_EXTENSION = ".schematic";
 
     private static final String DEFAULT_ERROR_SCHEMATIC_PATH = "/schematics/core/somethingBroke.schematic";
-    private static final String DUNGEON_CREATION_GUIDE_SOURCE_PATH = "/assets/dimdoors/text/How_to_add_dungeons.txt";
     private static final String BUNDLED_PACK_BASE_PATH = "/schematics/";
     private static final String STANDARD_CONFIG_FILE_NAME = "rules.txt";
 
@@ -111,10 +110,8 @@ public class DungeonHelper {
     }
 
     private void registerDungeons() {
-        File file = new File(properties.CustomSchematicDirectory);
-        if (file.exists() || file.mkdir()) {
-            copyfile.copyFile(DUNGEON_CREATION_GUIDE_SOURCE_PATH, file.getAbsolutePath() + "/How_to_add_dungeons.txt");
-        }
+        // How to build dungeons for this folder is on the wiki's Dungeons page
+        new File(properties.CustomSchematicDirectory).mkdir();
 
         DungeonPackConfigReader reader = new DungeonPackConfigReader();
         registerBundledDungeons(reader);
