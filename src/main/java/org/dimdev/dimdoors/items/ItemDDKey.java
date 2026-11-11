@@ -72,7 +72,9 @@ public class ItemDDKey extends Item {
             return false;
         }
 
-        if (player.inventory.getCurrentItem() != null) {
+        // Holding right-click to take a lock off; the key is always in hand, which this used to check by mistake, so
+        // keys did nothing
+        if (player.isUsingItem()) {
             return true;
         }
         Block block = world.getBlock(x, y, z);
