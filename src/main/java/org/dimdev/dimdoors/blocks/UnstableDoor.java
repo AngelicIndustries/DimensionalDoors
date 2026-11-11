@@ -32,8 +32,9 @@ public class UnstableDoor extends BaseDimDoor {
         return DimDoors.itemUnstableDoor;
     }
 
+    /** An Iron Door, from the lower half only, as the other doors drop: the upper half dropped a second one. */
     @Override
-    public Item getItemDropped(int p_149650_1_, Random p_149650_2_, int p_149650_3_) {
-        return Items.iron_door;
+    public Item getItemDropped(int metadata, Random random, int fortune) {
+        return isUpperDoorBlock(metadata) ? null : Items.iron_door;
     }
 }
