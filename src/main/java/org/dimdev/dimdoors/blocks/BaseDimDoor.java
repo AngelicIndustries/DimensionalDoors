@@ -14,6 +14,7 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
+import net.minecraft.util.AxisAlignedBB;
 import net.minecraft.util.IIcon;
 import net.minecraft.util.MathHelper;
 import net.minecraft.util.MovingObjectPosition;
@@ -192,6 +193,36 @@ public abstract class BaseDimDoor extends BlockDoor implements IDimDoor, ITileEn
     @Override
     public void updateTick(World par1World, int par2, int par3, int par4, Random par5Random) {
         this.updateAttachedTile(par1World, par2, par3, par4);
+    }
+
+    /**
+     * An open door's panel stands along one side of the doorway, its edge at the doorway's front, where the portal is.
+     * Bumping into that edge used to stop a player short of the door's block, so they never went through and had to
+     * step aside past the panel. It collides from this far into the doorway instead, so walking into the portal
+     * anywhere across it reaches the block. It is drawn as before.
+     */
+    private static final double PANEL_SETBACK = 0.1;
+
+    @Override
+    public AxisAlignedBB getCollisionBoundingBoxFromPool(World world, int x, int y, int z) {
+        AxisAlignedBB box = super.getCollisionBoundingBoxFromPool(world, x, y, z);
+        int state = func_150012_g(world, x, y, z);
+        if (box == null || (state & 4) == 0) return box;
+        // Each way the door faces, the doorway's front is the side a player enters from
+        switch (state & 3) {
+            case 0:
+                box.minX = Math.max(box.minX, x + PANEL_SETBACK);
+                break;
+            case 1:
+                box.minZ = Math.max(box.minZ, z + PANEL_SETBACK);
+                break;
+            case 2:
+                box.maxX = Math.min(box.maxX, x + 1 - PANEL_SETBACK);
+                break;
+            default:
+                box.maxZ = Math.min(box.maxZ, z + 1 - PANEL_SETBACK);
+        }
+        return box;
     }
 
     @Override
