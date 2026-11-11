@@ -7,15 +7,18 @@ import net.minecraft.entity.projectile.EntityArrow;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.DamageSource;
 import net.minecraftforge.event.entity.EntityJoinWorldEvent;
+import net.minecraftforge.event.entity.living.LivingAttackEvent;
 
 import org.dimdev.dimdoors.DimDoors;
 
+import cpw.mods.fml.common.eventhandler.Event;
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 
 /** Marks arrows shot from a Transcendent bow; MixinEntityEndermanTranscendent lets them hit. */
 public final class Transcendent {
 
     private static final String TAG = "dimdoorsTranscendent";
+    private static final String DRAGONAPI_ENDER_TELEPORT = "Reika.DragonAPI.Instantiable.Event.EnderAttackTPEvent";
 
     @SubscribeEvent
     public void onEntityJoinWorld(EntityJoinWorldEvent event) {
@@ -27,6 +30,19 @@ public final class Transcendent {
         if (bow != null && EnchantmentHelper.getEnchantmentLevel(DimDoors.transcendent.effectId, bow) > 0) {
             arrow.getEntityData()
                 .setBoolean(TAG, true);
+        }
+    }
+
+    /**
+     * DragonAPI turns the Enderman's check for indirect damage, which MixinEntityEndermanTranscendent wraps otherwise,
+     * into its EnderAttackTPEvent, a LivingAttackEvent with a result: denied, the Enderman takes the hit.
+     */
+    @SubscribeEvent
+    public void onLivingAttack(LivingAttackEvent event) {
+        if (event.getClass()
+            .getName()
+            .equals(DRAGONAPI_ENDER_TELEPORT) && marks(event.source)) {
+            event.setResult(Event.Result.DENY);
         }
     }
 

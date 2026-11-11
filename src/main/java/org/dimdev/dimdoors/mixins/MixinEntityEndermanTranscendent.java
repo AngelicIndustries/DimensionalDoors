@@ -18,7 +18,11 @@ import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 @Mixin(EntityEnderman.class)
 public abstract class MixinEntityEndermanTranscendent {
 
-    @WrapOperation(method = "attackEntityFrom", constant = @Constant(classValue = EntityDamageSourceIndirect.class))
+    // DragonAPI replaces this check with its EnderAttackTPEvent, which Transcendent answers instead
+    @WrapOperation(
+        method = "attackEntityFrom",
+        constant = @Constant(classValue = EntityDamageSourceIndirect.class),
+        require = 0)
     private boolean dimdoors$transcendentArrowsHit(Object source, Operation<Boolean> original) {
         return original.call(source) && !Transcendent.marks((DamageSource) source);
     }
