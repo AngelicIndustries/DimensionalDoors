@@ -49,6 +49,24 @@ public class DoorVariantListTest {
     }
 
     @Test
+    public void readsItemsAndBlockItemPairs() {
+        List<String> problems = new ArrayList<String>();
+        Map<String, DoorKind> doors = DoorVariantList.parse(
+            new String[] { "erebus:door_baobab=warp", "witchery:ingredient:152=personal",
+                "TwilightForest:tile.TFDoorSort+TwilightForest:item.doorSort=warp", "mod:a+b=warp",
+                "mod:a+mod:b+mod:c=warp", "mod:a+=warp" },
+            problems);
+        assertEquals(
+            Arrays.asList(
+                "erebus:door_baobab",
+                "witchery:ingredient:152",
+                "TwilightForest:tile.TFDoorSort+TwilightForest:item.doorSort"),
+            new ArrayList<String>(doors.keySet()));
+        assertEquals(DoorKind.PERSONAL, doors.get("witchery:ingredient:152"));
+        assertEquals(3, problems.size());
+    }
+
+    @Test
     public void defaultsAreValid() {
         List<String> problems = new ArrayList<String>();
         Map<String, DoorKind> doors = DoorVariantList.parse(DoorVariantList.DEFAULTS, problems);

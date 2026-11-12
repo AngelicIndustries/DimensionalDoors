@@ -763,7 +763,9 @@ public class DDProperties {
             CATEGORY_DOOR_VARIANTS,
             "Door Variants",
             DoorVariantList.DEFAULTS,
-            "Doors that get a dimensional variant, as block registry name=kind. The kinds are pocket (like the "
+            "Doors that get a dimensional variant, as name=kind. The name is the door's block or item registry name "
+                + "(an item with subtypes adds its damage, like witchery:ingredient:152), or both as block+item=kind "
+                + "when the log says they can't be matched up. The kinds are pocket (like the "
                 + "Dimensional Door), warp (like the Warp Door), dungeon (opens a new dungeon), nether_dungeon (a "
                 + "new dungeon from the Nether pack), personal (like the Personal Dimensional Door) and golden "
                 + "(like the Golden Dimensional Door). A variant is crafted from door, Stable Fabric (an Ender Pearl "
@@ -771,7 +773,7 @@ public class DDProperties {
                 + "the crafting option of its kind allows it, so personal ones aren't crafted by default. A plain door "
                 + "placed under a rift becomes its variant, except for personal ones. The iron, wooden, quartz "
                 + "and golden doors with their own kinds stand for our existing doors. Doors from mods that "
-                + "aren't installed are skipped.")
+                + "aren't installed are skipped; ones that can't be found are logged.")
             .getStringList();
         TrapdoorVariants = config
             .get(

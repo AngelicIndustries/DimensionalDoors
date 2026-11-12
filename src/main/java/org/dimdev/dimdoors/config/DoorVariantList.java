@@ -6,8 +6,9 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * The door variant list from the config. Each entry maps a door's block registry name to a kind, like
- * "etfuturum:door_spruce=warp". A door takes the first kind it is given.
+ * The door variant list from the config. Each entry maps a door to a kind, like "etfuturum:door_spruce=warp". The
+ * door is named by its block or its item (an item with subtypes adds its damage, like "witchery:ingredient:152"), or
+ * by both as block+item when the two can't be matched up. A door takes the first kind it is given.
  */
 public final class DoorVariantList {
 
@@ -38,8 +39,15 @@ public final class DoorVariantList {
         "TwilightForest:tile.TFDoorTime=warp", "TwilightForest:tile.TFDoorTrans=warp",
         "TwilightForest:tile.TFDoorMine=warp", "TwilightForest:tile.TFDoorSort=warp",
 
-        "netherlicious:doorfoxfire=nether_dungeon", "aether_legacy:skyroot_door=warp",
+        "netherlicious:doorfoxfire=nether_dungeon", "netherlicious:doorcrimson=nether_dungeon",
+        "netherlicious:doorwarped=nether_dungeon", "aether_legacy:skyroot_door=warp",
         "Growthcraft|Bamboo:grc.bambooDoor=warp",
+
+        "erebus:doorbaobab=warp", "erebus:dooreucalyptus=warp", "erebus:doormahogany=warp", "erebus:doormossbark=warp",
+        "erebus:doorasper=warp", "erebus:doorcypress=warp", "erebus:doorrotten=warp", "erebus:doorscorched=warp",
+        "erebus:doormarshwood=warp", "erebus:dooramber=dungeon", "erebus:doorpetrified=dungeon",
+
+        "witchery:icedoor=personal",
 
         "plantmegapack:bambooAsperDoor=warp", "plantmegapack:bambooFargesiaRobustaDoor=warp",
         "plantmegapack:bambooGiantTimberDoor=warp", "plantmegapack:bambooGoldenDoor=warp",
@@ -70,8 +78,11 @@ public final class DoorVariantList {
                 : entry.substring(0, split)
                     .trim();
             DoorKind kind = split < 0 ? null : DoorKind.fromId(entry.substring(split + 1));
-            if (door.indexOf(':') <= 0 || door.endsWith(":")) {
-                problems.add("\"" + entry + "\" needs a door's registry name, like etfuturum:door_spruce=warp");
+            if (!isName(door)) {
+                problems.add(
+                    "\"" + entry
+                        + "\" needs a door's block or item registry name, like etfuturum:door_spruce=warp, or both as "
+                        + "block+item=kind");
             } else if (kind == null) {
                 problems.add("\"" + entry + "\" has an unknown kind; the kinds are " + kindIds());
             } else if (doors.containsKey(door)) {
@@ -89,7 +100,18 @@ public final class DoorVariantList {
         return doors;
     }
 
-    /** The registry name of a door's variant, like "warp_door.etfuturum.door_spruce". */
+    /** A registry name like mod:name, or two of them as block+item. */
+    private static boolean isName(String door) {
+        String[] parts = door.split("\\+", -1);
+        for (String part : parts) {
+            if (part.indexOf(':') <= 0 || part.endsWith(":")) {
+                return false;
+            }
+        }
+        return parts.length <= 2;
+    }
+
+    /** The registry name of a door's variant, like "warp_door.etfuturum.door_spruce", from its block's name. */
     public static String variantName(String door, DoorKind kind) {
         return kind.id() + "_door."
             + door.replace(':', '.')
