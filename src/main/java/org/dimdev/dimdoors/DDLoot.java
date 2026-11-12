@@ -155,9 +155,21 @@ public class DDLoot {
         return ChestGenHooks.getInfo(base);
     }
 
-    /** Fills an empty chest in a dungeon (null for one built outside any): a grave chest some of the time. */
-    public static void fillChest(IInventory inventory, Random random, DDProperties properties, DungeonData dungeon) {
-        boolean grave = random.nextInt(100) < properties.GraveChestChance;
+    /** Whether a dungeon's chest is a grave chest, the remains of someone who died there (Grave Chest Chance). */
+    public static boolean rollsGrave(Random random, DDProperties properties) {
+        return random.nextInt(100) < properties.GraveChestChance;
+    }
+
+    /** Fills an empty chest with drawn loot, spread out over its slots. */
+    public static void fillChest(IInventory inventory, Random random, List<ItemStack> loot) {
+        scatter(loot, inventory, random);
+    }
+
+    /**
+     * The loot of one dungeon or grave chest in a dungeon (null for one built outside any), from the dungeon's own
+     * category if it has one.
+     */
+    public static List<ItemStack> draw(Random random, boolean grave, DungeonData dungeon) {
         ChestGenHooks loot = category(grave ? GRAVE_CHEST : DUNGEON_CHEST, dungeon);
         WeightedRandomChestContent[] content = loot.getItems(random);
         List<ItemStack> stacks = new ArrayList<ItemStack>();
@@ -180,7 +192,7 @@ public class DDLoot {
                 }
             }
         }
-        scatter(stacks, inventory, random);
+        return stacks;
     }
 
     /** A drawn stack as it goes in the chest: special items made, and a grave's gear worn. Null leaves it out. */
@@ -247,16 +259,18 @@ public class DDLoot {
     }
 
     private static ItemStack graveHead(Random random) {
-        DeathTracker deathTracker = DimDoors.deathTracker;
-        String skullOwner;
-        if (deathTracker.isEmpty() || (random.nextInt(MAX_SPECIAL_SKULL_CHANCE) < SPECIAL_SKULL_CHANCE)) {
-            skullOwner = SPECIAL_SKULL_OWNERS[random.nextInt(SPECIAL_SKULL_OWNERS.length)];
-        } else {
-            skullOwner = deathTracker.getRandomUsername(random);
-        }
         ItemStack skull = new ItemStack(Items.skull, 1, PLAYER_SKULL_METADATA);
         skull.stackTagCompound = new NBTTagCompound();
-        skull.stackTagCompound.setString("SkullOwner", skullOwner);
+        skull.stackTagCompound.setString("SkullOwner", graveName(random));
         return skull;
+    }
+
+    /** Someone who died in a pocket dimension, or now and then one of Dimensional Doors' authors. */
+    public static String graveName(Random random) {
+        DeathTracker deathTracker = DimDoors.deathTracker;
+        if (deathTracker.isEmpty() || (random.nextInt(MAX_SPECIAL_SKULL_CHANCE) < SPECIAL_SKULL_CHANCE)) {
+            return SPECIAL_SKULL_OWNERS[random.nextInt(SPECIAL_SKULL_OWNERS.length)];
+        }
+        return deathTracker.getRandomUsername(random);
     }
 }

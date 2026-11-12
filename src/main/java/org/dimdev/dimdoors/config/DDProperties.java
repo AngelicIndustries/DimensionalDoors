@@ -69,6 +69,7 @@ public class DDProperties {
     public final int StabilizedRiftSignatureLootWeight;
     public final int PersonalDimDoorLootWeight;
     public final int GraveChestChance;
+    public final boolean OpenBlocksGraves;
     public final String[] LootContainers;
 
     /**
@@ -305,6 +306,15 @@ public class DDProperties {
                 0,
                 100)
             .getInt();
+        OpenBlocksGraves = config
+            .get(
+                CATEGORY_LOOT,
+                "OpenBlocks Graves",
+                true,
+                "With OpenBlocks installed, a grave chest that is a single plain chest standing on a solid block "
+                    + "becomes an OpenBlocks grave with the same loot. Dug with a shovel, it spills its loot on the "
+                    + "ground.")
+            .getBoolean(true);
         LootContainers = config
             .get(
                 CATEGORY_LOOT,
