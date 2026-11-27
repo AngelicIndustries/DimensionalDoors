@@ -102,6 +102,7 @@ public class DDProperties {
     public final int MonolithAggroRange;
     public final int MonolithNoticeRange;
     public final double MonolithAggroScreenEffect;
+    public final boolean QuietLimboMonoliths;
     public final double LimboFogDensity;
     public static final String LIMBO_SHADER_FOG = "Limbo Shader Fog";
     /** Limbo's fog strength under each shader pack, by pack name; /limbofog adds to it. */
@@ -729,6 +730,13 @@ public class DDProperties {
             0.0,
             1.0)
             .getDouble();
+        QuietLimboMonoliths = config
+            .get(
+                CATEGORY_ENTITY,
+                "Quiet Monoliths in Limbo",
+                false,
+                "Monoliths in Limbo don't drone; elsewhere they drone as usual. Their other sounds stay. Client only.")
+            .getBoolean(false);
         MonolithSpawningChance = config
             .get(
                 Configuration.CATEGORY_GENERAL,

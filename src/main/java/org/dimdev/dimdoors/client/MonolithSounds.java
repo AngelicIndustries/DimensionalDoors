@@ -80,7 +80,9 @@ public final class MonolithSounds {
         }
         if (world == null || mc.thePlayer == null || mc.isGamePaused()) return;
         EntityPlayer player = mc.thePlayer;
-        double range = DDProperties.instance().MonolithAggroRange;
+        DDProperties properties = DDProperties.instance();
+        double range = properties.MonolithAggroRange;
+        boolean droneless = properties.QuietLimboMonoliths && world.provider.dimensionId == properties.LimboDimensionID;
         List<MobMonolith> quiet = new ArrayList<>();
         Set<Integer> present = new HashSet<>();
         MobMonolith seenBy = null;
@@ -102,7 +104,7 @@ public final class MonolithSounds {
             }
             if (noticed.contains(id) && distance <= range + DRONE_RETURN) continue;
             noticed.remove(id);
-            if (distance <= DRONE_DISTANCE) quiet.add(monolith);
+            if (distance <= DRONE_DISTANCE && !droneless) quiet.add(monolith);
         }
         noticed.retainAll(present);
         updateDrones(mc, quiet, player);
