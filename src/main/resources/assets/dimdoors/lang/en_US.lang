@@ -102,3 +102,14 @@ dimdoors.grave.death.1=%s never found the way out
 dimdoors.grave.death.2=%s went through one door too many
 dimdoors.grave.death.3=%s stayed too long in the dark
 dimdoors.grave.death.4=%s was unravelled by a rift
+
+# Config screen pages
+dimdoors.config.category.general=General
+dimdoors.config.category.entity=Monoliths and Entities
+dimdoors.config.category.loot=Loot
+dimdoors.config.category.crafting=Crafting
+dimdoors.config.category.door_variants=Door Variants
+dimdoors.config.category.enchantments=Enchantments
+dimdoors.config.category.dimension=Dimension IDs
+dimdoors.config.category.provider=Provider IDs
+dimdoors.config.category.biome=Biome IDs

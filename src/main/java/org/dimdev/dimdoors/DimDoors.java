@@ -107,7 +107,11 @@ import cpw.mods.fml.common.event.FMLServerStoppedEvent;
 import cpw.mods.fml.common.registry.EntityRegistry;
 import cpw.mods.fml.common.registry.GameRegistry;
 
-@Mod(modid = DimDoors.modid, name = "Dimensional Doors: Adventura Arcana Edition", version = DimDoors.version)
+@Mod(
+    modid = DimDoors.modid,
+    name = "Dimensional Doors: Adventura Arcana Edition",
+    version = DimDoors.version,
+    guiFactory = "org.dimdev.dimdoors.client.GuiFactory")
 public class DimDoors {
 
     public static final String version = Tags.VERSION;

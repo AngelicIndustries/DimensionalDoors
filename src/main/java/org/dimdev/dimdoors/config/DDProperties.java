@@ -69,41 +69,41 @@ public class DDProperties {
     public final int StabilizedRiftSignatureLootWeight;
     public final int PersonalDimDoorLootWeight;
     public final int GraveChestChance;
-    public final boolean OpenBlocksGraves;
+    public boolean OpenBlocksGraves;
     public final String[] LootContainers;
 
     /**
      * Other Flags
      */
 
-    public final boolean RiftSpreadEnabled;
-    public final boolean RiftGriefingEnabled;
-    public final double RiftGrowthSpeed;
-    public final int MaxRiftRadius;
-    public final boolean RiftsSpawnEndermenEnabled;
-    public final boolean LimboEnabled;
-    public final boolean HardcoreLimboEnabled;
-    public final boolean LimboDropsInventory;
-    public final boolean SeamlessLimboDeath;
-    public final boolean HungerInLimbo;
+    public boolean RiftSpreadEnabled;
+    public boolean RiftGriefingEnabled;
+    public double RiftGrowthSpeed;
+    public int MaxRiftRadius;
+    public boolean RiftsSpawnEndermenEnabled;
+    public boolean LimboEnabled;
+    public boolean HardcoreLimboEnabled;
+    public boolean LimboDropsInventory;
+    public boolean SeamlessLimboDeath;
+    public boolean HungerInLimbo;
     public final boolean DarkLimbo;
-    public final boolean ShowRiftCore;
-    public final int HighlightRiftCoreFor;
-    public final double RiftSize;
-    public final double RiftJitter;
-    public final double RiftCoreJitter;
-    public final float LimboAmbientLight;
+    public boolean ShowRiftCore;
+    public int HighlightRiftCoreFor;
+    public double RiftSize;
+    public double RiftJitter;
+    public double RiftCoreJitter;
+    public float LimboAmbientLight;
     public final boolean FadebloomsEnabled;
     public final int FadebloomLight;
-    public final int FadebloomHeldLight;
-    public final int FadebloomGlow;
-    public final int FadebloomPatches;
-    public final boolean RebuildDoorsAtRifts;
-    public final int MonolithAggroRange;
-    public final int MonolithNoticeRange;
-    public final double MonolithAggroScreenEffect;
-    public final boolean QuietLimboMonoliths;
-    public final double LimboFogDensity;
+    public int FadebloomHeldLight;
+    public int FadebloomGlow;
+    public int FadebloomPatches;
+    public boolean RebuildDoorsAtRifts;
+    public int MonolithAggroRange;
+    public int MonolithNoticeRange;
+    public double MonolithAggroScreenEffect;
+    public boolean QuietLimboMonoliths;
+    public double LimboFogDensity;
     public static final String LIMBO_SHADER_FOG = "Limbo Shader Fog";
     /** Limbo's fog strength under each shader pack, by pack name; /limbofog adds to it. */
     public final Map<String, Double> LimboShaderFog = new LinkedHashMap<String, Double>();
@@ -112,12 +112,12 @@ public class DDProperties {
     public final Map<String, Double> LimboShaderLight = new LinkedHashMap<String, Double>();
     /** These settings as loaded, comments and all, for the in-game tuners that save to them. */
     public final Configuration Config;
-    public final boolean LimboReturnsInventoryEnabled;
-    public final boolean DoorRenderingEnabled;
-    public final double PortalRoundness;
-    public final double PortalEdgeRoughness;
-    public final double PortalSpinSpeed;
-    public final PortalPlacement OpenPortalPlacement;
+    public boolean LimboReturnsInventoryEnabled;
+    public boolean DoorRenderingEnabled;
+    public double PortalRoundness;
+    public double PortalEdgeRoughness;
+    public double PortalSpinSpeed;
+    public PortalPlacement OpenPortalPlacement;
 
     /** Where an open door's portal goes, clear of the door's panel or not. */
     public enum PortalPlacement {
@@ -134,28 +134,28 @@ public class DDProperties {
         }
     }
 
-    public final boolean TNFREAKINGT_Enabled;
-    public final boolean MonolithTeleportationEnabled;
-    public final boolean DangerousLimboMonolithsDisabled;
-    public final boolean UniversalLimboInNewWorlds;
-    public final String LimboEscapeDestination;
-    public final boolean LimboEscapeUnravelsLanding;
-    public final int ExitSearchRadius;
+    public boolean TNFREAKINGT_Enabled;
+    public boolean MonolithTeleportationEnabled;
+    public boolean DangerousLimboMonolithsDisabled;
+    public boolean UniversalLimboInNewWorlds;
+    public String LimboEscapeDestination;
+    public boolean LimboEscapeUnravelsLanding;
+    public int ExitSearchRadius;
 
     /**
      * Other
      */
 
-    public final int NonTntWeight;
-    public final int ClusterGenerationChance;
-    public final int GatewayGenerationChance;
-    public final int FortressGatewayGenerationChance;
+    public int NonTntWeight;
+    public int ClusterGenerationChance;
+    public int GatewayGenerationChance;
+    public int FortressGatewayGenerationChance;
     public final String[] DoorVariants;
     public final String[] TrapdoorVariants;
-    public final int MonolithSpawningChance;
-    public final int WorldThreadDropChance;
-    public final int LimboEntryRange;
-    public final int LimboReturnRange;
+    public int MonolithSpawningChance;
+    public int WorldThreadDropChance;
+    public int LimboEntryRange;
+    public int LimboReturnRange;
     public final int WorldThreadRequirementLevel;
     public final String CustomSchematicDirectory;
 
@@ -173,8 +173,9 @@ public class DDProperties {
     private final String CATEGORY_DOOR_VARIANTS = "door_variants";
     private final String CATEGORY_ENCHANTMENTS = "enchantments";
 
-    /** Reads a list of pack name=value lines into values, leaving out lines that aren't. */
+    /** Reads a list of pack name=value lines into values, in place of what they held, leaving out lines that aren't. */
     private static void readPackValues(Configuration config, String key, String comment, Map<String, Double> values) {
+        values.clear();
         for (String entry : config.get(Configuration.CATEGORY_GENERAL, key, new String[0], comment)
             .getStringList()) {
             int split = entry.lastIndexOf('=');
@@ -203,8 +204,7 @@ public class DDProperties {
     }
 
     private DDProperties(File configFile) {
-        // Load the configuration. This must be done in the constructor, even though I'd rather have a separate
-        // function, because "blank final" variables must be initialized within the constructor.
+        // The settings that only take effect after a restart are final and read here; the others are in readLive.
 
         CustomSchematicDirectory = configFile.getParent() + CUSTOM_SCHEMATIC_SUBDIRECTORY;
         Configuration config = new Configuration(configFile);
@@ -307,6 +307,128 @@ public class DDProperties {
                 0,
                 100)
             .getInt();
+        LootContainers = config
+            .get(
+                CATEGORY_LOOT,
+                "Loot Containers",
+                new String[] { "minecraft:chest", "minecraft:trapped_chest", "etfuturum:barrel" },
+                "Containers that are filled with loot when a dungeon is built, by block name, if they are empty.")
+            .getStringList();
+
+        DarkLimbo = config.get(
+            Configuration.CATEGORY_GENERAL,
+            "Dark Limbo",
+            true,
+            "Sets whether Limbo is dark: a midnight without stars where unlit places are black and the Eternal Fabric "
+                + "glows. Off: Limbo is evenly bright, as Dimensional Doors always had it.")
+            .getBoolean(true);
+        FadebloomsEnabled = config.get(
+            Configuration.CATEGORY_GENERAL,
+            "Enable Fadeblooms",
+            false,
+            "Sets whether Fadeblooms exist: faintly glowing flowers that grow in Limbo and light up a little around "
+                + "players who carry them. Off: they aren't registered or generated.")
+            .getBoolean(false);
+        FadebloomLight = config.get(
+            Configuration.CATEGORY_GENERAL,
+            "Fadebloom Light",
+            1,
+            "The light level a planted Fadebloom gives off. Eyes in the Shadows judges Fadeblooms by it, carried ones "
+                + "too, so keep it low enough that it never keeps the eyes away.",
+            0,
+            15)
+            .getInt();
+
+        DoorRenderEntityID = config.get(CATEGORY_ENTITY, "Door Render Entity ID", 89)
+            .getInt();
+        MonolithEntityID = config.get(CATEGORY_ENTITY, "Monolith Entity ID", 125)
+            .getInt();
+        FallingDripstoneEntityID = config.get(CATEGORY_ENTITY, "Falling Dripstone Entity ID", 126)
+            .getInt();
+
+        config.setCategoryComment(
+            CATEGORY_ENCHANTMENTS,
+            "Transcendent (bows: arrows hit Endermen instead of them teleporting away) and Trepidation (chestplates: a "
+                + "heartbeat when a hostile mob is within 5, 10 or 15 blocks). Both come only as books in dungeon chests.");
+        TranscendentEnchantmentID = config
+            .get(CATEGORY_ENCHANTMENTS, "Transcendent ID", 170, "Enchantment ID; -1 leaves Transcendent out.")
+            .getInt();
+        TrepidationEnchantmentID = config
+            .get(CATEGORY_ENCHANTMENTS, "Trepidation ID", 171, "Enchantment ID; -1 leaves Trepidation out.")
+            .getInt();
+        TrepidationMobs = config
+            .get(
+                CATEGORY_ENCHANTMENTS,
+                "Trepidation Mobs",
+                new String[] { "*" },
+                "Mobs Trepidation senses, by entity name: * is every mob the game counts as hostile, a name adds one "
+                    + "and -name takes one out.")
+            .getStringList();
+
+        LimboDimensionID = config.get(CATEGORY_DIMENSION, "Limbo Dimension ID", -23)
+            .getInt();
+        PublicPocketDimensionID = config
+            .get(
+                CATEGORY_DIMENSION,
+                "Public Pocket Dimension ID",
+                -24,
+                "The dimension that holds pockets, each in a cell of its own.")
+            .getInt();
+        DungeonPocketDimensionID = config
+            .get(CATEGORY_DIMENSION, "Dungeon Pocket Dimension ID", -25, "The dimension that holds dungeon pockets.")
+            .getInt();
+        PersonalPocketDimensionID = config
+            .get(CATEGORY_DIMENSION, "Personal Pocket Dimension ID", -26, "The dimension that holds personal pockets.")
+            .getInt();
+        PocketProviderID = config.get(CATEGORY_PROVIDER, "Pocket Provider ID", 124)
+            .getInt();
+        LimboProviderID = config.get(CATEGORY_PROVIDER, "Limbo Provider ID", 113)
+            .getInt();
+        PersonalPocketProviderID = config.get(CATEGORY_PROVIDER, "Personal Pocket Provider ID", 125)
+            .getInt();
+
+        DoorVariants = config.get(
+            CATEGORY_DOOR_VARIANTS,
+            "Door Variants",
+            DoorVariantList.DEFAULTS,
+            "Doors that get a dimensional variant, as name=kind. The name is the door's block or item registry name "
+                + "(an item with subtypes adds its damage, like witchery:ingredient:152), or both as block+item=kind "
+                + "when the log says they can't be matched up. The kinds are pocket (like the "
+                + "Dimensional Door), warp (like the Warp Door), dungeon (opens a new dungeon), nether_dungeon (a "
+                + "new dungeon from the Nether pack), personal (like the Personal Dimensional Door) and golden "
+                + "(like the Golden Dimensional Door). A variant is crafted from door, Stable Fabric (an Ender Pearl "
+                + "for warp ones), door when "
+                + "the crafting option of its kind allows it, so personal ones aren't crafted by default. A plain door "
+                + "placed under a rift becomes its variant, except for personal ones. The iron, wooden, quartz "
+                + "and golden doors with their own kinds stand for our existing doors. Doors from mods that "
+                + "aren't installed are skipped; ones that can't be found are logged.")
+            .getStringList();
+        TrapdoorVariants = config
+            .get(
+                CATEGORY_DOOR_VARIANTS,
+                "Trapdoor Variants",
+                org.dimdev.dimdoors.TrapdoorVariants.DEFAULTS,
+                "Trapdoors that get a Transdimensional variant, by block registry name. Each works like the "
+                    + "Transdimensional Trapdoor and is crafted like it, from its own trapdoor, when that crafting "
+                    + "option is on; an iron one only opens by redstone. Trapdoors from mods that aren't installed are "
+                    + "skipped.")
+            .getStringList();
+
+        LimboBiomeID = config.get(CATEGORY_BIOME, "Limbo Biome ID", 148)
+            .getInt();
+        PocketBiomeID = config.get(CATEGORY_BIOME, "Pocket Biome ID", 147)
+            .getInt();
+
+        readLive(config);
+        describeForScreen(config);
+
+        config.save();
+    }
+
+    /**
+     * The settings that take effect without a restart: read here at startup, and again when the config screen saves.
+     */
+    private void readLive(Configuration config) {
         OpenBlocksGraves = config
             .get(
                 CATEGORY_LOOT,
@@ -316,14 +438,6 @@ public class DDProperties {
                     + "becomes an OpenBlocks grave with the same loot. Dug with a shovel, it spills its loot on the "
                     + "ground.")
             .getBoolean(true);
-        LootContainers = config
-            .get(
-                CATEGORY_LOOT,
-                "Loot Containers",
-                new String[] { "minecraft:chest", "minecraft:trapped_chest", "etfuturum:barrel" },
-                "Containers that are filled with loot when a dungeon is built, by block name, if they are empty.")
-            .getStringList();
-
         RiftGriefingEnabled = config.get(
             Configuration.CATEGORY_GENERAL,
             "Enable Rift Griefing",
@@ -360,7 +474,6 @@ public class DDProperties {
             true,
             "Sets whether groups of connected rifts, and single rifts that have grown for about an hour, spawn Endermen")
             .getBoolean(true);
-
         LimboEnabled = config
             .get(
                 Configuration.CATEGORY_GENERAL,
@@ -404,13 +517,6 @@ public class DDProperties {
                 "Sets whether players get hungry in Limbo. Off: food and saturation stay as they were on arrival, and "
                     + "health still regenerates.")
             .getBoolean(false);
-        DarkLimbo = config.get(
-            Configuration.CATEGORY_GENERAL,
-            "Dark Limbo",
-            true,
-            "Sets whether Limbo is dark: a midnight without stars where unlit places are black and the Eternal Fabric "
-                + "glows. Off: Limbo is evenly bright, as Dimensional Doors always had it.")
-            .getBoolean(true);
         ShowRiftCore = config.get(
             Configuration.CATEGORY_GENERAL,
             "Show Rift Cores",
@@ -485,22 +591,6 @@ public class DDProperties {
                 + "side of Limbo Ambient Light, given to the pack as faint night vision. 0 to 1; packs not listed get "
                 + "0.3. Names as for Limbo Shader Fog.",
             LimboShaderLight);
-        FadebloomsEnabled = config.get(
-            Configuration.CATEGORY_GENERAL,
-            "Enable Fadeblooms",
-            false,
-            "Sets whether Fadeblooms exist: faintly glowing flowers that grow in Limbo and light up a little around "
-                + "players who carry them. Off: they aren't registered or generated.")
-            .getBoolean(false);
-        FadebloomLight = config.get(
-            Configuration.CATEGORY_GENERAL,
-            "Fadebloom Light",
-            1,
-            "The light level a planted Fadebloom gives off. Eyes in the Shadows judges Fadeblooms by it, carried ones "
-                + "too, so keep it low enough that it never keeps the eyes away.",
-            0,
-            15)
-            .getInt();
         FadebloomHeldLight = config
             .get(
                 Configuration.CATEGORY_GENERAL,
@@ -626,7 +716,6 @@ public class DDProperties {
                 .equals(placement)) chosen = value;
         }
         OpenPortalPlacement = chosen;
-
         TNFREAKINGT_Enabled = config.get(Configuration.CATEGORY_GENERAL, "EXPLOSIONS!!???!!!?!?!!", false)
             .getBoolean(false);
         NonTntWeight = config
@@ -637,55 +726,6 @@ public class DDProperties {
                 "Weighs the chance that a block will not be TNT. Must be greater than or equal to 0. "
                     + "EXPLOSIONS must be set to true for this to have any effect.")
             .getInt();
-
-        DoorRenderEntityID = config.get(CATEGORY_ENTITY, "Door Render Entity ID", 89)
-            .getInt();
-        MonolithEntityID = config.get(CATEGORY_ENTITY, "Monolith Entity ID", 125)
-            .getInt();
-        FallingDripstoneEntityID = config.get(CATEGORY_ENTITY, "Falling Dripstone Entity ID", 126)
-            .getInt();
-
-        config.setCategoryComment(
-            CATEGORY_ENCHANTMENTS,
-            "Transcendent (bows: arrows hit Endermen instead of them teleporting away) and Trepidation (chestplates: a "
-                + "heartbeat when a hostile mob is within 5, 10 or 15 blocks). Both come only as books in dungeon chests.");
-        TranscendentEnchantmentID = config
-            .get(CATEGORY_ENCHANTMENTS, "Transcendent ID", 170, "Enchantment ID; -1 leaves Transcendent out.")
-            .getInt();
-        TrepidationEnchantmentID = config
-            .get(CATEGORY_ENCHANTMENTS, "Trepidation ID", 171, "Enchantment ID; -1 leaves Trepidation out.")
-            .getInt();
-        TrepidationMobs = config
-            .get(
-                CATEGORY_ENCHANTMENTS,
-                "Trepidation Mobs",
-                new String[] { "*" },
-                "Mobs Trepidation senses, by entity name: * is every mob the game counts as hostile, a name adds one "
-                    + "and -name takes one out.")
-            .getStringList();
-
-        LimboDimensionID = config.get(CATEGORY_DIMENSION, "Limbo Dimension ID", -23)
-            .getInt();
-        PublicPocketDimensionID = config
-            .get(
-                CATEGORY_DIMENSION,
-                "Public Pocket Dimension ID",
-                -24,
-                "The dimension that holds pockets, each in a cell of its own.")
-            .getInt();
-        DungeonPocketDimensionID = config
-            .get(CATEGORY_DIMENSION, "Dungeon Pocket Dimension ID", -25, "The dimension that holds dungeon pockets.")
-            .getInt();
-        PersonalPocketDimensionID = config
-            .get(CATEGORY_DIMENSION, "Personal Pocket Dimension ID", -26, "The dimension that holds personal pockets.")
-            .getInt();
-        PocketProviderID = config.get(CATEGORY_PROVIDER, "Pocket Provider ID", 124)
-            .getInt();
-        LimboProviderID = config.get(CATEGORY_PROVIDER, "Limbo Provider ID", 113)
-            .getInt();
-        PersonalPocketProviderID = config.get(CATEGORY_PROVIDER, "Personal Pocket Provider ID", 125)
-            .getInt();
-
         MonolithTeleportationEnabled = config
             .get(
                 Configuration.CATEGORY_GENERAL,
@@ -693,7 +733,6 @@ public class DDProperties {
                 true,
                 "Sets whether Monoliths can teleport players")
             .getBoolean(true);
-
         DangerousLimboMonolithsDisabled = config
             .get(
                 Configuration.CATEGORY_GENERAL,
@@ -701,7 +740,6 @@ public class DDProperties {
                 true,
                 "Sets whether monoliths in Limbo stare at the player rather than attack")
             .getBoolean(true);
-
         MonolithAggroRange = config
             .get(
                 CATEGORY_ENTITY,
@@ -746,7 +784,6 @@ public class DDProperties {
                     + ") that Monoliths will "
                     + "spawn in a given Limbo chunk. The default chance is 28.")
             .getInt();
-
         ClusterGenerationChance = config
             .get(
                 Configuration.CATEGORY_GENERAL,
@@ -756,7 +793,6 @@ public class DDProperties {
                     + ") that a cluster of rifts will "
                     + "generate in a given chunk. The default chance is 2.")
             .getInt();
-
         GatewayGenerationChance = config
             .get(
                 Configuration.CATEGORY_GENERAL,
@@ -766,7 +802,6 @@ public class DDProperties {
                     + ") that a Rift Gateway will "
                     + "generate in a given chunk. The default chance is 15.")
             .getInt();
-
         FortressGatewayGenerationChance = config
             .get(
                 Configuration.CATEGORY_GENERAL,
@@ -776,34 +811,6 @@ public class DDProperties {
                     + ") that a Rift Gateway will "
                     + "generate as part of a Nether Fortress. The default chance is 33.")
             .getInt();
-
-        DoorVariants = config.get(
-            CATEGORY_DOOR_VARIANTS,
-            "Door Variants",
-            DoorVariantList.DEFAULTS,
-            "Doors that get a dimensional variant, as name=kind. The name is the door's block or item registry name "
-                + "(an item with subtypes adds its damage, like witchery:ingredient:152), or both as block+item=kind "
-                + "when the log says they can't be matched up. The kinds are pocket (like the "
-                + "Dimensional Door), warp (like the Warp Door), dungeon (opens a new dungeon), nether_dungeon (a "
-                + "new dungeon from the Nether pack), personal (like the Personal Dimensional Door) and golden "
-                + "(like the Golden Dimensional Door). A variant is crafted from door, Stable Fabric (an Ender Pearl "
-                + "for warp ones), door when "
-                + "the crafting option of its kind allows it, so personal ones aren't crafted by default. A plain door "
-                + "placed under a rift becomes its variant, except for personal ones. The iron, wooden, quartz "
-                + "and golden doors with their own kinds stand for our existing doors. Doors from mods that "
-                + "aren't installed are skipped; ones that can't be found are logged.")
-            .getStringList();
-        TrapdoorVariants = config
-            .get(
-                CATEGORY_DOOR_VARIANTS,
-                "Trapdoor Variants",
-                org.dimdev.dimdoors.TrapdoorVariants.DEFAULTS,
-                "Trapdoors that get a Transdimensional variant, by block registry name. Each works like the "
-                    + "Transdimensional Trapdoor and is crafted like it, from its own trapdoor, when that crafting "
-                    + "option is on; an iron one only opens by redstone. Trapdoors from mods that aren't installed are "
-                    + "skipped.")
-            .getStringList();
-
         WorldThreadDropChance = config
             .get(
                 Configuration.CATEGORY_GENERAL,
@@ -813,13 +820,64 @@ public class DDProperties {
                     + ") that a rift will "
                     + "drop World Thread when it destroys a block. The default chance is 50.")
             .getInt();
+    }
 
-        LimboBiomeID = config.get(CATEGORY_BIOME, "Limbo Biome ID", 148)
-            .getInt();
-        PocketBiomeID = config.get(CATEGORY_BIOME, "Pocket Biome ID", 147)
-            .getInt();
+    /** Takes the config screen's changes: reads the live settings again and saves the file. */
+    public void reload() {
+        readLive(Config);
+        if (Config.hasChanged()) Config.save();
+    }
 
-        config.save();
+    /** The config screen's pages, in order. */
+    public String[] screenCategories() {
+        return new String[] { Configuration.CATEGORY_GENERAL, CATEGORY_ENTITY, CATEGORY_LOOT, CATEGORY_CRAFTING,
+            CATEGORY_DOOR_VARIANTS, CATEGORY_ENCHANTMENTS, CATEGORY_DIMENSION, CATEGORY_PROVIDER, CATEGORY_BIOME };
+    }
+
+    /**
+     * Names the config screen's pages and marks what only takes effect after a restart: IDs, recipes, loot tables,
+     * door variants, and the blocks and lighting that fadeblooms and Dark Limbo set up at startup.
+     */
+    private void describeForScreen(Configuration config) {
+        for (String category : screenCategories()) {
+            config.setCategoryLanguageKey(category, "dimdoors.config.category." + category);
+        }
+        config.setCategoryComment(
+            Configuration.CATEGORY_GENERAL,
+            "Rifts, Limbo, fadeblooms, door portals and world generation.");
+        config.setCategoryComment(CATEGORY_ENTITY, "Monoliths, and the entity IDs.");
+        config.setCategoryComment(CATEGORY_LOOT, "What dungeon chests hold.");
+        config.setCategoryComment(CATEGORY_CRAFTING, "Which items have recipes.");
+        config.setCategoryComment(CATEGORY_DOOR_VARIANTS, "Dimensional doors and trapdoors made from other doors.");
+        config.setCategoryComment(CATEGORY_ENCHANTMENTS, "Enchantment IDs, and the mobs Trepidation works on.");
+        config.setCategoryComment(CATEGORY_DIMENSION, "Dimension IDs.");
+        config.setCategoryComment(CATEGORY_PROVIDER, "Dimension provider IDs.");
+        config.setCategoryComment(CATEGORY_BIOME, "Biome IDs.");
+        for (String category : new String[] { CATEGORY_CRAFTING, CATEGORY_DOOR_VARIANTS, CATEGORY_ENCHANTMENTS,
+            CATEGORY_DIMENSION, CATEGORY_PROVIDER, CATEGORY_BIOME }) {
+            config.setCategoryRequiresMcRestart(category, true);
+        }
+        restartFor(
+            config,
+            CATEGORY_ENTITY,
+            "Door Render Entity ID",
+            "Monolith Entity ID",
+            "Falling Dripstone Entity ID");
+        restartFor(config, Configuration.CATEGORY_GENERAL, "Enable Fadeblooms", "Fadebloom Light", "Dark Limbo");
+        for (String key : config.getCategory(CATEGORY_LOOT)
+            .keySet()) {
+            if (!key.equals("OpenBlocks Graves")) restartFor(config, CATEGORY_LOOT, key);
+        }
+    }
+
+    private static void restartFor(Configuration config, String category, String... keys) {
+        for (String key : keys) {
+            if (config.getCategory(category)
+                .containsKey(key))
+                config.getCategory(category)
+                    .get(key)
+                    .setRequiresMcRestart(true);
+        }
     }
 
     public static DDProperties initialize(File configFile) {

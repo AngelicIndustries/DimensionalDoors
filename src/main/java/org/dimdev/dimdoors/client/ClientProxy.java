@@ -62,6 +62,9 @@ public class ClientProxy extends CommonProxy {
         FMLCommonHandler.instance()
             .bus()
             .register(new TrepidationHeartbeat());
+        FMLCommonHandler.instance()
+            .bus()
+            .register(new GuiFactory.Changes());
 
     }
 
