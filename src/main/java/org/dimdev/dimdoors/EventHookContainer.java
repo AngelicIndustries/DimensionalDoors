@@ -108,6 +108,9 @@ public class EventHookContainer {
         // player if Limbo does _not_ preserve inventories.
 
         Entity entity = event.entity;
+        // Deaths are the server's. A mod that kills a player on the client as well (Blood Magic's sacrificial dagger)
+        // fires this there too, where there's no Limbo to move them to.
+        if (entity.worldObj.isRemote) return true;
 
         if (properties.LimboEnabled && properties.LimboReturnsInventoryEnabled
             && entity instanceof EntityPlayer
@@ -158,6 +161,7 @@ public class EventHookContainer {
         // sent to Limbo.
 
         Entity entity = event.entity;
+        if (entity.worldObj.isRemote) return true;
 
         if (entity instanceof EntityPlayer && isValidSourceForLimbo(entity.worldObj.provider)) {
             EntityPlayer player = (EntityPlayer) entity;
